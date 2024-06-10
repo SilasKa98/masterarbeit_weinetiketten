@@ -1,0 +1,37 @@
+
+from ActionProcessor import ActionProcessor
+from Services.DeepLService import DeepLService
+from Services.DataProcessService import DataProcessService
+from Services.SearchImagesService import SearchImagesService
+from Services.MachineLearningService import MachineLearningService
+from Models.word_spelling_correction.PreProcessor import PreProcessor
+
+
+
+#search_text = "Riesling und Lemberger Qualitätswein"
+#searchImage = SearchImagesService()
+#search_result = searchImage.search(search_text, True)
+#print(search_result)
+
+
+def main():
+    #action_processor = ActionProcessor()
+    #action_processor.search_for_duplicate_entrys("tesseract", "text_pure", "path")
+
+    #machine_learning = MachineLearningService('german_words', '256Dim_512Batch_adam_german')
+    #pre_processor = PreProcessor()
+    #machine_learning.ml_word_correction('speicherplasz', 256, pre_processor.form_dataframe_german)
+
+    action_processor = ActionProcessor()
+    action_processor.correct_sentence_with_ml("easyocr", "text_pure, easyocr.path", "text_ml_modify")
+
+    # read in image texts--> can set lang detection True/False in class ActionProcessor function "read_and_save_ocr"
+    #action_processor.read_and_save_ocr("easyocr", "wine_images", "easyocr", "translation")
+
+    # detect language with db entrys
+    # action_processor.read_db_and_detect_lang()
+
+
+if __name__ == "__main__":
+    main()
+

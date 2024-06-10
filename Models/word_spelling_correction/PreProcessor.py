@@ -1,0 +1,262 @@
+import random
+
+import matplotlib.pyplot as plt
+import numpy as np # linear algebra
+import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
+import os
+import re
+from gibberish import Gibberish
+
+
+class PreProcessor:
+
+    @staticmethod
+    def form_dataframe(input_file):
+        # Load file with correct words
+        df = pd.read_csv(input_file,)
+        print(df.shape)
+
+        df = df.drop(df.columns[0], axis=1)
+        df = df.drop('description', axis=1)
+        df = df.drop('points', axis=1)
+        df = df.drop('price', axis=1)
+        print(df)
+        # drop all rows with missing values
+        df.dropna(axis=0, how='any')
+        print(df.shape)
+        combined_data = []
+        for value in df.itertuples():
+            combined_data.append(value[0])
+            combined_data.append(value[1])
+            combined_data.append(value[2])
+            combined_data.append(value[3])
+            combined_data.append(value[4])
+            combined_data.append(value[5])
+            combined_data.append(value[6])
+
+        # filter nan and digits
+        combined_data = [x for x in combined_data if str(x) != 'nan']
+        combined_data = [x for x in combined_data if not isinstance(x, int)]
+        combined_data = [element for element in combined_data if not element.isdigit()]
+
+        regex_numbers = re.compile(r'\d+')
+        combined_data = [element for element in combined_data if not regex_numbers.search(element)]
+
+
+        combined_single_words_data = []
+        for item in combined_data:
+            if " " in item:
+                combined_single_words_data.extend(item.split())
+            else:
+                combined_single_words_data.append(item)
+
+        combined_df_data = {'word': combined_single_words_data}
+        combined_df = pd.DataFrame(combined_df_data)
+
+        print(combined_df.shape)
+        print(combined_df.head())
+        return combined_df
+
+    def form_dataframe_german(self, input_file):
+        df = pd.read_csv(input_file, low_memory=False)
+
+        df = df.filter(['!'])
+        df = df.rename(columns={"!": "word"})
+        df = df.map(self.remove_numerics)
+        df['word'] = df['word'].str.replace('\d+', '', regex=True)
+        df['word'] = df['word'].str.replace('\W', '', regex=True)
+        df = df.dropna()
+        empty_filter = df["word"] != ""
+        df = df[empty_filter]
+        zero_filter = df["word"] != "0"
+        df = df[zero_filter]
+        #df = df.map(self.word_cleaning(german=True))
+        df = df.map(lambda x: self.word_cleaning(x, german=True))
+        print(df.head())
+        return df
+
+    def form_dataframe_english(self, input_file):
+
+        df = pd.read_csv(input_file, low_memory=False)
+        df = df.filter(['word'])
+        df = df.map(self.remove_numerics)
+        df['word'] = df['word'].str.replace('\d+', '', regex=True)
+        df['word'] = df['word'].str.replace('\W', '', regex=True)
+        df = df.dropna()
+        empty_filter = df["word"] != ""
+        df = df[empty_filter]
+        zero_filter = df["word"] != "0"
+        df = df[zero_filter]
+        df = df.map(self.word_cleaning)
+        print(df.head())
+        return df
+
+    @staticmethod
+    def remove_numerics(x):
+        if isinstance(x, (int, float)):
+            return np.nan
+        else:
+            return x
+
+    # load a csv file and transform it to a pandas dataframe
+    @staticmethod
+    def load_data(input_file):
+        # Load file with correct words
+        df  = pd.read_csv(input_file)
+        print(df.shape)
+
+        # drop all rows with missing values
+        df.dropna(axis=0,how='any')
+        print(df.shape)
+        return df
+
+    # count all lines of the dataframe but also check if the value of the line is a string
+    @staticmethod
+    def count_lines(dataframe):
+        string_lines = []
+        for string in dataframe['word']:
+            if isinstance(string, str):
+                string_lines.append(string)
+
+        print("Number of Lines: ", len(string_lines))
+        return string_lines
+
+    # function to clean a input string -> lower all chars + remove all numbers and upper case chars + replace \n with ''
+    @staticmethod
+    def word_cleaning(input_val, german=False):
+        input_val = input_val.lower()
+        if not german:
+            input_val = re.sub(r'[^0-9a-zA-Z ]','',input_val)
+        else:
+            input_val = re.sub(r'[^0-9a-zA-ZäöüÄÖÜ ]', '', input_val)
+        input_val = input_val.replace('\n','')
+        return input_val
+
+    def word_splitting(self, input_list):
+        string_lines = [self.word_cleaning(val) for val in input_list]
+        splitted_words = []
+        for str_line in string_lines:
+            splitted_words += [val_split for val_split in str_line.split()]
+        string_lines = list(set(splitted_words))
+        print("\n".join(string_lines[:4]))
+        print("Number of words:", len(string_lines))
+        return string_lines
+
+    @staticmethod
+    def char_indexing(all_existing_chars):
+        # all_existing_chars = list(" abcdefghijklmnopqrstuvwxyz0123456789")
+        all_existing_specials = ['\n', '\t', '#']
+        char_int_dict = {}
+        int_char_dict = {}
+        for index, char in enumerate(all_existing_chars):
+            int_char_dict[index] = char
+            char_int_dict[char] = index
+
+        dict_length = len(int_char_dict)
+        for i in range(len(all_existing_specials)):
+            int_char_dict[dict_length] = all_existing_specials[i]
+            char_int_dict[all_existing_specials[i]] = dict_length
+            dict_length = dict_length+1
+
+        print(int_char_dict)
+        print(char_int_dict)
+        return int_char_dict, char_int_dict
+
+    @staticmethod
+    def gibberish_word_generator(input_word, german=False):
+
+        cases = random.randint(1,5)
+        input_fanned = list(input_word)
+
+        '''
+        keyboard_layout_us = {
+            'q': 'was', 'w': 'qase', 'e': 'wsdr', 'r': 'edft', 't': 'rfgy', 'y': 'tghu', 'u': 'yhji',
+            'i': 'ujko', 'o': 'iklp', 'p': 'ol', 'a': 'qwsxz', 's': 'qawedxz', 'd': 'wersfxc', 'f': 'ertdgcv',
+            'g': 'rtyfhvb', 'h': 'yugjbn', 'j': 'uikhn', 'k': 'iojlm', 'l': 'opkm', 'z': 'asx', 'x': 'zsdc',
+            'c': 'xdfv', 'v': 'cfgb', 'b': 'vghn', 'n': 'bhjm', 'm': 'njk'
+        }
+        '''
+        '''
+        keyboard_similar_chars = {
+            'a': 'qsz', 'b': 'vnh', 'c': 'xdfv', 'd': 'serfcx', 'e': 'wrd', 'f': 'drtgvc', 'g': 'ftyhbv',
+            'h': 'gyujnb', 'i': 'uokjl', 'j': 'huikmn', 'k': 'jiolm', 'l': 'kopi', 'm': 'njkm', 'n': 'bhjmn',
+            'o': 'iplk', 'p': 'ol', 'q': 'wa', 'r': 'etdf', 's': 'awedxz', 't': 'ryfg', 'u': 'yijh', 'v': 'cfgb',
+            'w': 'qase', 'x': 'zsd', 'y': 'tuhg', 'z': 'asx'
+        }
+        '''
+        keyboard_similar_chars = {
+            'a': 'qsz1', 'b': 'vnh8', 'c': 'xdfv2', 'd': 'serfcx3', 'e': 'wrd34', 'f': 'drtgvc4', 'g': 'ftyhbv5',
+            'h': 'gyujnb6', 'i': 'uokjl9', 'j': 'huikmn7', 'k': 'jiolm8', 'l': 'kopi9', 'm': 'njkm0', 'n': 'bhjmn8',
+            'o': 'iplk90', 'p': 'ol0', 'q': 'wa12', 'r': 'etdf45', 's': 'awedxz2', 't': 'ryfg56', 'u': 'yijh78',
+            'v': 'cfgb1', 'w': 'qase23', 'x': 'zsd34', 'y': 'tuhg67', 'z': 'asx12'
+        }
+
+        all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzüöä0123456789")
+
+        # case to add a random char to the original string
+        if cases == 1:
+            random_char_index = random.randint(0, len(input_word) - 1)
+            # possible_typos = list(keyboard_similar_chars[input_word[random_char_index].lower()])
+
+            input_fanned.insert(random_char_index,random.choice(all_existing_chars))
+            gib_word = ''.join(input_fanned)
+            return gib_word, input_word
+
+        # case to delete a random char of the original string
+        elif cases == 2:
+            random_char_index = random.randint(0, len(input_word) - 1)
+            del input_fanned[random_char_index]
+            gib_word = ''.join(input_fanned)
+            return gib_word, input_word
+
+        # case to replace a char with a similar looking one
+        elif cases == 3:
+            random_char_index = random.randint(0, len(input_word) - 1)
+            # possible_typos = list(keyboard_similar_chars[input_word[random_char_index].lower()])
+
+            input_fanned[random_char_index] = random.choice(all_existing_chars)
+            gib_word = ''.join(input_fanned)
+            return gib_word, input_word
+
+        # special case for german to replace ü with u , ä with a and ö with o
+        elif cases == 4:
+            if german:
+                gib_word = ''
+                special_characters = ['ü', 'ö', 'ä']
+                replace_characters = ['u', 'o', 'a']
+                for index, char in enumerate(input_fanned):
+                    if char in special_characters:
+                        special_char_index = special_characters.index(char)
+                        input_fanned[index] = replace_characters[special_char_index]
+                        gib_word = ''.join(input_fanned)
+                if gib_word == '':
+                    random_char_index = random.randint(0, len(input_word) - 1)
+                    input_fanned[random_char_index] = random.choice(all_existing_chars)
+                    gib_word = ''.join(input_fanned)
+            else:
+                random_char_index = random.randint(0, len(input_word) - 1)
+                input_fanned[random_char_index] = random.choice(all_existing_chars)
+                gib_word = ''.join(input_fanned)
+
+            return gib_word, input_word
+
+
+        # case to scramble 2 chars
+        else:
+            random_char_index1 = random.randint(0, len(input_word) - 1)
+            random_char_index2 = random.randint(0, len(input_word) - 1)
+            while random_char_index1 == random_char_index2:
+                random_char_index2 = random.randint(0, len(input_word) - 1)
+
+            random_char1 = input_fanned[random_char_index1]
+            random_char2 = input_fanned[random_char_index2]
+
+            input_fanned[random_char_index1] = random_char2
+            input_fanned[random_char_index2] = random_char1
+
+            gib_word = ''.join(input_fanned)
+            return gib_word, input_word
+
+
+
+
