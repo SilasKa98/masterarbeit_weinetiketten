@@ -6,6 +6,7 @@ from Services.EasyOCRService import EasyOCRService
 from Models.word_spelling_correction.PreProcessor import PreProcessor
 from Services.MachineLearningService import MachineLearningService
 import os
+from collections import defaultdict
 import easyocr
 
 
@@ -120,14 +121,38 @@ class ActionProcessor:
                 image_path
             )
 
-    def search_for_duplicate_entrys(self, table, column_text, column_path):
+    def search_for_duplicate_entrys(self, search_table, search_column, save=False, save_table=''):
         self.database_service = DatabaseService()
-        select_result_text = self.database_service.select_from_table(table, column_text)
-        select_result_path = self.database_service.select_from_table(table, column_path)
+        select_result_text = self.database_service.select_from_table(search_table, search_column)
+        select_result_path = self.database_service.select_from_table(search_table, 'path')
 
         similarity_result = self.data_process_service.find_similar_sentences(select_result_text, select_result_path, 80)
+        path_dup_dict = defaultdict(list)
+        ratio_dup_dict = defaultdict(list)
         for item in similarity_result:
             print("ratio: ", item[2], "Paths: ", item[3], "&", item[4])
+            path_dup_dict[item[3][0]].append(item[4][0])
+            ratio_dup_dict[item[3][0]].append(item[2])
+
+        for k, v in path_dup_dict.items():
+            if save:
+                select_result_insert = self.database_service.select_from_table(save_table, 'og_path', 'og_path=%s', [k])
+                if select_result_insert:
+                    self.database_service.update_table(
+                        save_table,
+                        ['dup_paths', 'confidence_ratios'],
+                        [' , '.join(path_dup_dict[k]), ' , '.join(map(str, ratio_dup_dict[k]))],
+                        "og_path",
+                        k
+                    )
+                else:
+                    print([k, path_dup_dict[k], ratio_dup_dict[k]])
+                    self.database_service.insert_into_table(
+                        save_table,
+                        ['og_path', 'dup_paths', 'confidence_ratios'],
+                        [k, ' , '.join(path_dup_dict[k]), ' , '.join(map(str, ratio_dup_dict[k]))]
+                    )
+
         return similarity_result
 
     def correct_sentence_with_ml(self, table, column_text, insert_column):
@@ -142,7 +167,7 @@ class ActionProcessor:
         cleaned_string_list = [result[0] for result in select_result_text]
 
         pre_processor = PreProcessor()
-        machine_learning = MachineLearningService('german_words', '256Dim_512Batch_adam_german')
+        machine_learning = MachineLearningService('german_words', '256Dim_512Batch_adam_german_specialChars')
         ml_correction_init = machine_learning.ml_word_correction_init(pre_processor.form_dataframe_german)
 
         for idx, item in enumerate(cleaned_string_list):
