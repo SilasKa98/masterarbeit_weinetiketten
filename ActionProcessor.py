@@ -136,12 +136,17 @@ class ActionProcessor:
 
         for k, v in path_dup_dict.items():
             if save:
-                select_result_insert = self.database_service.select_from_table(save_table, 'og_path', 'og_path=%s', [k])
+                select_result_insert = self.database_service.select_from_table(save_table, 'og_path, found_in_table', 'og_path=%s', [k])
                 if select_result_insert:
+                    found_in_table_current = select_result_insert[0][1]
+                    if search_table not in found_in_table_current:
+                        found_in_table_new = found_in_table_current +' , ' + search_table
+                    else:
+                        found_in_table_new = found_in_table_current
                     self.database_service.update_table(
                         save_table,
-                        ['dup_paths', 'confidence_ratios'],
-                        [' , '.join(path_dup_dict[k]), ' , '.join(map(str, ratio_dup_dict[k]))],
+                        ['dup_paths', 'confidence_ratios', 'found_in_table'],
+                        [' , '.join(path_dup_dict[k]), ' , '.join(map(str, ratio_dup_dict[k])), found_in_table_new],
                         "og_path",
                         k
                     )
@@ -149,8 +154,8 @@ class ActionProcessor:
                     print([k, path_dup_dict[k], ratio_dup_dict[k]])
                     self.database_service.insert_into_table(
                         save_table,
-                        ['og_path', 'dup_paths', 'confidence_ratios'],
-                        [k, ' , '.join(path_dup_dict[k]), ' , '.join(map(str, ratio_dup_dict[k]))]
+                        ['og_path', 'dup_paths', 'confidence_ratios', 'found_in_table'],
+                        [k, ' , '.join(path_dup_dict[k]), ' , '.join(map(str, ratio_dup_dict[k])), search_table]
                     )
 
         return similarity_result
@@ -177,7 +182,8 @@ class ActionProcessor:
             for word in item_words:
                 cleaned_word = pre_processor.word_cleaning(word)
                 cleaned_word = pre_processor.remove_numerics(cleaned_word)
-                if len(cleaned_word) > 6:
+                special_characters = "!@#$%^&*()-+?_=,<>/"
+                if len(cleaned_word) > 6 and not any(char in special_characters for char in cleaned_word):
                     modified_word = machine_learning.ml_word_correction_exec(cleaned_word, 256, ml_correction_init[0], ml_correction_init[1], ml_correction_init[2], ml_correction_init[3])
                     modified_sentence.append(modified_word)
                 else:
