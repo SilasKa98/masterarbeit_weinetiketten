@@ -165,97 +165,71 @@ class PreProcessor:
     @staticmethod
     def gibberish_word_generator(input_word, german=False):
 
-        cases = random.randint(1,5)
+        num_cases = random.randint(1,3)
         input_fanned = list(input_word)
 
-        '''
-        keyboard_layout_us = {
-            'q': 'was', 'w': 'qase', 'e': 'wsdr', 'r': 'edft', 't': 'rfgy', 'y': 'tghu', 'u': 'yhji',
-            'i': 'ujko', 'o': 'iklp', 'p': 'ol', 'a': 'qwsxz', 's': 'qawedxz', 'd': 'wersfxc', 'f': 'ertdgcv',
-            'g': 'rtyfhvb', 'h': 'yugjbn', 'j': 'uikhn', 'k': 'iojlm', 'l': 'opkm', 'z': 'asx', 'x': 'zsdc',
-            'c': 'xdfv', 'v': 'cfgb', 'b': 'vghn', 'n': 'bhjm', 'm': 'njk'
-        }
-        '''
-        '''
-        keyboard_similar_chars = {
-            'a': 'qsz', 'b': 'vnh', 'c': 'xdfv', 'd': 'serfcx', 'e': 'wrd', 'f': 'drtgvc', 'g': 'ftyhbv',
-            'h': 'gyujnb', 'i': 'uokjl', 'j': 'huikmn', 'k': 'jiolm', 'l': 'kopi', 'm': 'njkm', 'n': 'bhjmn',
-            'o': 'iplk', 'p': 'ol', 'q': 'wa', 'r': 'etdf', 's': 'awedxz', 't': 'ryfg', 'u': 'yijh', 'v': 'cfgb',
-            'w': 'qase', 'x': 'zsd', 'y': 'tuhg', 'z': 'asx'
-        }
-        '''
-        keyboard_similar_chars = {
-            'a': 'qsz1', 'b': 'vnh8', 'c': 'xdfv2', 'd': 'serfcx3', 'e': 'wrd34', 'f': 'drtgvc4', 'g': 'ftyhbv5',
-            'h': 'gyujnb6', 'i': 'uokjl9', 'j': 'huikmn7', 'k': 'jiolm8', 'l': 'kopi9', 'm': 'njkm0', 'n': 'bhjmn8',
-            'o': 'iplk90', 'p': 'ol0', 'q': 'wa12', 'r': 'etdf45', 's': 'awedxz2', 't': 'ryfg56', 'u': 'yijh78',
-            'v': 'cfgb1', 'w': 'qase23', 'x': 'zsd34', 'y': 'tuhg67', 'z': 'asx12'
-        }
-
         all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzüöä0123456789")
+        for _ in range(num_cases):
+            cases = random.randint(1, 5)
+            # case to add a random char to the original string
+            if cases == 1:
+                random_char_index = random.randint(0, len(input_word) - 1)
 
-        # case to add a random char to the original string
-        if cases == 1:
-            random_char_index = random.randint(0, len(input_word) - 1)
-            # possible_typos = list(keyboard_similar_chars[input_word[random_char_index].lower()])
+                input_fanned.insert(random_char_index,random.choice(all_existing_chars))
+                gib_word = ''.join(input_fanned)
+                return gib_word, input_word
 
-            input_fanned.insert(random_char_index,random.choice(all_existing_chars))
-            gib_word = ''.join(input_fanned)
-            return gib_word, input_word
+            # case to delete a random char of the original string
+            elif cases == 2:
+                random_char_index = random.randint(0, len(input_word) - 1)
+                del input_fanned[random_char_index]
+                gib_word = ''.join(input_fanned)
+                return gib_word, input_word
 
-        # case to delete a random char of the original string
-        elif cases == 2:
-            random_char_index = random.randint(0, len(input_word) - 1)
-            del input_fanned[random_char_index]
-            gib_word = ''.join(input_fanned)
-            return gib_word, input_word
-
-        # case to replace a char with a similar looking one
-        elif cases == 3:
-            random_char_index = random.randint(0, len(input_word) - 1)
-            # possible_typos = list(keyboard_similar_chars[input_word[random_char_index].lower()])
-
-            input_fanned[random_char_index] = random.choice(all_existing_chars)
-            gib_word = ''.join(input_fanned)
-            return gib_word, input_word
-
-        # special case for german to replace ü with u , ä with a and ö with o
-        elif cases == 4:
-            if german:
-                gib_word = ''
-                special_characters = ['ü', 'ö', 'ä']
-                replace_characters = ['u', 'o', 'a']
-                for index, char in enumerate(input_fanned):
-                    if char in special_characters:
-                        special_char_index = special_characters.index(char)
-                        input_fanned[index] = replace_characters[special_char_index]
-                        gib_word = ''.join(input_fanned)
-                if gib_word == '':
-                    random_char_index = random.randint(0, len(input_word) - 1)
-                    input_fanned[random_char_index] = random.choice(all_existing_chars)
-                    gib_word = ''.join(input_fanned)
-            else:
+            # case to replace a char
+            elif cases == 3:
                 random_char_index = random.randint(0, len(input_word) - 1)
                 input_fanned[random_char_index] = random.choice(all_existing_chars)
                 gib_word = ''.join(input_fanned)
+                return gib_word, input_word
 
-            return gib_word, input_word
+            # special case for german to replace ü with u , ä with a and ö with o else--> random replace like in case3
+            elif cases == 4:
+                if german:
+                    gib_word = ''
+                    special_characters = ['ü', 'ö', 'ä']
+                    replace_characters = ['u', 'o', 'a']
+                    for index, char in enumerate(input_fanned):
+                        if char in special_characters:
+                            special_char_index = special_characters.index(char)
+                            input_fanned[index] = replace_characters[special_char_index]
+                            gib_word = ''.join(input_fanned)
+                    if gib_word == '':
+                        random_char_index = random.randint(0, len(input_word) - 1)
+                        input_fanned[random_char_index] = random.choice(all_existing_chars)
+                        gib_word = ''.join(input_fanned)
+                else:
+                    random_char_index = random.randint(0, len(input_word) - 1)
+                    input_fanned[random_char_index] = random.choice(all_existing_chars)
+                    gib_word = ''.join(input_fanned)
 
+                return gib_word, input_word
 
-        # case to scramble 2 chars
-        else:
-            random_char_index1 = random.randint(0, len(input_word) - 1)
-            random_char_index2 = random.randint(0, len(input_word) - 1)
-            while random_char_index1 == random_char_index2:
+            # case to scramble 2 chars
+            else:
+                random_char_index1 = random.randint(0, len(input_word) - 1)
                 random_char_index2 = random.randint(0, len(input_word) - 1)
+                while random_char_index1 == random_char_index2:
+                    random_char_index2 = random.randint(0, len(input_word) - 1)
 
-            random_char1 = input_fanned[random_char_index1]
-            random_char2 = input_fanned[random_char_index2]
+                random_char1 = input_fanned[random_char_index1]
+                random_char2 = input_fanned[random_char_index2]
 
-            input_fanned[random_char_index1] = random_char2
-            input_fanned[random_char_index2] = random_char1
+                input_fanned[random_char_index1] = random_char2
+                input_fanned[random_char_index2] = random_char1
 
-            gib_word = ''.join(input_fanned)
-            return gib_word, input_word
+                gib_word = ''.join(input_fanned)
+                return gib_word, input_word
 
 
 
