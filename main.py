@@ -15,15 +15,15 @@ from Models.word_spelling_correction.PreProcessor import PreProcessor
 
 
 def main():
-    #action_processor = ActionProcessor()
-    #action_processor.search_for_duplicate_entrys("tesseract", "text_pure", "path")
+    # action_processor = ActionProcessor()
+    # action_processor.search_for_duplicate_entrys('easyocr', 'text_translation', save='True', save_table='duplicates')
 
     #machine_learning = MachineLearningService('german_words', '256Dim_512Batch_adam_german')
     #pre_processor = PreProcessor()
     #machine_learning.ml_word_correction('speicherplasz', 256, pre_processor.form_dataframe_german)
 
     action_processor = ActionProcessor()
-    action_processor.correct_sentence_with_ml("easyocr", "text_pure, easyocr.path", "text_ml_modify")
+    action_processor.correct_sentence_with_ml("easyocr", "text_translation, easyocr.path", "text_translation_ml_modify")
 
     # read in image texts--> can set lang detection True/False in class ActionProcessor function "read_and_save_ocr"
     #action_processor.read_and_save_ocr("easyocr", "wine_images", "easyocr", "translation")
