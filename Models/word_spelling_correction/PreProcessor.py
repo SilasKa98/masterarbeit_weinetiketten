@@ -165,12 +165,12 @@ class PreProcessor:
     @staticmethod
     def gibberish_word_generator(input_word, german=False):
 
-        num_cases = random.randint(1,3)
+        num_cases = random.randint(1,5)
         input_fanned = list(input_word)
 
         all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzüöä0123456789")
         for _ in range(num_cases):
-            cases = random.randint(1, 5)
+            cases = random.randint(1, 6)
             # case to add a random char to the original string
             if cases == 1:
                 random_char_index = random.randint(0, len(input_word) - 1)
@@ -213,6 +213,21 @@ class PreProcessor:
                     input_fanned[random_char_index] = random.choice(all_existing_chars)
                     gib_word = ''.join(input_fanned)
 
+                return gib_word, input_word
+
+            # another special case for german to delete ü ö and ä from words, bcs of their week detection rate in ocr
+            elif cases == 5:
+                if german:
+                    special_characters = ['ü', 'ö', 'ä']
+                    for index, char in enumerate(input_fanned):
+                        if char in special_characters:
+                            special_char_index = special_characters.index(char)
+                            del input_fanned[special_char_index]
+                else:
+                    random_char_index = random.randint(0, len(input_word) - 1)
+                    del input_fanned[random_char_index]
+
+                gib_word = ''.join(input_fanned)
                 return gib_word, input_word
 
             # case to scramble 2 chars
