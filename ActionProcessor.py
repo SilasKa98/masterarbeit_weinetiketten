@@ -172,7 +172,7 @@ class ActionProcessor:
         cleaned_string_list = [result[0] for result in select_result_text]
 
         pre_processor = PreProcessor()
-        machine_learning = MachineLearningService('german_words', '256Dim_512Batch_adam_german_specialChars')
+        machine_learning = MachineLearningService('german_words', '256Dim_512Batch_adam_german_specialChars_newGib')
         ml_correction_init = machine_learning.ml_word_correction_init(pre_processor.form_dataframe_german)
 
         for idx, item in enumerate(cleaned_string_list):
