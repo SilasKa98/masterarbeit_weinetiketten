@@ -6,8 +6,8 @@ preprocessor = PreProcessor()
 #loaded_input_file = preprocessor.load_data('data/english_words.csv')
 #print(loaded_input_file)
 
-input_file = "data/english_words.csv"
-loaded_input_file = preprocessor.form_dataframe_english(input_file)
+input_file = "data/vivno_dataset.csv"
+loaded_input_file = preprocessor.form_dataframe_vivno(input_file)
 
 all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzüöä0123456789")
 

@@ -64,7 +64,7 @@ class PreProcessor:
         df = df.rename(columns={"!": "word"})
         df = df.map(self.remove_numerics)
         df['word'] = df['word'].str.replace('\d+', '', regex=True)
-        df['word'] = df['word'].str.replace('\W', '', regex=True)
+        # df['word'] = df['word'].str.replace('\W', '', regex=True)
         df = df.dropna()
         empty_filter = df["word"] != ""
         df = df[empty_filter]
@@ -89,6 +89,33 @@ class PreProcessor:
         df = df[zero_filter]
         df = df.map(self.word_cleaning)
         print(df.head())
+        return df
+
+    def form_dataframe_vivno(self, input_file):
+        df = pd.read_csv(input_file, encoding="utf-16")
+        df = df.filter(['Names'])
+        df = df.rename(columns={"Names": "word"})
+        df = df.map(self.remove_numerics)
+        df['word'] = df['word'].str.replace('\d+', '', regex=True)
+        df = df.dropna()
+        print(df.head())
+
+        '''
+        df = pd.read_csv(input_file, sep=',', quotechar='"', encoding='utf-8')
+        print(df)
+        print(df.head())
+        
+        df = df.filter(['Names'])
+        
+        df = df.rename(columns={"Names": "word"})
+        df = df.map(self.remove_numerics)
+        df = df.dropna()
+        empty_filter = df["word"] != ""
+        df = df[empty_filter]
+        df = df.map(self.word_cleaning)
+        print(df.head())
+        '''
+
         return df
 
     @staticmethod
