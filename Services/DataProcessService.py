@@ -11,6 +11,7 @@ class DataProcessService:
     def iterate_directory(directory):
 
         # Durch das Hauptverzeichnis iterieren
+        image_path = ''
         for root, dirs, files in os.walk(directory):
             for file in files:
                 image_path = os.path.join(root, file)
