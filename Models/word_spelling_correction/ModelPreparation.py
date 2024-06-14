@@ -25,13 +25,13 @@ class ModelPreparation:
         start_factor = 0.2
         start_point = int(len(string_lines)*start_factor)
         #start_point = 0
-        repeats = 10
+        repeats = 1
 
         for str_val in string_lines[start_point:]:
-            if len(str_val) > 6:
+            if len(str_val) > 4:
                 target_val = '\t' + str_val + '\n'
                 for _ in range(repeats):
-                    input_val = self.pre_processor.gibberish_word_generator(str_val, False)
+                    input_val = self.pre_processor.gibberish_word_generator(str_val, True)
                     input_vals.append(input_val[0])
                     target_vals.append(target_val)
         print("Training-sample Length ", len(input_vals))
@@ -198,8 +198,8 @@ class ModelPreparation:
                   callbacks=[early_stopping, reduce_lr]
                   )
 
-        model.save('savedModels/256Dim_512Batch_adam_vivno.h5')
-        model.save('savedModels/256Dim_512Batch_adam_vivno.keras')
+        model.save('savedModels/128Dim_128Batch_adam_german_specialChars_newGib_v3.h5')
+        model.save('savedModels/128Dim_128Batch_adam_german_specialChars_newGib_v3.keras')
 
         encoder_model = Model(encoder_inputs, encoder_states)
 
@@ -215,8 +215,8 @@ class ModelPreparation:
             [decoder_inputs] + decoder_states_inputs,
             [decoder_outputs] + decoder_states
         )
-        encoder_model.save('savedModels/encoder_256Dim_512Batch_adam_vivno.h5')
-        decoder_model.save('savedModels/decoder_256Dim_512Batch_adam_vivno.h5')
+        encoder_model.save('savedModels/encoder_128Dim_128Batch_adam_german_specialChars_newGib_v3.h5')
+        decoder_model.save('savedModels/decoder_128Dim_128Batch_adam_german_specialChars_newGib_v3.h5')
 
     @staticmethod
     def create_ml_model_2(batch_size, epochs, latent_dim, all_existing_chars, encoder_input_data, decoder_input_data,decoder_target_data):
