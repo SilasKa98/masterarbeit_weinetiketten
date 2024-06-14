@@ -5,6 +5,7 @@ from Services.DatabaseService import DatabaseService
 from Services.EasyOCRService import EasyOCRService
 from Models.word_spelling_correction.PreProcessor import PreProcessor
 from Services.MachineLearningService import MachineLearningService
+from Services.ImageModificationService import ImageModificationService
 import os
 from collections import defaultdict
 import easyocr
@@ -67,6 +68,8 @@ class ActionProcessor:
         self.database_service = DatabaseService()
 
         for image_info in image_reads:
+            if 'edited_wine_images' in image_info[1]:
+                image_info[1] = image_info[1].replace('/edited_wine_images/', '\\')
             if table == "etiketten_infos":
                 select_result = self.database_service.select_from_table(table, "*", "name=%s", [image_info[2]])
                 if not select_result:
@@ -85,12 +88,16 @@ class ActionProcessor:
                     )
             else:
                 select_result = self.database_service.select_from_table(table, "*", "path=%s", [image_info[1]])
-                if not select_result:
+                print(select_result)
+                if len(select_result) == 0:
+                    '''
                     self.database_service.insert_into_table(
                         table,
                         [f"text_{column_addition}", "path"],
                         [image_info[0], image_info[1]]
                     )
+                    '''
+                    continue
                 else:
                     self.database_service.update_table(
                         table,
@@ -172,7 +179,7 @@ class ActionProcessor:
         cleaned_string_list = [result[0] for result in select_result_text]
 
         pre_processor = PreProcessor()
-        machine_learning = MachineLearningService('german_words', '256Dim_512Batch_adam_german_specialChars_newGib')
+        machine_learning = MachineLearningService('german_words', '256Dim_512Batch_adam_german_specialChars_newGib_v2')
         ml_correction_init = machine_learning.ml_word_correction_init(pre_processor.form_dataframe_german)
 
         for idx, item in enumerate(cleaned_string_list):
@@ -199,6 +206,24 @@ class ActionProcessor:
                 "path",
                 current_path
             )
+
+    def modify_images(self, directory_path):
+
+        images = self.data_process_service.iterate_directory(directory_path)
+        print(images)
+        for index, img_path in enumerate(images):
+            image_directory = os.path.dirname(os.path.abspath(img_path))
+            image_directory_name = os.path.basename(image_directory)
+            image_name = os.path.basename(img_path)
+
+            image_mod = ImageModificationService(image_directory+"/"+image_name)
+            processed_path = f"C:/Masterarbeit_ocr_env/wine_images/edited_wine_images/{image_directory_name}"
+            if not os.path.exists(processed_path):
+                os.makedirs(processed_path)
+
+            save_path = processed_path + f"/{image_name}"
+            image_mod.image_grayscaler().image_rescaler().noise_remover().blur_apply("median").save_modified_image(save_path)
+
 
     def process_single_picuture(self, image_path):
 
