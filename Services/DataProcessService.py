@@ -20,6 +20,20 @@ class DataProcessService:
         return image_path
 
     @staticmethod
+    def get_subdirectories(path):
+        try:
+            contents = os.listdir(path)
+            subdirectories = [name for name in contents if os.path.isdir(os.path.join(path, name))]
+            return subdirectories
+
+        except FileNotFoundError:
+            print(f"Error: The path '{path}' does not exist.")
+            return []
+        except PermissionError:
+            print(f"Error: Permission denied for path '{path}'.")
+            return []
+
+    @staticmethod
     def create_keywords_of_scentence(input_text, lang, keyword_nums, max_ngram_size, deduplication_threshold):
         import yake
         custom_kw_extractor = yake.KeywordExtractor(lan=lang, n=max_ngram_size, dedupLim=deduplication_threshold, top=keyword_nums, features=None)
