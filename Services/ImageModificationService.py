@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-
+from PIL import Image
 
 class ImageModificationService:
 
@@ -46,6 +46,25 @@ class ImageModificationService:
 
         cv2.imwrite(save_path, self.image_src)
         print('Successfully saved Image ' + save_path)
+
+    def save_modified_image2(self, save_path):
+
+        original_image_pil = Image.open(self.image_path)
+        dpi = original_image_pil.info.get('dpi', (300, 300))  # set dpi to 300x300 if info not available
+
+        # Konvertiere das OpenCV-Bild zu einem Pillow-Image
+        image_pil = Image.fromarray(cv2.cvtColor(self.image_src, cv2.COLOR_BGR2RGB))
+        image_pil.save(save_path, dpi=dpi)
+        print('Successfully saved Image ' + save_path)
+
+    def get_image_dpi(self):
+        with Image.open(self.image_path) as img:
+            dpi = img.info.get('dpi')
+            if dpi:
+                return dpi
+            else:
+                return (0, 0)
+
 
 
 
