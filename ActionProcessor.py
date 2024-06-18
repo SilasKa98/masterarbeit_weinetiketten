@@ -34,13 +34,15 @@ class ActionProcessor:
             images = (image_path for image_path in images if 'edited_wine_images' not in image_path)
 
         if only_new_entrys:
-            self.database_service = DatabaseService()
-            all_directorys_db = self.database_service.select_from_table("etiketten_infos", "image_directory")
-            all_directorys_db = {dire[0] for dire in all_directorys_db}
+           # all_directorys_db = self.database_service.select_from_table("etiketten_infos", "image_directory")
+           # all_directorys_db = {dire[0] for dire in all_directorys_db}
 
+            all_sub_directorys = self.data_process_service.get_subdirectories("wine_images/")
+            all_sub_directorys.remove("edited_wine_images")
+            print(all_sub_directorys)
             # check if a subfolder/specific directory is given in the path --> handle different sql calls
             is_specific_directory = False
-            for directory in all_directorys_db:
+            for directory in all_sub_directorys:
                 if directory in directory_input:
                     db_filter_directory = directory
                     is_specific_directory = True
