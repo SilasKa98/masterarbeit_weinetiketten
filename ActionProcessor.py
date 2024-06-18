@@ -64,7 +64,7 @@ class ActionProcessor:
     def read_and_save_ocr(self, ocr_model, path_to_read, table, column_addition):
         action_processor = ActionProcessor()
         # True / False determines  wether translation is used for ocr or not
-        image_reads = action_processor.process_directory(path_to_read, True, ocr_model)
+        image_reads = action_processor.process_directory(path_to_read, False, ocr_model)
         self.database_service = DatabaseService()
 
         for image_info in image_reads:
@@ -222,8 +222,14 @@ class ActionProcessor:
                 os.makedirs(processed_path)
 
             save_path = processed_path + f"/{image_name}"
-            image_mod.image_grayscaler().image_rescaler().noise_remover().blur_apply("median").save_modified_image(save_path)
-
+            print(image_mod.get_image_dpi())
+            if image_mod.get_image_dpi()[0] >= 300 and image_mod.get_image_dpi()[1] >= 300:
+                print("dpi > 300")
+                image_mod.image_grayscaler().noise_remover().blur_apply("median").save_modified_image2(save_path)
+            else:
+                print("dpi < 300")
+                image_mod.image_grayscaler().image_rescaler().noise_remover().blur_apply("median")\
+                    .save_modified_image2(save_path)
 
     def process_single_picuture(self, image_path):
 

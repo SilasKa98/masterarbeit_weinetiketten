@@ -22,15 +22,18 @@ def main():
     #pre_processor = PreProcessor()
     #machine_learning.ml_word_correction('speicherplasz', 256, pre_processor.form_dataframe_german)
 
-    # action_processor = ActionProcessor()
-    # action_processor.correct_sentence_with_ml("easyocr", "text_translation, easyocr.path", "text_translation_ml_modify")
+    #action_processor = ActionProcessor()
+    #action_processor.correct_sentence_with_ml("easyocr", "text_translation, easyocr.path", "text_translation_ml_modify")
 
-     #action_processor = ActionProcessor()
-     #action_processor.modify_images("wine_images")
+    # action_processor = ActionProcessor()
+    # action_processor.modify_images("wine_images")
 
     # read in image texts--> can set lang detection True/False in class ActionProcessor function "read_and_save_ocr"
-     action_processor = ActionProcessor()
-     action_processor.read_and_save_ocr("easyocr", "wine_images/edited_wine_images/", "easyocr", "translation_modified_images")
+    action_processor = ActionProcessor()
+    action_processor.read_and_save_ocr("easyocr", "wine_images/edited_wine_images/", "easyocr", "modified_images")
+
+    action_processor2 = ActionProcessor()
+    action_processor2.read_and_save_ocr("tesseract", "wine_images/edited_wine_images/", "tesseract", "modified_images")
 
     # detect language with db entrys
     # action_processor.read_db_and_detect_lang()
