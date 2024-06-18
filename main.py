@@ -28,15 +28,16 @@ def main():
     # action_processor = ActionProcessor()
     # action_processor.modify_images("wine_images")
 
-    # read in image texts--> can set lang detection True/False in class ActionProcessor function "read_and_save_ocr"
-    action_processor = ActionProcessor()
-    action_processor.read_and_save_ocr("easyocr", "wine_images/edited_wine_images/", "easyocr", "modified_images")
-
-    action_processor2 = ActionProcessor()
-    action_processor2.read_and_save_ocr("tesseract", "wine_images/edited_wine_images/", "tesseract", "modified_images")
+    # read in image texts--> can set lang detection True/False to read texts with expected lang
+    # action_processor = ActionProcessor()
+    # action_processor.read_and_save_ocr("easyocr", "wine_images/edited_wine_images/", "easyocr",
+                                       #"modified_images", use_translation=True, only_new_entrys=True)
 
     # detect language with db entrys
     # action_processor.read_db_and_detect_lang()
+
+    action_processor = ActionProcessor()
+    action_processor.process_directory("wine_images/archiv19/", False, "easyocr", only_new_entrys=False)
 
 
 if __name__ == "__main__":

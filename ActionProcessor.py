@@ -20,16 +20,52 @@ class ActionProcessor:
         self.database_service = DatabaseService()
         self.easy_ocr_service = EasyOCRService()
 
-    def process_directory(self, directory_input, use_translation, ocr_model):
+    def process_directory(self, directory_input, use_translation, ocr_model, only_new_entrys=False):
 
         # directory_input = directory path
         images = self.data_process_service.iterate_directory(directory_input)
         # iterate images in paths
         directory_results = []
 
+        # removing the edited_wine_images paths if only the normal directory is given, otherwise it would scan the
+        # images double. Once normal and once edited, even if they are treated as one in the db (no extra path entrys
+        # for edited images)
+        if "edited_wine_images" not in directory_input:
+            images = (image_path for image_path in images if 'edited_wine_images' not in image_path)
+
+        if only_new_entrys:
+            self.database_service = DatabaseService()
+            all_directorys_db = self.database_service.select_from_table("etiketten_infos", "image_directory")
+            all_directorys_db = {dire[0] for dire in all_directorys_db}
+
+            # check if a subfolder/specific directory is given in the path --> handle different sql calls
+            is_specific_directory = False
+            for directory in all_directorys_db:
+                if directory in directory_input:
+                    db_filter_directory = directory
+                    is_specific_directory = True
+
+            if is_specific_directory:
+                all_paths_in_db_tupels = self.database_service.select_from_table("etiketten_infos", "path",
+                                                                                 "image_directory=%s",
+                                                                                 [db_filter_directory])
+            else:
+                all_paths_in_db_tupels = self.database_service.select_from_table("etiketten_infos", "path")
+
+            # some path modifications to match each other
+            all_paths_in_db = {path[0] for path in all_paths_in_db_tupels}
+            all_paths_in_db_normalized = [path.replace('\\', '/') for path in all_paths_in_db]
+            images_normalized = [path.replace('\\', '/') for path in images]
+
+            # if edited_wine_images in given path input, add substring to db paths so the check for only new ones
+            # is still working as expected
+            if "edited_wine_images" in directory_input:
+                all_paths_in_db_normalized = [path.split('/', 1)[0] + '/edited_wine_images/' + path.split('/', 1)[1] if '/' in path else path for path in all_paths_in_db_normalized]
+
+            images = (image_path for image_path in images_normalized if image_path not in all_paths_in_db_normalized)
+
         for index, image_path in enumerate(images):
-            #if index == 100:
-                #break
+
             image_directory = os.path.dirname(os.path.abspath(image_path))
             image_directory_name = os.path.basename(image_directory)
             image_name = os.path.basename(image_path)
@@ -61,10 +97,10 @@ class ActionProcessor:
             directory_results.append([image_string,image_path,image_name, detected_lang, image_directory_name])
         return directory_results
 
-    def read_and_save_ocr(self, ocr_model, path_to_read, table, column_addition):
+    def read_and_save_ocr(self, ocr_model, path_to_read, table, column_addition, use_translation=False, only_new_entrys=False):
         action_processor = ActionProcessor()
-        # True / False determines  wether translation is used for ocr or not
-        image_reads = action_processor.process_directory(path_to_read, False, ocr_model)
+        # use_translation True / False determines  wether translation is used for ocr or not
+        image_reads = action_processor.process_directory(path_to_read, use_translation, ocr_model, only_new_entrys)
         self.database_service = DatabaseService()
 
         for image_info in image_reads:
