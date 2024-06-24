@@ -22,9 +22,9 @@ class ModelPreparation:
         print("string_lines ", len(string_lines))
         input_vals = []
         target_vals = []
-        start_factor = 0.2
-        start_point = int(len(string_lines)*start_factor)
-        #start_point = 0
+        start_factor = 0.1
+        #start_point = int(len(string_lines)*start_factor)
+        start_point = 0
         repeats = 1
 
         for str_val in string_lines[start_point:]:
