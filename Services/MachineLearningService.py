@@ -62,3 +62,4 @@ class MachineLearningService:
         print("Input: ", test_text, "\n")
         print("Output: ", decoded_word, "\n")
         return decoded_word
+

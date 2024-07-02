@@ -20,4 +20,5 @@ class TesseractService:
             except TesseractError:
                 # use default lang if the given lang is not found(e.g. lang pack not installed)
                 image_text = pytesseract.image_to_string(image)
+
         return image_text
