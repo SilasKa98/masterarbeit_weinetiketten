@@ -3,7 +3,7 @@ from glob import glob
 from difflib import SequenceMatcher
 from collections import Counter
 from rapidfuzz import fuzz
-
+from spellchecker import SpellChecker
 
 class DataProcessService:
 
@@ -75,3 +75,15 @@ class DataProcessService:
                         checked_pairs.add((i, j))
 
         return similar_pairs
+
+    @staticmethod
+    def spellchecker(word, language='en'):
+        if len(word) > 10:
+            spell = SpellChecker(language=language, distance=1)
+        else:
+            spell = SpellChecker(language=language)
+        corrected_word = spell.correction(word)
+        #print("wrong: ", word, " corrected: ", corrected_word)
+        if corrected_word is None:
+            corrected_word = word
+        return corrected_word
