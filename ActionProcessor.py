@@ -205,20 +205,26 @@ class ActionProcessor:
 
         return similarity_result
 
-    def correct_sentence_with_ml(self, table, column_text, insert_column):
+    def correct_sentence_spelling(self, table, column_text, insert_column, use_ml=False, lang_filter=None):
         self.database_service = DatabaseService()
-        language_filter = "de"
+        if lang_filter is None:
+            condition = None
+            spellchecker_lang = "en"
+        else:
+            condition = f"etiketten_infos.detected_language = '{lang_filter}'"
+            spellchecker_lang = lang_filter
         select_result_text = self.database_service.select_from_table(table,
                                                                      column_text,
                                                                      join=f"left join etiketten_infos ON {table}.path = etiketten_infos.path",
-                                                                     condition=f"etiketten_infos.detected_language = '{language_filter}'"
+                                                                     condition=condition
                                                                      )
         print(select_result_text[:3])
         cleaned_string_list = [result[0] for result in select_result_text]
 
         pre_processor = PreProcessor()
-        machine_learning = MachineLearningService('german_words', '256Dim_512Batch_adam_german_specialChars_newGib_v2')
-        ml_correction_init = machine_learning.ml_word_correction_init(pre_processor.form_dataframe_german)
+        if use_ml:
+            machine_learning = MachineLearningService('german_words', '128Dim_128Batch_adam_german_specialChars_newGib_v3')
+            ml_correction_init = machine_learning.ml_word_correction_init(pre_processor.form_dataframe_german)
 
         for idx, item in enumerate(cleaned_string_list):
             modified_sentence = []
@@ -228,11 +234,16 @@ class ActionProcessor:
                 cleaned_word = pre_processor.word_cleaning(word)
                 cleaned_word = pre_processor.remove_numerics(cleaned_word)
                 special_characters = "!@#$%^&*()-+?_=,<>/"
-                if len(cleaned_word) > 6 and not any(char in special_characters for char in cleaned_word):
-                    modified_word = machine_learning.ml_word_correction_exec(cleaned_word, 256, ml_correction_init[0], ml_correction_init[1], ml_correction_init[2], ml_correction_init[3])
-                    modified_sentence.append(modified_word)
+                if use_ml:
+                    if len(cleaned_word) > 6 and not any(char in special_characters for char in cleaned_word):
+                        modified_word = machine_learning.ml_word_correction_exec(cleaned_word, 128, ml_correction_init[0], ml_correction_init[1], ml_correction_init[2], ml_correction_init[3])
+                        modified_sentence.append(modified_word)
+                    else:
+                        modified_sentence.append(word)
                 else:
-                    modified_sentence.append(word)
+                    modified_word = self.data_process_service.spellchecker(cleaned_word, language=spellchecker_lang)
+                    modified_sentence.append(modified_word)
+
             print(modified_sentence)
             joined_string = ' '.join(modified_sentence)
             print(joined_string)
@@ -244,6 +255,7 @@ class ActionProcessor:
                 "path",
                 current_path
             )
+
 
     def modify_images(self, directory_path):
 
