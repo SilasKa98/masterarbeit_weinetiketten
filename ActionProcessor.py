@@ -248,8 +248,10 @@ class ActionProcessor:
                 special_characters = "!@#$%^&*()-+?_=,<>/"
                 if use_ml:
                     if len(cleaned_word) > 6 and not any(char in special_characters for char in cleaned_word):
-                        modified_word = machine_learning.ml_word_correction_exec(cleaned_word, 128, ml_correction_init[0], ml_correction_init[1], ml_correction_init[2], ml_correction_init[3])
-                        modified_sentence.append(modified_word)
+                        is_word_correct = self.data_process_service.is_word_correct_check(cleaned_word, language="de_DE")
+                        if not is_word_correct[0]:
+                            modified_word = machine_learning.ml_word_correction_exec(cleaned_word, 128, ml_correction_init[0], ml_correction_init[1], ml_correction_init[2], ml_correction_init[3])
+                            modified_sentence.append(modified_word)
                     else:
                         modified_sentence.append(word)
                 else:
