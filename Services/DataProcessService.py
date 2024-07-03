@@ -4,6 +4,7 @@ from difflib import SequenceMatcher
 from collections import Counter
 from rapidfuzz import fuzz
 from spellchecker import SpellChecker
+import enchant
 
 class DataProcessService:
 
@@ -87,3 +88,22 @@ class DataProcessService:
         if corrected_word is None:
             corrected_word = word
         return corrected_word
+
+    @staticmethod
+    def is_word_correct_check(word, language='en_US'):
+        if language == "en":
+            language = "en_US"
+        elif language == "de":
+            language = "de_DE"
+        else:
+            language = "en_US"
+
+        d = enchant.Dict(language)
+        is_correct = d.check(word)
+
+        if not is_correct:
+            suggestions = d.suggest(word)
+        else:
+            suggestions = []
+
+        return is_correct, suggestions
