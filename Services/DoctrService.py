@@ -1,9 +1,11 @@
+from doctr.io import DocumentFile
+from doctr.models import ocr_predictor
+
+
 class DoctrService:
 
     @staticmethod
     def read_in_files(read_in_image):
-        from doctr.io import DocumentFile
-        from doctr.models import ocr_predictor
 
         model = ocr_predictor(pretrained=True)
         doc = DocumentFile.from_images(read_in_image)
