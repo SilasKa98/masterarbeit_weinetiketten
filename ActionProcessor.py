@@ -6,8 +6,10 @@ from Services.EasyOCRService import EasyOCRService
 from Models.word_spelling_correction.PreProcessor import PreProcessor
 from Services.MachineLearningService import MachineLearningService
 from Services.ImageModificationService import ImageModificationService
+from Services.DoctrService import DoctrService
 import os
 from collections import defaultdict
+from datetime import datetime
 import easyocr
 
 
@@ -19,6 +21,7 @@ class ActionProcessor:
         self.tesseract_service = TesseractService()
         self.database_service = DatabaseService()
         self.easy_ocr_service = EasyOCRService()
+        self.doctr_service = DoctrService()
 
     def process_directory(self, directory_input, use_translation, ocr_model, only_new_entrys=False):
 
@@ -40,7 +43,8 @@ class ActionProcessor:
             all_sub_directorys = self.data_process_service.get_subdirectories("wine_images/")
             all_sub_directorys.remove("edited_wine_images")
             print(all_sub_directorys)
-            # check if a subfolder/specific directory is given in the path --> handle different sql calls
+            # check if a subfolder/specific-directory is given in the path e.g. wineimages/archiv19/
+            # sql calls get handle different if specific subfolder is given
             is_specific_directory = False
             for directory in all_sub_directorys:
                 if directory in directory_input:
@@ -59,7 +63,7 @@ class ActionProcessor:
             all_paths_in_db_normalized = [path.replace('\\', '/') for path in all_paths_in_db]
             images_normalized = [path.replace('\\', '/') for path in images]
 
-            # if edited_wine_images in given path input, add substring to db paths so the check for only new ones
+            # if edited_wine_images in given path input, add substring to db paths so the check for only_new_entrys
             # is still working as expected
             if "edited_wine_images" in directory_input:
                 all_paths_in_db_normalized = [path.split('/', 1)[0] + '/edited_wine_images/' + path.split('/', 1)[1] if '/' in path else path for path in all_paths_in_db_normalized]
@@ -88,6 +92,8 @@ class ActionProcessor:
                 if use_translation is True:
                     detected_lang = self.deepl_service.deepl_to_iso639_1(detected_lang)
                 image_string = self.easy_ocr_service.read_in_files(image_path, detected_lang)
+            elif "doctr" in ocr_model:
+                image_string = self.doctr_service.read_in_files(image_path)
 
             # WIP needs to be adressed. What happens if ocr recognizes nothing?
             if image_string == "":
@@ -101,49 +107,55 @@ class ActionProcessor:
 
     def read_and_save_ocr(self, ocr_model, path_to_read, table, column_addition, use_translation=False, only_new_entrys=False):
         action_processor = ActionProcessor()
-        # use_translation True / False determines  wether translation is used for ocr or not
+        # use_translation True / False determines  wether language knowledge is used for ocr or not
         image_reads = action_processor.process_directory(path_to_read, use_translation, ocr_model, only_new_entrys)
         self.database_service = DatabaseService()
 
         for image_info in image_reads:
             if 'edited_wine_images' in image_info[1]:
                 image_info[1] = image_info[1].replace('/edited_wine_images/', '\\')
-            if table == "etiketten_infos":
-                select_result = self.database_service.select_from_table(table, "*", "name=%s", [image_info[2]])
-                if not select_result:
-                    self.database_service.insert_into_table(
-                        table,
-                        [f"text_{column_addition}", "path", "name", "detected_language", "image_directory"],
-                        [image_info[0], image_info[1], image_info[2], image_info[3], image_info[4]]
-                    )
-                else:
-                    self.database_service.update_table(
-                        table,
-                        [f"text_{column_addition}", "path", "detected_language", "image_directory"],
-                        [image_info[0], image_info[1], image_info[3], image_info[4]],
-                        "name",
-                        image_info[2]
-                    )
+            # replace all / for \ so its correct for checking in the db
+            image_info[1] = image_info[1].replace('/', '\\')
+
+            # first check the etiketten_infos table if the image is already existing there.
+            # If not insert, otherwise update the corresponding informations
+            select_result = self.database_service.select_from_table("etiketten_infos", "id", "path=%s", [image_info[1]])
+            current_time = datetime.now()
+            current_time_formatted = current_time.strftime('%Y-%m-%d %H:%M:%S')
+            if not select_result:
+                print (image_info[1], "is not in etiketteninfos! tying to insert...")
+                self.database_service.insert_into_table(
+                    "etiketten_infos",
+                    ["path", "name", "detected_language", "image_directory", "read_in_date"],
+                    [image_info[1], image_info[2], image_info[3], image_info[4], current_time_formatted]
+                )
             else:
-                select_result = self.database_service.select_from_table(table, "*", "path=%s", [image_info[1]])
-                print(select_result)
-                if len(select_result) == 0:
-                    '''
-                    self.database_service.insert_into_table(
-                        table,
-                        [f"text_{column_addition}", "path"],
-                        [image_info[0], image_info[1]]
-                    )
-                    '''
-                    continue
-                else:
-                    self.database_service.update_table(
-                        table,
-                        [f"text_{column_addition}"],
-                        [image_info[0]],
-                        "path",
-                        image_info[1]
-                    )
+                self.database_service.update_table(
+                    "etiketten_infos",
+                    ["detected_language", "image_directory", "read_in_date"],
+                    [image_info[3], image_info[4], current_time_formatted],
+                    "path",
+                    image_info[1]
+                )
+
+            # now check for the actual used ocr table if there is already a entry for the processed image
+            # if so update, otherwise insert
+            select_result = self.database_service.select_from_table(table, "*", "path=%s", [image_info[1]])
+            if len(select_result) == 0:
+                self.database_service.insert_into_table(
+                    table,
+                    [f"text_{column_addition}", "path"],
+                    [image_info[0], image_info[1]]
+                )
+
+            else:
+                self.database_service.update_table(
+                    table,
+                    [f"text_{column_addition}"],
+                    [image_info[0]],
+                    "path",
+                    image_info[1]
+                )
 
     def read_db_and_detect_lang(self):
         self.database_service = DatabaseService()
