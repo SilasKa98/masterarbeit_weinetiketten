@@ -1,14 +1,7 @@
-import json
-
-from Services.DoctrService import DoctrService
-from Services.SearchImagesService import SearchImagesService
-
-#doctr = DoctrService()
-#data = doctr.read_in_files_with_kie("C:\\Masterarbeit_ocr_env\\wine_images\\uploads\\i00234a01.jpg")
+from Services.DataProcessService import DataProcessService
 
 
-search = SearchImagesService()
-test = search.search_normal("Zeige mir weine aus italien")
+data = DataProcessService()
+test = data.is_word_correct_check("Tst", language="de_DE")
 
-print(test)
-print(list(test.keys()))
+print(test[0])
