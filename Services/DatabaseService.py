@@ -12,8 +12,11 @@ class DatabaseService:
             database="weinetiketten"
         )
 
-    def select_from_table(self, table, selected_cols, condition=None, params=None, join=None):
-        connection = self.mydb.cursor()
+    def select_from_table(self, table, selected_cols, condition=None, params=None, join=None, as_dict=False):
+        if as_dict:
+            connection = self.mydb.cursor(dictionary=True)
+        else:
+            connection = self.mydb.cursor()
 
         query = f"SELECT {selected_cols} FROM {table}"
 
