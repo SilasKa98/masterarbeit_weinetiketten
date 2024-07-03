@@ -44,7 +44,7 @@ class DataProcessService:
         return all_keywords
 
     @staticmethod
-    def find_text_intersections(text1, text2, image_path):
+    def find_text_intersections(text1, text2):
         import nltk
         from nltk.tokenize import word_tokenize
 
@@ -54,7 +54,7 @@ class DataProcessService:
         intersection = tokens1.intersection(tokens2)
 
         if len(intersection) > 0:
-            return intersection, image_path
+            return intersection
 
     @staticmethod
     def similar(a, b):
