@@ -1,5 +1,5 @@
 from doctr.io import DocumentFile
-from doctr.models import ocr_predictor
+from doctr.models import ocr_predictor, kie_predictor
 
 
 class DoctrService:
@@ -22,3 +22,17 @@ class DoctrService:
 
         text_string = ' '.join(text_list)
         return text_string
+
+    @staticmethod
+    def read_in_files_with_kie(read_in_image):
+        model = kie_predictor(det_arch='db_resnet50', reco_arch='crnn_vgg16_bn', pretrained=True)
+        doc = DocumentFile.from_images(read_in_image)
+        result = model(doc)
+
+        all_predictions = []
+        predictions = result.pages[0].predictions
+        for class_name in predictions.keys():
+            list_predictions = predictions[class_name]
+            for prediction in list_predictions:
+                print(f"Prediction for {class_name}: {prediction}")
+                all_predictions.append(prediction)
