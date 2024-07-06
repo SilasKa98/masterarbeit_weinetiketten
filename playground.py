@@ -1,7 +1,9 @@
-from Services.DataProcessService import DataProcessService
+from Models.word_spelling_correction.ModelPreparation import ModelPreparation
+
+preprocessor = ModelPreparation()
+#loaded_input_file = preprocessor.load_data('data/english_words.csv')
+#print(loaded_input_file)
+
+preprocessor.create_training_data()
 
 
-data = DataProcessService()
-test = data.is_word_correct_check("Tst", language="de_DE")
-
-print(test[0])
