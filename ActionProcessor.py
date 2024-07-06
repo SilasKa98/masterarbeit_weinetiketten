@@ -7,6 +7,7 @@ from Models.word_spelling_correction.PreProcessor import PreProcessor
 from Services.MachineLearningService import MachineLearningService
 from Services.ImageModificationService import ImageModificationService
 from Services.DoctrService import DoctrService
+from Services.SpellcheckerService import SpellcheckerService
 import os
 from collections import defaultdict
 from datetime import datetime
@@ -233,10 +234,18 @@ class ActionProcessor:
         print(select_result_text[:3])
         cleaned_string_list = [result[0] for result in select_result_text]
 
+        if lang_filter == "de":
+            additional_dict = "dictionary_files/german_extracted_words_20mio.txt"
+        else:
+            additional_dict = "dictionary_files/empty_dict.txt"
+
+        spell = SpellcheckerService(additional_dict, spellchecker_lang)
+        spell.add_words_to_spellchecker_dict()
+
         pre_processor = PreProcessor()
         if use_ml:
-            machine_learning = MachineLearningService('german_words', '128Dim_128Batch_adam_german_specialChars_newGib_v3')
-            ml_correction_init = machine_learning.ml_word_correction_init(pre_processor.form_dataframe_german)
+            machine_learning = MachineLearningService('german_extracted_words_2mio.txt', '256Dim_128Batch_adam_german_newTrainingData.h5')
+            ml_correction_init = machine_learning.ml_word_correction_init(pre_processor.form_dataframe_german_txt)
 
         for idx, item in enumerate(cleaned_string_list):
             modified_sentence = []
@@ -248,14 +257,17 @@ class ActionProcessor:
                 special_characters = "!@#$%^&*()-+?_=,<>/"
                 if use_ml:
                     if len(cleaned_word) > 6 and not any(char in special_characters for char in cleaned_word):
-                        is_word_correct = self.data_process_service.is_word_correct_check(cleaned_word, language="de_DE")
+                        is_word_correct = spell.is_word_correct_check(cleaned_word)
+
                         if not is_word_correct[0]:
-                            modified_word = machine_learning.ml_word_correction_exec(cleaned_word, 128, ml_correction_init[0], ml_correction_init[1], ml_correction_init[2], ml_correction_init[3])
+                            modified_word = machine_learning.ml_word_correction_exec(cleaned_word, 256, ml_correction_init[0], ml_correction_init[1], ml_correction_init[2], ml_correction_init[3])
                             modified_sentence.append(modified_word)
+                        else:
+                            modified_sentence.append(word)
                     else:
                         modified_sentence.append(word)
                 else:
-                    modified_word = self.data_process_service.spellchecker(cleaned_word, language=spellchecker_lang)
+                    modified_word = spell.correct_word(cleaned_word)
                     modified_sentence.append(modified_word)
 
             print(modified_sentence)
