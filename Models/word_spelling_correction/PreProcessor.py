@@ -72,7 +72,12 @@ class PreProcessor:
         df = df[zero_filter]
         #df = df.map(self.word_cleaning(german=True))
         df = df.map(lambda x: self.word_cleaning(x, german=True))
-        print(df.head())
+        return df
+
+    def form_dataframe_german_txt(self, input_file):
+        # Lade die Textdatei in einen DataFrame mit einer Spalte 'word'
+        df = pd.read_csv(input_file, header=None, names=['word'])
+
         return df
 
     def form_dataframe_english(self, input_file):
