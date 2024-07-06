@@ -163,3 +163,4 @@ cython_debug/
 Models/word_spelling_correction/savedModels_old/512Dim_1024Batch_adam_english_ds.h5
 Models/word_spelling_correction/savedModels_old/512Dim_1024Batch_adam_english_ds.keras
 
+dictionary_files/german_extracted_words_20mio.txt
