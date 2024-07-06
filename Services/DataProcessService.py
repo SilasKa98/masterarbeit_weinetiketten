@@ -3,8 +3,6 @@ from glob import glob
 from difflib import SequenceMatcher
 from collections import Counter
 from rapidfuzz import fuzz
-from spellchecker import SpellChecker
-import enchant
 
 class DataProcessService:
 
@@ -77,33 +75,53 @@ class DataProcessService:
 
         return similar_pairs
 
-    @staticmethod
-    def spellchecker(word, language='en'):
-        if len(word) > 10:
-            spell = SpellChecker(language=language, distance=1)
-        else:
-            spell = SpellChecker(language=language)
-        corrected_word = spell.correction(word)
-        #print("wrong: ", word, " corrected: ", corrected_word)
-        if corrected_word is None:
-            corrected_word = word
-        return corrected_word
 
     @staticmethod
-    def is_word_correct_check(word, language='en_US'):
-        if language == "en":
-            language = "en_US"
-        elif language == "de":
-            language = "de_DE"
-        else:
-            language = "en_US"
+    def create_txt_from_wikimedia(file_path, output_file, max_words):
+        from bigxml import Parser, xml_handle_element
+        import re
 
-        d = enchant.Dict(language)
-        is_correct = d.check(word)
+        # wikipedia text decorator
+        @xml_handle_element("mediawiki", "page", "revision", "text")
+        def handler(node):
+            yield node.text
 
-        if not is_correct:
-            suggestions = d.suggest(word)
-        else:
-            suggestions = []
+        def clean_text(text):
+            # Entfernt Wiki-Syntax und HTML-Tags mit regulären Ausdrücken
+            text = re.sub(r'\[\[.*?\]\]', '', text)  # Entfernt [[wikilinks]]
+            text = re.sub(r'<.*?>', '', text)  # Entfernt HTML-Tags
+            text = re.sub(r'==.*?==', '', text)  # Entfernt Überschriften
+            text = re.sub(r'\{\{.*?\}\}', '', text)  # Entfernt Vorlagen
+            return text
 
-        return is_correct, suggestions
+        def extract_words(text):
+            # Extrahiert Wörter mit regulären Ausdrücken und filtert Duplikate
+            words = re.findall(r'\b[A-Za-z]{5,}\b', text.lower())  # Nur Wörter mit mindestens 4 Buchstaben
+            unique_words = set(words)  # Entfernt Duplikate durch Umwandlung in ein Set
+            return list(unique_words)  # Rückgabe als Liste von eindeutigen Wörtern
+
+
+        try:
+            with open(file_path, "rb") as f, open(output_file, 'w', encoding='utf-8') as out_file:
+                count = 0
+                for item in Parser(f).iter_from(handler):
+                    # Bereinigen des Textes und Extrahieren der Wörter
+                    cleaned_text = clean_text(item)
+                    words = extract_words(cleaned_text)
+
+                    # Schreibe jedes Wort in die Ausgabedatei
+                    for word in words:
+                        out_file.write(word + '\n')
+                        count += 1
+                        if count >= max_words:
+                            break
+                    if count >= max_words:
+                        break
+            print(f"Extrahierte Wörter wurden in die Datei {output_file} geschrieben.")
+        except Exception as e:
+            print(f"Fehler beim Parsen der XML-Datei: {e}")
+
+
+
+
+
