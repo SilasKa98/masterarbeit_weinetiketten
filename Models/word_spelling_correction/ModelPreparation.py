@@ -22,21 +22,21 @@ class ModelPreparation:
         print("string_lines ", len(string_lines))
         input_vals = []
         target_vals = []
-        start_factor = 0.1
-        #start_point = int(len(string_lines)*start_factor)
-        start_point = 0
-        repeats = 1
+        start_factor = 0.6
+        start_point = int(len(string_lines)*start_factor)
+        #start_point = 0
+        repeats = 4
 
         for str_val in string_lines[start_point:]:
-            if len(str_val) > 4:
+            if len(str_val) > 5:
                 target_val = '\t' + str_val + '\n'
                 for _ in range(repeats):
                     input_val = self.pre_processor.gibberish_word_generator(str_val, True)
                     input_vals.append(input_val[0])
                     target_vals.append(target_val)
         print("Training-sample Length ", len(input_vals))
-        print(input_vals[:20])
-        print(target_vals[:20])
+        print(input_vals[:100])
+        print(target_vals[:100])
         encode_max_length = max([len(i) for i in input_vals])
         decode_max_length = max([len(i) for i in target_vals])
         print("Max word length Encoded set: ", encode_max_length)
@@ -198,8 +198,8 @@ class ModelPreparation:
                   callbacks=[early_stopping, reduce_lr]
                   )
 
-        model.save('savedModels/128Dim_128Batch_adam_german_specialChars_newGib_v3.h5')
-        model.save('savedModels/128Dim_128Batch_adam_german_specialChars_newGib_v3.keras')
+        model.save('savedModels/256Dim_512Batch_adam_german_newTrainingData_2.h5')
+        model.save('savedModels/256Dim_512Batch_adam_german_newTrainingData_2.keras')
 
         encoder_model = Model(encoder_inputs, encoder_states)
 
@@ -215,8 +215,8 @@ class ModelPreparation:
             [decoder_inputs] + decoder_states_inputs,
             [decoder_outputs] + decoder_states
         )
-        encoder_model.save('savedModels/encoder_128Dim_128Batch_adam_german_specialChars_newGib_v3.h5')
-        decoder_model.save('savedModels/decoder_128Dim_128Batch_adam_german_specialChars_newGib_v3.h5')
+        encoder_model.save('savedModels/encoder_256Dim_512Batch_adam_german_newTrainingData_2.h5')
+        decoder_model.save('savedModels/decoder_256Dim_512Batch_adam_german_newTrainingData_2.h5')
 
     @staticmethod
     def create_ml_model_2(batch_size, epochs, latent_dim, all_existing_chars, encoder_input_data, decoder_input_data,decoder_target_data):

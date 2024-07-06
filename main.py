@@ -1,5 +1,5 @@
-
 from ActionProcessor import ActionProcessor
+
 from Services.DeepLService import DeepLService
 from Services.DataProcessService import DataProcessService
 from Services.SearchImagesService import SearchImagesService
@@ -22,8 +22,22 @@ def main():
     #pre_processor = PreProcessor()
     #machine_learning.ml_word_correction('speicherplasz', 256, pre_processor.form_dataframe_german)
 
+    #action_processor = ActionProcessor()
+    #action_processor.correct_sentence_spelling("doctr", "text_pure, doctr.path", "text_ml_modify", use_ml=True, lang_filter="de")
+
     action_processor = ActionProcessor()
-    action_processor.correct_sentence_spelling("easyocr", "text_pure, easyocr.path", "text_ml_modify", use_ml=True, lang_filter="de")
+    action_processor.correct_sentence_spelling("doctr", "text_pure, doctr.path",
+                                                "text_pure_spellchecker", use_ml=False,
+                                                lang_filter="de")
+
+    action_processor2 = ActionProcessor()
+    action_processor2.correct_sentence_spelling("easyocr", "text_pure, easyocr.path", "text_pure_spellchecker", use_ml=False,
+                                               lang_filter="de")
+
+    action_processor3 = ActionProcessor()
+    action_processor3.correct_sentence_spelling("tesseract", "text_pure, tesseract.path",
+                                                "text_pure_spellchecker", use_ml=False,
+                                                lang_filter="de")
 
     # action_processor = ActionProcessor()
     # action_processor.modify_images("wine_images")
@@ -39,4 +53,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
