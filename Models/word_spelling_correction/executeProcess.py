@@ -6,12 +6,12 @@ preprocessor = PreProcessor()
 #loaded_input_file = preprocessor.load_data('data/english_words.csv')
 #print(loaded_input_file)
 
-input_file = "data/german_extracted_words_750k.txt"
+input_file = "data/german_extracted_words_750k_uml.txt"
 loaded_input_file = preprocessor.form_dataframe_german_txt(input_file)
 
 print(loaded_input_file)
 
-all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzüöä0123456789")
+all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzüöä0123456789-")
 
 string_lines = preprocessor.count_lines(loaded_input_file)
 
@@ -56,6 +56,6 @@ decoder_target_data = one_hots[2]
 
 #model_preparation.create_ml_model_2(256, 2000, 256, all_existing_chars, encoder_input_data, decoder_input_data, decoder_target_data)
 
-model_preparation.create_ml_model(512, 12, 256, all_existing_chars, encoder_input_data, decoder_input_data, decoder_target_data)
+model_preparation.create_ml_model(96, 15, 256, all_existing_chars, encoder_input_data, decoder_input_data, decoder_target_data)
 
 #model_preparation.create_ml_model_with_tuning(128, 100, all_existing_chars, encoder_input_data, decoder_input_data, decoder_target_data)

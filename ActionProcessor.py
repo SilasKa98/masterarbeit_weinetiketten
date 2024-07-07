@@ -235,7 +235,7 @@ class ActionProcessor:
         cleaned_string_list = [result[0] for result in select_result_text]
 
         if lang_filter == "de":
-            additional_dict = "dictionary_files/german_extracted_words_20mio.txt"
+            additional_dict = "dictionary_files/german_extracted_words_20mio_uml.txt"
         else:
             additional_dict = "dictionary_files/empty_dict.txt"
 
@@ -244,7 +244,7 @@ class ActionProcessor:
 
         pre_processor = PreProcessor()
         if use_ml:
-            machine_learning = MachineLearningService('german_extracted_words_2mio.txt', '256Dim_128Batch_adam_german_newTrainingData.h5')
+            machine_learning = MachineLearningService('german_extracted_words_750k.txt', '256Dim_512Batch_adam_german_newTrainingData_uml.h5')
             ml_correction_init = machine_learning.ml_word_correction_init(pre_processor.form_dataframe_german_txt)
 
         for idx, item in enumerate(cleaned_string_list):
@@ -256,7 +256,7 @@ class ActionProcessor:
                 cleaned_word = pre_processor.remove_numerics(cleaned_word)
                 special_characters = "!@#$%^&*()-+?_=,<>/"
                 if use_ml:
-                    if len(cleaned_word) > 6 and not any(char in special_characters for char in cleaned_word):
+                    if len(cleaned_word) > 5 and not any(char in special_characters for char in cleaned_word) and not cleaned_word.isdigit():
                         is_word_correct = spell.is_word_correct_check(cleaned_word)
 
                         if not is_word_correct[0]:
