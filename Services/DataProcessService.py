@@ -96,7 +96,7 @@ class DataProcessService:
 
         def extract_words(text):
             # Extrahiert Wörter mit regulären Ausdrücken und filtert Duplikate
-            words = re.findall(r'\b[A-Za-z]{5,}\b', text.lower())  # Nur Wörter mit mindestens 4 Buchstaben
+            words = re.findall(r'\b[A-Za-zäöüÄÖÜß-]{5,}\b', text.lower())  # Nur Wörter mit mindestens 4 Buchstaben
             unique_words = set(words)  # Entfernt Duplikate durch Umwandlung in ein Set
             return list(unique_words)  # Rückgabe als Liste von eindeutigen Wörtern
 

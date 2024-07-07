@@ -200,7 +200,7 @@ class PreProcessor:
         num_cases = random.randint(1,5)
         input_fanned = list(input_word)
 
-        all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzüöä0123456789")
+        all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzüöä0123456789-")
         for _ in range(num_cases):
             cases = random.randint(1, 6)
             # case to add a random char to the original string
