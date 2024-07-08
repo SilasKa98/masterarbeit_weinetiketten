@@ -25,7 +25,7 @@ class ModelPreparation:
         start_factor = 0.6
         start_point = int(len(string_lines)*start_factor)
         #start_point = 0
-        repeats = 4
+        repeats = 3
 
         for str_val in string_lines[start_point:]:
             if len(str_val) > 5:

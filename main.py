@@ -30,14 +30,17 @@ def main():
                                                 "text_pure_spellchecker", use_ml=False,
                                                 lang_filter="de")
 
-    #action_processor2 = ActionProcessor()
-    #action_processor2.correct_sentence_spelling("easyocr", "text_pure, easyocr.path", "text_pure_spellchecker", use_ml=False,
-                                             #  lang_filter="de")
+    action_processor2 = ActionProcessor()
+    action_processor2.correct_sentence_spelling("easyocr", "text_pure, easyocr.path", "text_pure_spellchecker", use_ml=False,
+                                                lang_filter="de")
 
-    #action_processor3 = ActionProcessor()
-    #action_processor3.correct_sentence_spelling("tesseract", "text_pure, tesseract.path",
-                                               # "text_pure_spellchecker", use_ml=False,
-                                               # lang_filter="de")
+    action_processor3 = ActionProcessor()
+    action_processor3.correct_sentence_spelling("tesseract", "text_pure, tesseract.path",
+                                                "text_pure_spellchecker", use_ml=False,
+                                                lang_filter="de")
+
+    # action_processor = ActionProcessor()
+    # action_processor.update_label_detail_infos()
 
     # action_processor = ActionProcessor()
     # action_processor.modify_images("wine_images")
