@@ -8,6 +8,7 @@ from Services.MachineLearningService import MachineLearningService
 from Services.ImageModificationService import ImageModificationService
 from Services.DoctrService import DoctrService
 from Services.SpellcheckerService import SpellcheckerService
+from Services.DetailFinderService import DetailFinderService
 import os
 from collections import defaultdict
 from datetime import datetime
@@ -159,7 +160,6 @@ class ActionProcessor:
                 )
 
     def read_db_and_detect_lang(self):
-        self.database_service = DatabaseService()
         select_result = self.database_service.select_from_table("etiketten_infos", "name, image_directory, path, text_tesseract, text_easyocr")
         #print(select_result)
         for entry in select_result:
@@ -180,7 +180,6 @@ class ActionProcessor:
             )
 
     def search_for_duplicate_entrys(self, search_table, search_column, save=False, save_table=''):
-        self.database_service = DatabaseService()
         select_result_text = self.database_service.select_from_table(search_table, search_column)
         select_result_path = self.database_service.select_from_table(search_table, 'path')
 
@@ -219,7 +218,6 @@ class ActionProcessor:
         return similarity_result
 
     def correct_sentence_spelling(self, table, column_text, insert_column, use_ml=False, lang_filter=None):
-        self.database_service = DatabaseService()
         if lang_filter is None:
             condition = None
             spellchecker_lang = "en"
@@ -255,20 +253,21 @@ class ActionProcessor:
                 cleaned_word = pre_processor.word_cleaning(word)
                 cleaned_word = pre_processor.remove_numerics(cleaned_word)
                 special_characters = "!@#$%^&*()-+?_=,<>/"
-                if use_ml:
-                    if len(cleaned_word) > 5 and not any(char in special_characters for char in cleaned_word) and not cleaned_word.isdigit():
-                        is_word_correct = spell.is_word_correct_check(cleaned_word)
+                if len(cleaned_word) > 1:
+                    if use_ml:
+                        if len(cleaned_word) > 5 and not any(char in special_characters for char in cleaned_word) and not cleaned_word.isdigit():
+                            is_word_correct = spell.is_word_correct_check(cleaned_word)
 
-                        if not is_word_correct[0]:
-                            modified_word = machine_learning.ml_word_correction_exec(cleaned_word, 256, ml_correction_init[0], ml_correction_init[1], ml_correction_init[2], ml_correction_init[3])
-                            modified_sentence.append(modified_word)
+                            if not is_word_correct[0]:
+                                modified_word = machine_learning.ml_word_correction_exec(cleaned_word, 256, ml_correction_init[0], ml_correction_init[1], ml_correction_init[2], ml_correction_init[3])
+                                modified_sentence.append(modified_word)
+                            else:
+                                modified_sentence.append(word)
                         else:
                             modified_sentence.append(word)
                     else:
-                        modified_sentence.append(word)
-                else:
-                    modified_word = spell.correct_word(cleaned_word)
-                    modified_sentence.append(modified_word)
+                        modified_word = spell.correct_word(cleaned_word)
+                        modified_sentence.append(modified_word)
 
             print(modified_sentence)
             joined_string = ' '.join(modified_sentence)
@@ -307,21 +306,25 @@ class ActionProcessor:
                 image_mod.image_grayscaler().image_rescaler().noise_remover().blur_apply("median")\
                     .save_modified_image2(save_path)
 
-    def process_single_picuture(self, image_path):
+    def update_label_detail_infos(self):
+        all_paths_in_db_tupels = self.database_service.select_from_table("etiketten_infos", "path")
+        all_paths_in_db = {path[0] for path in all_paths_in_db_tupels}
+        all_paths_in_db_normalized = [path.replace('/', '\\') for path in all_paths_in_db]
+        details = DetailFinderService()
+        for item in all_paths_in_db_normalized:
+            print(item)
+            vol = details.find_vol(item)
+            anno = details.find_anno(item)
+            countries = ', '.join(list(set(details.find_country(item))))
+            provinces = ', '.join(list(set(details.find_provinces(item))))
+            self.database_service.update_table("etiketten_infos",
+                                               ["country", "provinces", "anno", "vol"],
+                                               [countries, provinces, anno, vol],
+                                               "path",
+                                               item
+                                               )
 
-        print("ImagePath: ")
-        print(image_path)
-        print("\n")
-        print("---------processing 1-----------")
-        print("\n")
-        image_string = self.tesseract_service.read_in_files(image_path, "unknown")
-        print(image_string)
-        detected_lang = self.deepl_service.detect_language(image_string)
-        print("detected language:" + detected_lang)
-        print("\n")
-        print("---------processing 2-----------")
-        print("\n")
-        image_string = self.tesseract_service.read_in_files(image_path, detected_lang)
-        print(image_string)
-        print("\n")
-        return image_string, image_path
+
+
+
+
