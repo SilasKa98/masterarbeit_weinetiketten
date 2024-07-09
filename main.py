@@ -18,6 +18,9 @@ def main():
     # action_processor = ActionProcessor()
     # action_processor.search_for_duplicate_entrys('easyocr', 'text_translation', save='True', save_table='duplicates')
 
+    action_processor = ActionProcessor()
+    action_processor.read_db_and_detect_lang(force_update=True)
+
     #machine_learning = MachineLearningService('german_words', '256Dim_512Batch_adam_german')
     #pre_processor = PreProcessor()
     #machine_learning.ml_word_correction('speicherplasz', 256, pre_processor.form_dataframe_german)
@@ -25,19 +28,19 @@ def main():
     #action_processor = ActionProcessor()
     #action_processor.correct_sentence_spelling("doctr", "text_pure, doctr.path", "text_ml_modify", use_ml=True, lang_filter="de")
 
-    action_processor = ActionProcessor()
-    action_processor.correct_sentence_spelling("doctr", "text_pure, doctr.path",
-                                                "text_pure_spellchecker", use_ml=False,
-                                                lang_filter="de")
+    #action_processor = ActionProcessor()
+    #action_processor.correct_sentence_spelling("doctr", "text_pure, doctr.path",
+                                               # "text_pure_ml_modify", use_ml=True,
+                                               # lang_filter="de")
 
-    action_processor2 = ActionProcessor()
-    action_processor2.correct_sentence_spelling("easyocr", "text_pure, easyocr.path", "text_pure_spellchecker", use_ml=False,
-                                                lang_filter="de")
+   # action_processor2 = ActionProcessor()
+   # action_processor2.correct_sentence_spelling("easyocr", "text_pure, easyocr.path", "text_pure_spellchecker", use_ml=False,
+                                               # lang_filter="de")
 
-    action_processor3 = ActionProcessor()
-    action_processor3.correct_sentence_spelling("tesseract", "text_pure, tesseract.path",
-                                                "text_pure_spellchecker", use_ml=False,
-                                                lang_filter="de")
+    #action_processor3 = ActionProcessor()
+    #action_processor3.correct_sentence_spelling("tesseract", "text_pure, tesseract.path",
+                                               # "text_pure_spellchecker", use_ml=False,
+                                               # lang_filter="de")
 
     # action_processor = ActionProcessor()
     # action_processor.update_label_detail_infos()
