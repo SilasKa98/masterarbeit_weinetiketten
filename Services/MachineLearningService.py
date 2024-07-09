@@ -17,7 +17,7 @@ class MachineLearningService:
         preprocessor = PreProcessor()
         model_prep = ModelPreparation()
 
-        all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzüöä0123456789")
+        all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzüöä0123456789-")
         char_indexing = preprocessor.char_indexing(all_existing_chars)
         int_char_dict = char_indexing[0]
         char_int_dict = char_indexing[1]
@@ -53,12 +53,15 @@ class MachineLearningService:
         encoder_test_data = np.zeros((1, encoded_max_length, len(all_existing_chars)), dtype='float32')
 
         for t, char in enumerate(test_text):
-            encoder_test_data[0, t, input_token_index[char]] = 1.0
+            if char in input_token_index:
+                encoder_test_data[0, t, input_token_index[char]] = 1.0
+            else:
+                print(f"Character '{char}' not in training set, skipping.")
 
         # decoded_sentence = model_prep.decode_sequence(encoder_test_data)
         model_prep = ModelPreparation()
         decoded_word = model_prep.doPredict(encoder_test_data, self.model_to_use , dim_size,
-                                                char_int_dict, all_existing_chars, decoded_max_length)
+                                            char_int_dict, all_existing_chars, decoded_max_length)
         print("Input: ", test_text, "\n")
         print("Output: ", decoded_word, "\n")
         return decoded_word

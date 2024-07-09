@@ -197,7 +197,7 @@ class PreProcessor:
     @staticmethod
     def gibberish_word_generator(input_word, german=False):
 
-        num_cases = random.randint(1,5)
+        num_cases = random.randint(1,3)
         input_fanned = list(input_word)
 
         all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzüöä0123456789-")
