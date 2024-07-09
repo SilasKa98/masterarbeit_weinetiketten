@@ -19,7 +19,7 @@ def main():
     # action_processor.search_for_duplicate_entrys('easyocr', 'text_translation', save='True', save_table='duplicates')
 
     action_processor = ActionProcessor()
-    action_processor.read_db_and_detect_lang(force_update=True)
+    action_processor.read_db_and_detect_lang(force_update=False)
 
     #machine_learning = MachineLearningService('german_words', '256Dim_512Batch_adam_german')
     #pre_processor = PreProcessor()
@@ -29,9 +29,9 @@ def main():
     #action_processor.correct_sentence_spelling("doctr", "text_pure, doctr.path", "text_ml_modify", use_ml=True, lang_filter="de")
 
     #action_processor = ActionProcessor()
-    #action_processor.correct_sentence_spelling("doctr", "text_pure, doctr.path",
-                                               # "text_pure_ml_modify", use_ml=True,
-                                               # lang_filter="de")
+   # action_processor.correct_sentence_spelling("doctr", "text_pure_modified_images, doctr.path",
+                                               # "text_final", use_ml=False,
+                                              #  lang_filter="de")
 
    # action_processor2 = ActionProcessor()
    # action_processor2.correct_sentence_spelling("easyocr", "text_pure, easyocr.path", "text_pure_spellchecker", use_ml=False,
@@ -49,9 +49,9 @@ def main():
     # action_processor.modify_images("wine_images")
 
     # read in image texts--> can set lang detection True/False to read texts with expected lang
-    # action_processor = ActionProcessor()
-    # action_processor.read_and_save_ocr("doctr", "wine_images/", "doctr",
-                                       #"pure", use_translation=True, only_new_entrys=False)
+     #action_processor = ActionProcessor()
+     #action_processor.read_and_save_ocr("doctr", "wine_images/edited_wine_images/", "doctr",
+                                        #"pure_modified_images", use_translation=False, only_new_entrys=False)
 
     # detect language with db entrys
     # action_processor.read_db_and_detect_lang()

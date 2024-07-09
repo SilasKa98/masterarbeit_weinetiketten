@@ -39,9 +39,6 @@ class ActionProcessor:
             images = (image_path for image_path in images if 'edited_wine_images' not in image_path)
 
         if only_new_entrys:
-           # all_directorys_db = self.database_service.select_from_table("etiketten_infos", "image_directory")
-           # all_directorys_db = {dire[0] for dire in all_directorys_db}
-
             all_sub_directorys = self.data_process_service.get_subdirectories("wine_images/")
             all_sub_directorys.remove("edited_wine_images")
             print(all_sub_directorys)
@@ -60,7 +57,7 @@ class ActionProcessor:
             else:
                 all_paths_in_db_tupels = self.database_service.select_from_table("etiketten_infos", "path")
 
-            # some path modifications to match each other
+            # some path modifications to get them in the correct format
             all_paths_in_db = {path[0] for path in all_paths_in_db_tupels}
             all_paths_in_db_normalized = [path.replace('\\', '/') for path in all_paths_in_db]
             images_normalized = [path.replace('\\', '/') for path in images]
@@ -83,17 +80,16 @@ class ActionProcessor:
                 # However most languages are already in the db and so it doesn't really matter because its ignored then.
                 string_for_detection = self.tesseract_service.read_in_files(image_path, "unknown")
                 detected_lang = self.deepl_service.detect_language(string_for_detection, image_name, image_directory_name)
+                detected_lang_iso639_1 = self.deepl_service.deepl_to_iso639_1(detected_lang)
+                detected_lang_iso639_2 = self.deepl_service.deepl_to_iso639_2(detected_lang)
             else:
-                detected_lang = "unknown"
+                detected_lang_iso639_1 = "unknown"
+                detected_lang_iso639_2 = "unknown"
 
             if "tesseract" in ocr_model:
-                if use_translation is True:
-                    detected_lang = self.deepl_service.deepl_to_iso639_2(detected_lang)
-                image_string = self.tesseract_service.read_in_files(image_path, detected_lang)
+                image_string = self.tesseract_service.read_in_files(image_path, detected_lang_iso639_2)
             elif "easyocr" in ocr_model:
-                if use_translation is True:
-                    detected_lang = self.deepl_service.deepl_to_iso639_1(detected_lang)
-                image_string = self.easy_ocr_service.read_in_files(image_path, detected_lang)
+                image_string = self.easy_ocr_service.read_in_files(image_path, detected_lang_iso639_1)
             elif "doctr" in ocr_model:
                 image_string = self.doctr_service.read_in_files(image_path)
 
@@ -104,7 +100,7 @@ class ActionProcessor:
             # printing current path for better overview
             print(image_path)
 
-            directory_results.append([image_string,image_path,image_name, detected_lang, image_directory_name])
+            directory_results.append([image_string,image_path,image_name, detected_lang_iso639_1, image_directory_name])
         return directory_results
 
     def read_and_save_ocr(self, ocr_model, path_to_read, table, column_addition, use_translation=False, only_new_entrys=False):
@@ -132,10 +128,18 @@ class ActionProcessor:
                     [image_info[1], image_info[2], image_info[3], image_info[4], current_time_formatted]
                 )
             else:
+                # when language got detected update it, if its unknown rather keep the current value in the database
+                if image_info[3] != "unknown":
+                    update_cols = ["detected_language", "image_directory", "read_in_date"]
+                    update_params = [image_info[3], image_info[4], current_time_formatted]
+                else:
+                    update_cols = ["image_directory", "read_in_date"]
+                    update_params = [image_info[4], current_time_formatted]
+
                 self.database_service.update_table(
                     "etiketten_infos",
-                    ["detected_language", "image_directory", "read_in_date"],
-                    [image_info[3], image_info[4], current_time_formatted],
+                    update_cols,
+                    update_params,
                     "path",
                     image_info[1]
                 )
@@ -233,7 +237,7 @@ class ActionProcessor:
         print(select_result_text[:3])
         cleaned_string_list = [result[0] for result in select_result_text]
 
-        if lang_filter == "de":
+        if spellchecker_lang == "de":
             additional_dict = "dictionary_files/german_extracted_words_20mio_uml.txt"
         else:
             additional_dict = "dictionary_files/empty_dict.txt"
@@ -281,7 +285,6 @@ class ActionProcessor:
                 "path",
                 current_path
             )
-
 
     def modify_images(self, directory_path):
 
