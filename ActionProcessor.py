@@ -159,18 +159,19 @@ class ActionProcessor:
                     image_info[1]
                 )
 
-    def read_db_and_detect_lang(self):
-        select_result = self.database_service.select_from_table("etiketten_infos", "name, image_directory, path, text_tesseract, text_easyocr")
-        #print(select_result)
+    def read_db_and_detect_lang(self, force_update=False):
+        select_result = self.database_service.select_from_table("etiketten_infos as et",
+                                                                "et.name, et.image_directory, et.path, dr.text_pure",
+                                                                join="left join doctr as dr on et.path = dr.path"
+                                                                )
         for entry in select_result:
             name = entry[0]
             image_directory = entry[1]
             image_path = entry[2]
-            text_tesseract = entry[3]
-            text_easyocr = entry[4]
-            joined_texts = text_tesseract + text_easyocr
-            detected_lang = self.deepl_service.detect_language(joined_texts, name, image_directory)
-            print('updating language for image: ',image_path, '\n')
+            text = entry[3]
+            detected_lang = self.deepl_service.detect_language(text, name, image_directory, force_update=force_update)
+            detected_lang = self.deepl_service.deepl_to_iso639_1(detected_lang)
+            print('updating language (',detected_lang,') for image: ', image_path, '\n')
             self.database_service.update_table(
                 "etiketten_infos",
                 ["detected_language"],
@@ -242,7 +243,7 @@ class ActionProcessor:
 
         pre_processor = PreProcessor()
         if use_ml:
-            machine_learning = MachineLearningService('german_extracted_words_750k.txt', '256Dim_512Batch_adam_german_newTrainingData_uml.h5')
+            machine_learning = MachineLearningService('german_extracted_words_750k_uml.txt', '256Dim_96Batch_adam_german_newTrainingData_uml2.h5')
             ml_correction_init = machine_learning.ml_word_correction_init(pre_processor.form_dataframe_german_txt)
 
         for idx, item in enumerate(cleaned_string_list):
@@ -252,7 +253,7 @@ class ActionProcessor:
             for word in item_words:
                 cleaned_word = pre_processor.word_cleaning(word)
                 cleaned_word = pre_processor.remove_numerics(cleaned_word)
-                special_characters = "!@#$%^&*()-+?_=,<>/"
+                special_characters = "!@#$%^&*()+?_=,<>/"
                 if len(cleaned_word) > 1:
                     if use_ml:
                         if len(cleaned_word) > 5 and not any(char in special_characters for char in cleaned_word) and not cleaned_word.isdigit():
