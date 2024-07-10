@@ -165,3 +165,5 @@ Models/word_spelling_correction/savedModels_old/512Dim_1024Batch_adam_english_ds
 
 dictionary_files/german_extracted_words_20mio.txt
 dictionary_files/german_extracted_words_20mio_uml.txt
+dictionary_files/french_extracted_words_20mio_uml.txt
+dictionary_files/french_extracted_words_20mio_uml_fr.txt
