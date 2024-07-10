@@ -1,3 +1,5 @@
+import re
+
 from Services.DataProcessService import DataProcessService
 from Services.DeepLService import DeepLService
 from Services.TesseractService import TesseractService
@@ -238,12 +240,15 @@ class ActionProcessor:
         cleaned_string_list = [result[0] for result in select_result_text]
 
         if spellchecker_lang == "de":
-            additional_dict = "dictionary_files/german_extracted_words_20mio_uml.txt"
+            additional_dict = "dictionary_files\\german_extracted_words_20mio_uml.txt"
         else:
-            additional_dict = "dictionary_files/empty_dict.txt"
+            additional_dict = "dictionary_files\\empty_dict.txt"
 
-        spell = SpellcheckerService(additional_dict, spellchecker_lang)
+        spell = SpellcheckerService(additional_dict, language=spellchecker_lang)
         spell.add_words_to_spellchecker_dict()
+
+        test = spell.is_word_correct_check("ausländischer")
+        print("fooo: ",test[0])
 
         pre_processor = PreProcessor()
         if use_ml:
@@ -264,12 +269,27 @@ class ActionProcessor:
                             is_word_correct = spell.is_word_correct_check(cleaned_word)
 
                             if not is_word_correct[0]:
-                                modified_word = machine_learning.ml_word_correction_exec(cleaned_word, 256, ml_correction_init[0], ml_correction_init[1], ml_correction_init[2], ml_correction_init[3])
-                                modified_sentence.append(modified_word)
+                                modified_word = cleaned_word
+                                iteration_count = 0
+                                max_iterations = 5
+                                while not spell.is_word_correct_check(modified_word)[0]:
+                                    modified_word = machine_learning.ml_word_correction_exec(cleaned_word, 256,ml_correction_init[0],ml_correction_init[1],ml_correction_init[2],ml_correction_init[3])
+                                    modified_word = re.sub(r'\s+', '', modified_word)
+                                    iteration_count += 1
+                                    if iteration_count >= max_iterations:
+                                        break
+                                # if new correct word seems to be found in the 5 iterations append it, else try to
+                                # correct with spellcorrection
+                                if iteration_count < 5:
+                                    modified_sentence.append(modified_word)
+                                else:
+                                    modified_word = spell.correct_word(cleaned_word)
+                                    modified_sentence.append(modified_word)
                             else:
                                 modified_sentence.append(word)
                         else:
-                            modified_sentence.append(word)
+                            modified_word = spell.correct_word(cleaned_word)
+                            modified_sentence.append(modified_word)
                     else:
                         modified_word = spell.correct_word(cleaned_word)
                         modified_sentence.append(modified_word)
