@@ -77,7 +77,7 @@ class DataProcessService:
 
 
     @staticmethod
-    def create_txt_from_wikimedia(file_path, output_file, max_words):
+    def create_txt_from_wikimedia(file_path, output_file, max_words, language="de"):
         from bigxml import Parser, xml_handle_element
         import re
 
@@ -95,8 +95,15 @@ class DataProcessService:
             return text
 
         def extract_words(text):
-            # Extrahiert Wörter mit regulären Ausdrücken und filtert Duplikate
-            words = re.findall(r'\b[A-Za-zäöüÄÖÜß-]{5,}\b', text.lower())  # Nur Wörter mit mindestens 4 Buchstaben
+            if language == "de":
+                regex = r'\b[A-Za-zäöüÄÖÜß-]{5,}\b'
+            elif language == "fr":
+                regex = r'\b[A-Za-zàâçéèêëîïôûùüÿæœ-]{5,}\b'
+            elif language == "it":
+                regex = r'\b[A-Za-zàèéìòù-]{5,}\b'
+            else:
+                regex = r'\b[A-Za-z-]{5,}\b'
+            words = re.findall(regex, text.lower())  # only words with at least 5 chars
             unique_words = set(words)  # Entfernt Duplikate durch Umwandlung in ein Set
             return list(unique_words)  # Rückgabe als Liste von eindeutigen Wörtern
 
