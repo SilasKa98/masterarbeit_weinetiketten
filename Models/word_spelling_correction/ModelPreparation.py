@@ -22,7 +22,7 @@ class ModelPreparation:
         print("string_lines ", len(string_lines))
         input_vals = []
         target_vals = []
-        start_factor = 0.6
+        start_factor = 0.85
         start_point = int(len(string_lines)*start_factor)
         #start_point = 0
         repeats = 3
@@ -198,8 +198,8 @@ class ModelPreparation:
                   callbacks=[early_stopping, reduce_lr]
                   )
 
-        model.save('savedModels/256Dim_96Batch_adam_german_newTrainingData_uml2.h5')
-        model.save('savedModels/256Dim_96Batch_adam_german_newTrainingData_uml2.keras')
+        model.save('savedModels/312Dim_96Batch_adam_german_newTrainingData_uml3.h5')
+        model.save('savedModels/312Dim_96Batch_adam_german_newTrainingData_uml3.keras')
 
         encoder_model = Model(encoder_inputs, encoder_states)
 
@@ -215,8 +215,8 @@ class ModelPreparation:
             [decoder_inputs] + decoder_states_inputs,
             [decoder_outputs] + decoder_states
         )
-        encoder_model.save('savedModels/encoder_256Dim_96Batch_adam_german_newTrainingData_uml2.h5')
-        decoder_model.save('savedModels/decoder_256Dim_96Batch_adam_german_newTrainingData_uml2.h5')
+        encoder_model.save('savedModels/encoder_312Dim_96Batch_adam_german_newTrainingData_uml3.h5')
+        decoder_model.save('savedModels/decoder_312Dim_96Batch_adam_german_newTrainingData_uml3.h5')
 
     @staticmethod
     def create_ml_model_2(batch_size, epochs, latent_dim, all_existing_chars, encoder_input_data, decoder_input_data,decoder_target_data):
@@ -266,7 +266,6 @@ class ModelPreparation:
         model.save("savedModels/new_test_model_4.h5")
         model.save("savedModels/new_test_model_4_keras.keras")
 
-
     def doPredict(self, input_seq, model_to_load, latent_dim, char_int_dict, all_existing_chars, decode_max_length):
         model = tf.keras.models.load_model(model_to_load)
 
@@ -315,7 +314,13 @@ class ModelPreparation:
             output_tokens, h, c = decoder_model.predict([target_seq] + states_value)
 
             # Sample a token
-            sampled_token_index = np.argmax(output_tokens[0, -1, :])
+            #sampled_token_index = np.argmax(output_tokens[0, -1, :])
+            output_tokens = output_tokens[0, -1, :]
+            output_tokens = np.asarray(output_tokens).astype('float64')
+            output_tokens = np.log(output_tokens + 1e-8)  # prevent log(0)
+            exp_preds = np.exp(output_tokens)
+            output_tokens = exp_preds / np.sum(exp_preds)
+            sampled_token_index = np.random.choice(range(num_dec_tokens), p=output_tokens)
             sampled_char = reverse_target_char_index[sampled_token_index]
             decoded_sentence += sampled_char
 

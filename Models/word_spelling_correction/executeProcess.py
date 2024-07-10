@@ -56,6 +56,6 @@ decoder_target_data = one_hots[2]
 
 #model_preparation.create_ml_model_2(256, 2000, 256, all_existing_chars, encoder_input_data, decoder_input_data, decoder_target_data)
 
-model_preparation.create_ml_model(96, 9, 256, all_existing_chars, encoder_input_data, decoder_input_data, decoder_target_data)
+model_preparation.create_ml_model(96, 8, 312, all_existing_chars, encoder_input_data, decoder_input_data, decoder_target_data)
 
 #model_preparation.create_ml_model_with_tuning(128, 100, all_existing_chars, encoder_input_data, decoder_input_data, decoder_target_data)
