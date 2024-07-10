@@ -4,6 +4,7 @@ from Services.DeepLService import DeepLService
 from Services.DataProcessService import DataProcessService
 from Services.SearchImagesService import SearchImagesService
 from Services.MachineLearningService import MachineLearningService
+from Services.InterfaceService import InterfaceService
 from Models.word_spelling_correction.PreProcessor import PreProcessor
 
 
@@ -15,11 +16,15 @@ from Models.word_spelling_correction.PreProcessor import PreProcessor
 
 
 def main():
+
+    interface = InterfaceService()
+    interface.run()
+
     # action_processor = ActionProcessor()
     # action_processor.search_for_duplicate_entrys('easyocr', 'text_translation', save='True', save_table='duplicates')
 
-    action_processor = ActionProcessor()
-    action_processor.read_db_and_detect_lang(force_update=False)
+    #action_processor = ActionProcessor()
+    #action_processor.read_db_and_detect_lang(force_update=False)
 
     #machine_learning = MachineLearningService('german_words', '256Dim_512Batch_adam_german')
     #pre_processor = PreProcessor()
@@ -34,7 +39,7 @@ def main():
                                               #  lang_filter="de")
 
    # action_processor2 = ActionProcessor()
-   # action_processor2.correct_sentence_spelling("easyocr", "text_pure, easyocr.path", "text_pure_spellchecker", use_ml=False,
+   # action_processor2.correct_sentence_spelling("easyocr", "text_pure, easyocr.path", "text_pure_ml_modify", use_ml=True,
                                                # lang_filter="de")
 
     #action_processor3 = ActionProcessor()
@@ -59,5 +64,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
