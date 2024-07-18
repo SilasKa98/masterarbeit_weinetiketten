@@ -186,13 +186,14 @@ class ActionProcessor:
                 image_path
             )
 
-    def search_for_duplicate_entrys(self, search_table, search_column, save=False, save_table=''):
+    def search_for_duplicate_entrys(self, search_table, search_column, save=False, save_table='duplicates'):
         select_result_text = self.database_service.select_from_table(search_table, search_column)
         select_result_path = self.database_service.select_from_table(search_table, 'path')
 
         similarity_result = self.data_process_service.find_similar_sentences(select_result_text, select_result_path, 80)
         path_dup_dict = defaultdict(list)
         ratio_dup_dict = defaultdict(list)
+
         for item in similarity_result:
             print("ratio: ", item[2], "Paths: ", item[3], "&", item[4])
             path_dup_dict[item[3][0]].append(item[4][0])
