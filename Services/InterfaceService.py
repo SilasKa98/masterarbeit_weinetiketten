@@ -1,12 +1,14 @@
 import threading
 import uuid
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 
 class InterfaceService:
 
     def __init__(self):
         self.app = Flask(__name__)
+        CORS(self.app)
         self.tasks = {}  # Dictionary to track all running tasks
 
     def run(self):
@@ -35,6 +37,9 @@ class InterfaceService:
             lang_filter = data["lang_filter"]
             task_id = str(uuid.uuid4())
 
+            sel_columns = sel_columns + ", " + table + ".path"
+
+            print(sel_columns)
             # use threads so the task is getting done async and the rest of the system stays responsive
             threading.Thread(target=self.process_spelling_correction,
                              args=(task_id, table, sel_columns, insert_column, use_ml, lang_filter)).start()
