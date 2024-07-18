@@ -67,14 +67,15 @@ class DataProcessService:
         for i, sentence in enumerate(cleaned_string_list):
             for j, other_sentence in enumerate(cleaned_string_list):
                 if i != j and (j, i) not in checked_pairs:
-                    if "empty" not in sentence and "empty" not in other_sentence:
-                        similarity = fuzz.ratio(sentence, other_sentence)
-                        if similarity >= threshold:
-                            similar_pairs.append((sentence, other_sentence, similarity, paths[i], paths[j]))
-                        checked_pairs.add((i, j))
+                    # check if both strings are "" or None
+                    if not (sentence is None and other_sentence is None) and not (sentence == "" and other_sentence == ""):
+                        if "empty" not in sentence and "empty" not in other_sentence:
+                            similarity = fuzz.ratio(sentence, other_sentence)
+                            if similarity >= threshold:
+                                similar_pairs.append((sentence, other_sentence, similarity, paths[i], paths[j]))
+                            checked_pairs.add((i, j))
 
         return similar_pairs
-
 
     @staticmethod
     def create_txt_from_wikimedia(file_path, output_file, max_words, language="de"):
