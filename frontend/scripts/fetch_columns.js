@@ -85,3 +85,33 @@ function run_spelling_correction(){
         }
     });
 }
+
+function status_polling(){
+    $.ajax({
+        type: "GET",
+        url: "http://127.0.0.1:5000/status",
+        contentType: 'application/json',
+        success: function(response){ 
+            Object.keys(response).forEach(function(key) {
+                console.log(response[key]["name"])
+                let task_name = response[key]["name"]
+                let task_status = response[key]["status"]
+                let spinner_elem = document.getElementById("spinner_"+task_name)
+                let success_elem = document.getElementById("success_"+task_name)
+                if(task_status == "processing"){
+                    success_elem.style.display = "none";
+                    spinner_elem.style.display = "block";
+                }else if(task_status == success){
+                    spinner_elem.style.display = "none";
+                    success_elem.style.display = "block";
+                }else{
+                    spinner_elem.style.display = "none";
+                    success_elem.style.display = "none";
+                }
+            });
+        }
+    });
+
+
+    setTimeout(status_polling, 5000);
+}
