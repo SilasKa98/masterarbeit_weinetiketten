@@ -32,7 +32,7 @@
                     Zur Fehleranalyse werden Wörterbücher und alternativ ein Machine-Learning Modell eingesetzt.
                 </p>
                 <div>
-                    <select class="form-select input_option_admin" onchange="fetchColumns(value)" id="spell_correction_table_select">
+                    <select class="form-select input_option_admin" onchange="fetchColumns(value, 'spelling_correction')" id="spell_correction_table_select">
                         <option>Tabelle auswählen</option>
                         <?php foreach ($tables as &$val){?>
                                 <option value="<?php print $val; ?>"><?php print $val; ?></option>
@@ -82,5 +82,96 @@
             </div>
         </div>
     </div>
+
+
+    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary">
+        <div class="card">
+            <div class="card-header">
+                <span style="color: #d7a900;">update_label_detail_infos</span>()
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Etiketten nach Details durchsuchen</h5>
+                <p class="card-text">
+                    Mit diesem Modul können die persistierten Details aktualisiert werden. 
+                    Hierrunter zählen Das <b>Land</b>, die <b>Provinzen</b>, der <b>Jahrgang</b> und der <b>Alkohlgehalt</b> des jeweiligen Weines.<br>
+                    Jeder erkannte Weinetikettentext wird hierbei nach all diesen Informationen durchsucht. 
+                </p>
+                <div>
+                    <a href="#" class="btn btn-success" onclick="run_update_label_detail_infos()">Detailsuche ausführen</a>
+                </div>
+            </div>
+            <div class="card-footer text-body-secondary" id="footer_update_label_detail_infos">
+                Vorsicht! Dieser Prozess kann einige Zeit in anspruch nehmen!
+                <div class="spinner-border" id="spinner_update_label_detail_infos" role="status" style="float: right; display:none;">
+                    <span class="sr-only"></span>
+                </div>
+                <div id="success_update_label_detail_infos" role="status" style="float: right;display:none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16" style="border: 1px solid #5aa940; border-radius: 22px; background-color: #b5dfb5;">
+                        <path style="color: #07c507;" d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary">
+        <div class="card">
+            <div class="card-header">
+                <span style="color: #d7a900;">search_for_duplicate_entrys</span>()
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Etiketten nach Duplikaten durchsuchen</h5>
+                <p class="card-text">
+                    Mit diesem Modul können die Etiketten nach möglichen Duplikaten durchsucht werden. <br>
+                    Die Duplikatsuche beschränkt sich hierbei auf die Texte der Etiketten. Es werden keine Formen oder sonstiges beachtet. 
+                </p>
+                <div>
+                    <select class="form-select input_option_admin" onchange="fetchColumns(value, 'search_for_duplicate_entrys')" id="search_for_duplicate_entrys_table_select">
+                        <option>Tabelle auswählen</option>
+                        <?php foreach ($tables as &$val){?>
+                                <option value="<?php print $val; ?>"><?php print $val; ?></option>
+                        <?php }?>
+                    </select>
+
+                    <select class="form-select input_option_admin" id="dup_search_column_input_select">
+                        <option>Spalte auswählen</option>
+                    </select>
+
+                    <div class="form-check form-switch input_option_admin">
+                        <input class="form-check-input" type="checkbox" role="switch" id="search_for_duplicate_entrys_save">
+                        <label class="form-check-label" for="search_for_duplicate_entrys_save">Ergebnisse in Datenbank speichern</label>
+                    </div>
+
+                    <a href="#" class="btn btn-success" onclick="run_search_for_duplicate_entrys()">Duplikatsuche ausführen</a>
+                </div>
+            </div>
+            <div class="card-footer text-body-secondary" id="footer_search_for_duplicate_entrys">
+                Dieser Prozess sollte weniger als eine Minute dauern!
+
+                <div class="spinner-border" id="spinner_search_for_duplicate_entrys" role="status" style="float: right; display:none;">
+                    <span class="sr-only"></span>
+                </div>
+                <div id="success_search_for_duplicate_entrys" role="status" style="float: right;display:none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16" style="border: 1px solid #5aa940; border-radius: 22px; background-color: #b5dfb5;">
+                        <path style="color: #07c507;" d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+                    </svg>
+                </div>
+
+                <div class="d-flex justify-content-end" style="margin-top: 20px;">
+                    <button class="btn btn-info text-right" style="display: none;" id="result_search_for_duplicate_entrys_btn" type="button" data-bs-toggle="collapse" data-bs-target="#result_search_for_duplicate_entrys_wrp" aria-expanded="false" aria-controls="result_search_for_duplicate_entrys">
+                       Ergebnisse anzeigen
+                    </button>
+                </div>
+            </div>
+            <div class="collapse" id="result_search_for_duplicate_entrys_wrp">
+                <div class="card card-body" id="result_search_for_duplicate_entrys">
+                    
+                </div>
+            </div>
+
+        </div>
+    </div>
+
 </body>
 </html>
