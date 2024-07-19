@@ -146,6 +146,29 @@ class InterfaceService:
             }
             return jsonify(response)
 
+        @self.app.route('/read_db_and_detect_lang', methods=['POST'])
+        def read_db_and_detect_lang():
+            data = request.json
+            force_update = data["force_update"]
+            task_id = str(uuid.uuid4())
+            task_name = "read_db_and_detect_lang"
+
+            threading.Thread(target=self.process_read_db_and_detect_lang,
+                             args=(task_id, task_name, force_update)).start()
+
+            self.tasks[task_name] = {
+                "task_id": task_id,
+                "status": "processing",
+                "name": task_name
+            }
+
+            response = {
+                "task_id": task_id,
+                "status": "processing",
+                "name": task_name
+            }
+            return jsonify(response)
+
     # ------------------------------------------------Processing--------------------------------------------------------
     # functions to async handle the processing
     def process_spelling_correction(self, task_id, task_name, table, sel_columns, insert_column, use_ml, lang_filter):
@@ -203,9 +226,19 @@ class InterfaceService:
         if not path.endswith('/'):
             path += '/'
 
-        print(path)
         action_processor.read_and_save_ocr(ocr_model, path, table, column,
                                            use_translation=use_translation, only_new_entrys=only_new_entries)
+
+        self.tasks[task_name] = {"status": "success",
+                                 "name": task_name,
+                                 "task_id": task_id
+                                 }
+
+    def process_read_db_and_detect_lang(self, task_id, task_name, force_update):
+
+        from ActionProcessor import ActionProcessor
+        action_processor = ActionProcessor()
+        action_processor.read_db_and_detect_lang(force_update=force_update)
 
         self.tasks[task_name] = {"status": "success",
                                  "name": task_name,
