@@ -51,7 +51,7 @@
 
                     <div class="form-check form-switch input_option_admin">
                         <input class="form-check-input" type="checkbox" role="switch" id="read_and_save_ocr_use_translation">
-                        <label class="form-check-label" for="read_and_save_ocr_use_translation">Etikettensprache erkennen und nutzen</label>
+                        <label class="form-check-label" for="read_and_save_ocr_use_translation">Etikettensprache erkennen, nutzen und speichern</label>
                     </div>
 
                     <div class="form-check form-switch input_option_admin">
@@ -229,9 +229,44 @@
                     
                 </div>
             </div>
-
         </div>
     </div>
 
+
+    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary">
+        <div class="card">
+            <div class="card-header">
+                <span style="color: #d7a900;">read_db_and_detect_lang</span>()
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Etikettensprache erkennen</h5>
+                <p class="card-text">
+                   Dieses Modul dient zur erkennung der Sprache auf Weinetiketten. Unter Umständen, wurde dies bereits beim initialen Einlesen der Etiketten durchgeführt. <br>
+                   Allerdings gibt es hiermit die Möglichkeit manuell nochmals für alle Etiketten die Sprache zu erkennen.<br>
+                   Sollte der Schalter für "Alles erneut erkennen" auf "aus" gesetzt sein, werden nur neue bzw. noch nicht erkannte Etiketten analysiert.<br>
+                   Anderenfalls werden alle Etiketten erneut analysiert und überprüft, dies kann zu längeren Bearbeitungszeit führen.
+                </p>
+                <div>
+                    <div class="form-check form-switch input_option_admin">
+                        <input class="form-check-input" type="checkbox" role="switch" id="read_db_and_detect_lang_force_update">
+                        <label class="form-check-label" for="read_db_and_detect_lang_force_update">Alles erneut erkennen</label>
+                    </div>
+
+                    <a href="#" class="btn btn-success" onclick="run_read_db_and_detect_lang()">Sprachen erkennen</a>
+                </div>
+            </div>
+            <div class="card-footer text-body-secondary" id="footer_read_db_and_detect_lang">
+                Vorsicht! Dieser Prozess kann einige Zeit in anspruch nehmen!
+                <div class="spinner-border" id="spinner_read_db_and_detect_lang" role="status" style="float: right; display:none;">
+                    <span class="sr-only"></span>
+                </div>
+                <div id="success_read_db_and_detect_lang" role="status" style="float: right;display:none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16" style="border: 1px solid #5aa940; border-radius: 22px; background-color: #b5dfb5;">
+                        <path style="color: #07c507;" d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
