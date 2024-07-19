@@ -17,8 +17,68 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
     <link href="styles/admin.css" rel="stylesheet">
 </head>
-<body onload="status_polling()">
+<body onload="status_polling(); getImageDirectories()">
     <h1 style="text-align:center"> Admin </h1>
+
+    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary">
+        <div class="card">
+            <div class="card-header">
+                <span style="color: #d7a900;">read_and_save_ocr</span>()
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Weinetiketten einlesen und speichern</h5>
+                <p class="card-text">
+                    Mit diesem Modul können Weinetiketten per OCR eingelesen werden. <br>
+                    Dabei können verschiedene Hilfsparameter aktiviert werden, die ein besseres und gezielteres einlesen ermöglichen.
+                    Außerdem kann ausgewählt werden, welches OCR-Modell gewählt werden soll.
+                </p>
+                <div>
+
+                    <select class="form-select input_option_admin" onchange="fetchColumns(value, 'read_and_save_ocr')" id="read_and_save_ocr_table_select">
+                        <option>OCR-Modell auswählen</option>
+                        <?php foreach ($tables as &$val){?>
+                                <option value="<?php print $val; ?>"><?php print $val; ?></option>
+                        <?php }?>
+                    </select>
+
+                    <select class="form-select input_option_admin" id="read_and_save_ocr_column_input_select">
+                        <option>Spalte für Persistierung auswählen</option>
+                    </select>
+
+                    <select class="form-select input_option_admin" id="read_and_save_ocr_path_select">
+                        <option>Pfad mit Bildern auswählen</option>
+                    </select>
+
+                    <div class="form-check form-switch input_option_admin">
+                        <input class="form-check-input" type="checkbox" role="switch" id="read_and_save_ocr_use_translation">
+                        <label class="form-check-label" for="read_and_save_ocr_use_translation">Etikettensprache erkennen und nutzen</label>
+                    </div>
+
+                    <div class="form-check form-switch input_option_admin">
+                        <input class="form-check-input" type="checkbox" role="switch" id="read_and_save_ocr_only_new_entries">
+                        <label class="form-check-label" for="read_and_save_ocr_only_new_entries">Nur nach neuen Bildern suchen</label>
+                    </div>
+
+                    <a href="#" class="btn btn-success" onclick="run_read_and_save_ocr()">Weinetiketten einlesen</a>
+                </div>
+            </div>
+            <div class="card-footer text-body-secondary" id="footer_read_and_save_ocr">
+                Vorsicht! Dieser Prozess kann einige Zeit in anspruch nehmen!
+                <div class="spinner-border" id="spinner_read_and_save_ocr" role="status" style="float: right; display:none;">
+                    <span class="sr-only"></span>
+                </div>
+                <div id="success_read_and_save_ocr" role="status" style="float: right;display:none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16" style="border: 1px solid #5aa940; border-radius: 22px; background-color: #b5dfb5;">
+                        <path style="color: #07c507;" d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
     <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary">
         <div class="card">
             <div class="card-header">
