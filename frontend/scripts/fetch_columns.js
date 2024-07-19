@@ -286,5 +286,5 @@ function status_polling(){
     });
 
 
-    setTimeout(status_polling, 20000);
+    setTimeout(status_polling, 15000);
 }
