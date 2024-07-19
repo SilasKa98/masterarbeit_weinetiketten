@@ -9,9 +9,9 @@ from Services.SpellcheckerService import SpellcheckerService
 
 data = DataProcessService()
 
-filepath = "D:\\masterarbeit_saver_all\\frwiki-latest-pages-articles.xml\\frwiki-latest-pages-articles.xml"
-output_file = "dictionary_files/french_extracted_words_750k_uml_fr.txt"
-data.create_txt_from_wikimedia(filepath, output_file, 750000, language="fr")
+filepath = "D:\\masterarbeit_saver_all\\enwiki-latest-pages-articles.xml\\enwiki-latest-pages-articles.xml"
+output_file = "dictionary_files/english_extracted_words_750k_uml_en.txt"
+data.create_txt_from_wikimedia(filepath, output_file, 750000, language="en")
 
 
 '''
