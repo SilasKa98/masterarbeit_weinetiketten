@@ -226,6 +226,13 @@ class ActionProcessor:
         return similarity_result
 
     def correct_sentence_spelling(self, table, column_text, insert_column, use_ml=False, lang_filter=None):
+
+        # check if the selected language is in supported langs (langs where a model is available)
+        # if not present, set ml to false, because it would make results worse
+        lang_support_ml = ["de"]
+        if lang_filter not in lang_support_ml:
+            use_ml = False
+
         if lang_filter is None:
             condition = None
             spellchecker_lang = "en"
@@ -242,14 +249,15 @@ class ActionProcessor:
 
         if spellchecker_lang == "de":
             additional_dict = "dictionary_files\\german_extracted_words_20mio_uml.txt"
+        elif spellchecker_lang == "fr":
+            additional_dict = "dictionary_files\\french_extracted_words_20mio_uml_fr.txt"
+        elif spellchecker_lang == "it":
+            additional_dict = "dictionary_files\\italy_extracted_words_20mio_uml_it.txt"
         else:
-            additional_dict = "dictionary_files\\empty_dict.txt"
+            additional_dict = "dictionary_files\\english_extracted_words_20mio_uml_en.txt"
 
         spell = SpellcheckerService(additional_dict, language=spellchecker_lang)
         spell.add_words_to_spellchecker_dict()
-
-        test = spell.is_word_correct_check("ausländischer")
-        print("fooo: ",test[0])
 
         pre_processor = PreProcessor()
         if use_ml:
