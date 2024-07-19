@@ -6,19 +6,30 @@ preprocessor = PreProcessor()
 #loaded_input_file = preprocessor.load_data('data/english_words.csv')
 #print(loaded_input_file)
 
-input_file = "data/german_extracted_words_750k_uml.txt"
+input_file = "data/french_extracted_words_750k_uml_fr.txt"
 loaded_input_file = preprocessor.form_dataframe_german_txt(input_file)
 
 print(loaded_input_file)
 
-all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzüöä0123456789-")
+# german
+# all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzüöä0123456789-")
+
+# english
+# all_existing_chars = list(" abcdefghijklmnopqrstuvwxyz0123456789-")
+
+# italian
+# all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzàèéìòù0123456789-")
+
+# french
+all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzàâæçèéêëîïôœùûüÿ0123456789-")
+
 
 string_lines = preprocessor.count_lines(loaded_input_file)
 
 #string_lines = preprocessor.word_splitting(string_lines)
 cleaned_string_lines = []
 for cleaned_str in string_lines:
-    cln = preprocessor.word_cleaning(cleaned_str, german=True)
+    cln = preprocessor.word_cleaning(cleaned_str, german=False)
     cleaned_string_lines.append(cln)
 
 string_lines = cleaned_string_lines
@@ -28,12 +39,8 @@ char_indexing = preprocessor.char_indexing(all_existing_chars)
 int_char_dict = char_indexing[0]
 char_int_dict = char_indexing[1]
 
-gib = preprocessor.gibberish_word_generator("Test")
-print("Gibberish: ", gib[0], "\n Input: ", gib[1])
-
-
 model_preparation = ModelPreparation()
-training_data = model_preparation.create_training_data(string_lines)
+training_data = model_preparation.create_training_data(string_lines, all_existing_chars, german=False)
 
 input_vals = training_data[0]
 target_vals = training_data[1]

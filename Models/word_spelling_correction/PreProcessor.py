@@ -195,12 +195,12 @@ class PreProcessor:
         return int_char_dict, char_int_dict
 
     @staticmethod
-    def gibberish_word_generator(input_word, german=False):
+    def gibberish_word_generator(input_word, all_existing_chars, german=False):
 
         num_cases = random.randint(1,3)
         input_fanned = list(input_word)
 
-        all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzüöä0123456789-")
+        # all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzüöä0123456789-")
         for _ in range(num_cases):
             cases = random.randint(1, 6)
             # case to add a random char to the original string

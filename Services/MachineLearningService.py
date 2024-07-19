@@ -12,12 +12,23 @@ class MachineLearningService:
         self.input_file = os.path.join(self.current_path, f'C:/Masterarbeit_ocr_env/Models/word_spelling_correction/data/{data_file}')
         self.model_to_use = os.path.join(self.current_path, f'C:/Masterarbeit_ocr_env/Models/word_spelling_correction/savedModels/{model_name}')
 
-    def ml_word_correction_init(self, dataframe_function):
+    def ml_word_correction_init(self, dataframe_function, language="en"):
 
         preprocessor = PreProcessor()
         model_prep = ModelPreparation()
 
-        all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzüöä0123456789-")
+        if language == "de":
+            all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzüöä0123456789-")
+            use_german = True
+        elif language == "fr":
+            all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzàâæçèéêëîïôœùûüÿ0123456789-")
+            use_german = False
+        elif language == "it":
+            all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzàèéìòù0123456789-")
+            use_german = False
+        elif language == "en":
+            all_existing_chars = list(" abcdefghijklmnopqrstuvwxyz0123456789-")
+            use_german = False
         char_indexing = preprocessor.char_indexing(all_existing_chars)
         int_char_dict = char_indexing[0]
         char_int_dict = char_indexing[1]
@@ -31,12 +42,12 @@ class MachineLearningService:
 
         cleaned_string_lines = []
         for cleaned_str in string_lines:
-            cln = preprocessor.word_cleaning(cleaned_str)
+            cln = preprocessor.word_cleaning(cleaned_str, german=use_german)
             cleaned_string_lines.append(cln)
 
         string_lines = cleaned_string_lines
 
-        training_data = model_prep.create_training_data(string_lines)
+        training_data = model_prep.create_training_data(string_lines, all_existing_chars, german=use_german)
 
         input_vals = training_data[0]
         target_vals = training_data[1]

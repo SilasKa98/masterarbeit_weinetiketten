@@ -262,7 +262,7 @@ class ActionProcessor:
         pre_processor = PreProcessor()
         if use_ml:
             machine_learning = MachineLearningService('german_extracted_words_750k_uml.txt', '256Dim_96Batch_adam_german_newTrainingData_uml2.h5')
-            ml_correction_init = machine_learning.ml_word_correction_init(pre_processor.form_dataframe_german_txt)
+            ml_correction_init = machine_learning.ml_word_correction_init(pre_processor.form_dataframe_german_txt, language=spellchecker_lang)
 
         for idx, item in enumerate(cleaned_string_list):
             modified_sentence = []

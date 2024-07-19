@@ -18,7 +18,7 @@ class ModelPreparation:
         self.pre_processor = PreProcessor()
 
     # create a dataset for training
-    def create_training_data(self, string_lines):
+    def create_training_data(self, string_lines, all_existing_chars, german=False):
         print("string_lines ", len(string_lines))
         input_vals = []
         target_vals = []
@@ -31,7 +31,7 @@ class ModelPreparation:
             if len(str_val) > 5:
                 target_val = '\t' + str_val + '\n'
                 for _ in range(repeats):
-                    input_val = self.pre_processor.gibberish_word_generator(str_val, True)
+                    input_val = self.pre_processor.gibberish_word_generator(str_val, all_existing_chars, german=german)
                     input_vals.append(input_val[0])
                     target_vals.append(target_val)
         print("Training-sample Length ", len(input_vals))
@@ -198,8 +198,8 @@ class ModelPreparation:
                   callbacks=[early_stopping, reduce_lr]
                   )
 
-        model.save('savedModels/312Dim_96Batch_adam_german_newTrainingData_uml3.h5')
-        model.save('savedModels/312Dim_96Batch_adam_german_newTrainingData_uml3.keras')
+        model.save('savedModels/312Dim_96Batch_adam_english_uml.h5')
+        model.save('savedModels/312Dim_96Batch_adam_english_uml.keras')
 
         encoder_model = Model(encoder_inputs, encoder_states)
 
@@ -215,8 +215,8 @@ class ModelPreparation:
             [decoder_inputs] + decoder_states_inputs,
             [decoder_outputs] + decoder_states
         )
-        encoder_model.save('savedModels/encoder_312Dim_96Batch_adam_german_newTrainingData_uml3.h5')
-        decoder_model.save('savedModels/decoder_312Dim_96Batch_adam_german_newTrainingData_uml3.h5')
+        encoder_model.save('savedModels/encoder_312Dim_96Batch_adam_english_uml.h5')
+        decoder_model.save('savedModels/decoder_312Dim_96Batch_adam_english_uml.h5')
 
     @staticmethod
     def create_ml_model_2(batch_size, epochs, latent_dim, all_existing_chars, encoder_input_data, decoder_input_data,decoder_target_data):
