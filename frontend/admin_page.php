@@ -18,6 +18,7 @@
     <link href="styles/admin.css" rel="stylesheet">
 </head>
 <body onload="status_polling(); getImageDirectories()">
+<?php include_once "components/navbar.php"?>
     <h1 style="text-align:center"> Admin </h1>
 
     <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary">
