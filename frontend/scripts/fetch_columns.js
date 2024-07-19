@@ -2,7 +2,7 @@ function fetchColumns(table, module_name){
     console.log(module_name)
     $.ajax({
         type: "POST",
-        url: "sql_requests/fetch_table_columns.php",
+        url: "backend_handling/fetch_table_columns.php",
         data: {
             table: table
         },
@@ -20,7 +20,8 @@ function fetchColumns(table, module_name){
                 
                 // remove all options except the first one ("Spalte auswählen"), so its not stacking up by switching tables
                 while (col_sel_id.options.length > 1) {
-                    selectElement.remove(1);
+                    col_sel_id.remove(1);
+                    col_sel_id_2.remove(1);
                 }
                 columnNames = columnNames.filter(columnName => columnName !== 'path');
                 columnNames.forEach(columnName => {
@@ -41,7 +42,7 @@ function fetchColumns(table, module_name){
 
                 // remove all options except the first one ("Spalte auswählen"), so its not stacking up by switching tables
                 while (col_sel_id.options.length > 1) {
-                    selectElement.remove(1);
+                    col_sel_id.remove(1);
                 }
 
                 columnNames.forEach(columnName => {
@@ -50,9 +51,42 @@ function fetchColumns(table, module_name){
                     option.text = columnName;
                     col_sel_id.appendChild(option);
                 });
-            }
+            }else if(module_name == "read_and_save_ocr"){
+                let col_sel_id = document.getElementById("read_and_save_ocr_column_input_select")
 
+                // remove all options except the first one ("Spalte auswählen"), so its not stacking up by switching tables
+                while (col_sel_id.options.length > 1) {
+                    col_sel_id.remove(1);
+                }
+
+                columnNames = columnNames.filter(columnName => columnName !== 'path');
+                columnNames.forEach(columnName => {
+                    const option = document.createElement('option');
+                    option.value = columnName;
+                    option.text = columnName;
+                    col_sel_id.appendChild(option);
+                });
+            }
         },
+    });
+}
+
+
+function getImageDirectories(){
+    $.ajax({
+        type: "POST",
+        url: "backend_handling/fetch_image_directories.php",
+        success: function(response){ 
+            const json_response =  JSON.parse(response);
+            const read_and_save_ocr_path_select = document.getElementById("read_and_save_ocr_path_select");
+            json_response.forEach(path => {
+                const option = document.createElement('option');
+                option.value = path;
+                option.text = path;
+                read_and_save_ocr_path_select.appendChild(option);
+            });
+            
+        }
     });
 }
 
@@ -145,6 +179,45 @@ function run_search_for_duplicate_entrys(){
     });
 }
 
+
+function run_read_and_save_ocr(){
+    const read_and_save_ocr_table_select = document.getElementById("read_and_save_ocr_table_select").value
+    const read_and_save_ocr_column_input_select = document.getElementById("read_and_save_ocr_column_input_select").value
+    const read_and_save_ocr_path_select = document.getElementById("read_and_save_ocr_path_select").value
+    const read_and_save_ocr_use_translation = document.getElementById("read_and_save_ocr_use_translation")
+    const read_and_save_ocr_only_new_entries = document.getElementById("read_and_save_ocr_only_new_entries")
+
+
+    if(read_and_save_ocr_use_translation.checked){
+        use_translation = true
+    }else{
+        use_translation = false
+    }
+
+    if(read_and_save_ocr_only_new_entries.checked){
+        only_new_entries = true
+    }else{
+        only_new_entries = false
+    }
+
+    $.ajax({
+        type: "POST",
+        url: "http://127.0.0.1:5000/read_and_save_ocr",
+        contentType: 'application/json',
+        data: JSON.stringify({
+            table: read_and_save_ocr_table_select,
+            column: read_and_save_ocr_column_input_select,
+            path: read_and_save_ocr_path_select,
+            use_translation: use_translation,
+            only_new_entries: only_new_entries
+        }),
+        success: function(response){ 
+            console.log(response)
+            status_polling()
+        }
+    });
+}
+
 function status_polling(){
     $.ajax({
         type: "GET",
@@ -187,5 +260,5 @@ function status_polling(){
     });
 
 
-    setTimeout(status_polling, 10000);
+    setTimeout(status_polling, 20000);
 }
