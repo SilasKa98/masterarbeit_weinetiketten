@@ -218,6 +218,32 @@ function run_read_and_save_ocr(){
     });
 }
 
+
+function run_read_db_and_detect_lang(){
+    const read_db_and_detect_lang_force_update = document.getElementById("read_db_and_detect_lang_force_update")
+
+
+    if(read_db_and_detect_lang_force_update.checked){
+        force_update = true
+    }else{
+        force_update = false
+    }
+
+    $.ajax({
+        type: "POST",
+        url: "http://127.0.0.1:5000/read_db_and_detect_lang",
+        contentType: 'application/json',
+        data: JSON.stringify({
+            force_update: force_update
+        }),
+        success: function(response){ 
+            console.log(response)
+            status_polling()
+        }
+    });
+}
+
+
 function status_polling(){
     $.ajax({
         type: "GET",
