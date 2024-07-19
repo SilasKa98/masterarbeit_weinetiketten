@@ -1,3 +1,4 @@
+import os
 import threading
 import uuid
 from flask import Flask, request, jsonify
@@ -117,6 +118,34 @@ class InterfaceService:
             }
             return jsonify(response)
 
+        @self.app.route('/read_and_save_ocr', methods=['POST'])
+        def read_and_save_ocr():
+            data = request.json
+            table = data["table"]
+            ocr_model = data["table"]
+            column = data["column"]
+            path = data["path"]
+            use_translation = data["use_translation"]
+            only_new_entries = data["only_new_entries"]
+            task_id = str(uuid.uuid4())
+            task_name = "read_and_save_ocr"
+
+            threading.Thread(target=self.process_read_and_save_ocr,
+                             args=(task_id, task_name, table, ocr_model, column, path, use_translation, only_new_entries)).start()
+
+            self.tasks[task_name] = {
+                "task_id": task_id,
+                "status": "processing",
+                "name": task_name
+            }
+
+            response = {
+                "task_id": task_id,
+                "status": "processing",
+                "name": task_name
+            }
+            return jsonify(response)
+
     # ------------------------------------------------Processing--------------------------------------------------------
     # functions to async handle the processing
     def process_spelling_correction(self, task_id, task_name, table, sel_columns, insert_column, use_ml, lang_filter):
@@ -161,4 +190,24 @@ class InterfaceService:
                                  "result": return_strings
                                  }
 
+    def process_read_and_save_ocr(self, task_id, task_name, table, ocr_model, column, path, use_translation, only_new_entries):
 
+        from ActionProcessor import ActionProcessor
+        action_processor = ActionProcessor()
+
+        # edit path to suit the desired format
+        path_parts = os.path.normpath(path).split(os.sep)
+        start_index = path_parts.index('wine_images')
+        trimmed_path = os.path.join(*path_parts[start_index:])
+        path = trimmed_path.replace(os.sep, '/')
+        if not path.endswith('/'):
+            path += '/'
+
+        print(path)
+        action_processor.read_and_save_ocr(ocr_model, path, table, column,
+                                           use_translation=use_translation, only_new_entrys=only_new_entries)
+
+        self.tasks[task_name] = {"status": "success",
+                                 "name": task_name,
+                                 "task_id": task_id
+                                 }
