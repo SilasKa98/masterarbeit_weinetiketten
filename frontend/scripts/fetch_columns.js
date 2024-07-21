@@ -107,6 +107,7 @@ function run_spelling_correction(){
     const spelling_correction_useML = document.getElementById("spelling_correction_useML")
     const spelling_correction_langFilter = document.getElementById("spelling_correction_langFilter")
     const spell_correction_select_langFilter = document.getElementById("spell_correction_select_langFilter").value
+    const spelling_correction_only_new = document.getElementById("spelling_correction_only_new")
 
 
     if(spelling_correction_useML.checked){
@@ -121,6 +122,12 @@ function run_spelling_correction(){
         lang_filter = "None"
     }
 
+    if(spelling_correction_only_new.checked){
+        only_new = true
+    }else{
+        only_new = false
+    }
+
     $.ajax({
         type: "POST",
         url: "http://127.0.0.1:5000/spelling_correction",
@@ -130,7 +137,8 @@ function run_spelling_correction(){
             sel_columns: spell_correction_column_input_select,
             insert_column: spell_correction_column_output_select,
             use_ml: use_ml,
-            lang_filter: lang_filter
+            lang_filter: lang_filter,
+            only_new: only_new
         }),
         success: function(response){ 
             console.log(response)

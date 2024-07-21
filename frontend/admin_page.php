@@ -112,6 +112,11 @@
                         <input class="form-check-input" type="checkbox" role="switch" id="spelling_correction_useML">
                         <label class="form-check-label" for="spelling_correction_useML">Machine-Learning Modell benutzen</label>
                     </div>
+
+                    <div class="form-check form-switch input_option_admin">
+                        <input class="form-check-input" type="checkbox" role="switch" id="spelling_correction_only_new">
+                        <label class="form-check-label" for="spelling_correction_only_new">Bereits geprüfte Labels ignorieren</label>
+                    </div>
                     
                     <div class="form-check form-switch input_option_admin">
                         <input class="form-check-input" type="checkbox" role="switch" id="spelling_correction_langFilter" onclick="showLangFilter(this)">
