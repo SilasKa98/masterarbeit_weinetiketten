@@ -1,5 +1,7 @@
 import deepl
 from iso639 import Lang
+import langid
+from langid.langid import LanguageIdentifier, model
 from Services.DataProcessService import DataProcessService
 from Services.DatabaseService import DatabaseService
 
@@ -26,6 +28,13 @@ class DeepLService:
             return iso_lang.pt1
         except KeyError:
             return "en"
+
+    @staticmethod
+    def detect_language_on_the_fly(input_text):
+        identifier = LanguageIdentifier.from_modelstring(model, norm_probs=True)
+        identifier.set_languages(['de', 'fr', 'it', 'en'])
+        return identifier.classify(input_text)
+
 
     def detect_language(self, input_text, image_name, image_directory_name, force_update=False):
 
