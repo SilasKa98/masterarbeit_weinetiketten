@@ -7,11 +7,15 @@ from Services.SpellcheckerService import SpellcheckerService
 #loaded_input_file = preprocessor.load_data('data/english_words.csv')
 #print(loaded_input_file)
 
-data = DataProcessService()
+#data = DataProcessService()
 
-filepath = "D:\\masterarbeit_saver_all\\enwiki-latest-pages-articles.xml\\enwiki-latest-pages-articles.xml"
-output_file = "dictionary_files/english_extracted_words_750k_uml_en.txt"
-data.create_txt_from_wikimedia(filepath, output_file, 750000, language="en")
+#filepath = "D:\\masterarbeit_saver_all\\enwiki-latest-pages-articles.xml\\enwiki-latest-pages-articles.xml"
+#output_file = "dictionary_files/english_extracted_words_750k_uml_en.txt"
+#data.create_txt_from_wikimedia(filepath, output_file, 750000, language="en")
+
+action_processor3 = ActionProcessor()
+action_processor3.correct_sentence_spelling("tesseract", "text_pure, tesseract.path",
+                                            "text_pure_spellchecker", use_ml=True, lang_filter="de")
 
 
 '''

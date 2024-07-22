@@ -6,22 +6,22 @@ preprocessor = PreProcessor()
 #loaded_input_file = preprocessor.load_data('data/english_words.csv')
 #print(loaded_input_file)
 
-input_file = "data/french_extracted_words_750k_uml_fr.txt"
+input_file = "data/english_extracted_words_750k_uml_en.txt"
 loaded_input_file = preprocessor.form_dataframe_german_txt(input_file)
-
+word_cleaning_lang = "en"
 print(loaded_input_file)
 
 # german
 # all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzüöä0123456789-")
 
 # english
-# all_existing_chars = list(" abcdefghijklmnopqrstuvwxyz0123456789-")
+all_existing_chars = list(" abcdefghijklmnopqrstuvwxyz0123456789-")
 
 # italian
-# all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzàèéìòù0123456789-")
+#all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzàèéìòù0123456789-")
 
 # french
-all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzàâæçèéêëîïôœùûüÿ0123456789-")
+# all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzàâæçèéêëîïôœùûüÿ0123456789-")
 
 
 string_lines = preprocessor.count_lines(loaded_input_file)
@@ -29,7 +29,7 @@ string_lines = preprocessor.count_lines(loaded_input_file)
 #string_lines = preprocessor.word_splitting(string_lines)
 cleaned_string_lines = []
 for cleaned_str in string_lines:
-    cln = preprocessor.word_cleaning(cleaned_str, german=False)
+    cln = preprocessor.word_cleaning(cleaned_str, lang=word_cleaning_lang)
     cleaned_string_lines.append(cln)
 
 string_lines = cleaned_string_lines

@@ -38,11 +38,9 @@ class MachineLearningService:
 
         string_lines = preprocessor.count_lines(loaded_input_file)
 
-        # string_lines = preprocessor.word_splitting(string_lines)
-
         cleaned_string_lines = []
         for cleaned_str in string_lines:
-            cln = preprocessor.word_cleaning(cleaned_str, german=use_german)
+            cln = preprocessor.word_cleaning(cleaned_str, lang=language)
             cleaned_string_lines.append(cln)
 
         string_lines = cleaned_string_lines
