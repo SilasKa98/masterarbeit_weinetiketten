@@ -70,8 +70,7 @@ class PreProcessor:
         df = df[empty_filter]
         zero_filter = df["word"] != "0"
         df = df[zero_filter]
-        #df = df.map(self.word_cleaning(german=True))
-        df = df.map(lambda x: self.word_cleaning(x, german=True))
+        df = df.map(lambda x: self.word_cleaning(x, lang="de"))
         return df
 
     def form_dataframe_german_txt(self, input_file):
@@ -155,15 +154,22 @@ class PreProcessor:
 
     # function to clean a input string -> lower all chars + remove all numbers and upper case chars + replace \n with ''
     @staticmethod
-    def word_cleaning(input_val, german=False):
+    def word_cleaning(input_val, lang="en"):
         input_val = input_val.lower()
-        if not german:
+        if lang == "en":
             input_val = re.sub(r'[^0-9a-zA-Z ]','',input_val)
-        else:
+        elif lang == "de":
             input_val = re.sub(r'[^0-9a-zA-ZäöüÄÖÜ ]', '', input_val)
+        elif lang == "it":
+            input_val = re.sub(r'[^0-9a-zA-ZàèéìòùÀÈÉÌÒÙ ]', '', input_val)
+        elif lang == "fr":
+            input_val = re.sub(r'[^0-9a-zA-ZàâæçèéêëîïôœùûüÿÀÂÆÇÈÉÊËÎÏÔŒÙÛÜŸ ]', '', input_val)
+        else:
+            input_val = re.sub(r'[^0-9a-zA-Z ]', '', input_val)
         input_val = input_val.replace('\n','')
         return input_val
 
+    # not in use any longer -  20.07.2024
     def word_splitting(self, input_list):
         string_lines = [self.word_cleaning(val) for val in input_list]
         splitted_words = []
