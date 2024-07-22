@@ -225,64 +225,103 @@ class ActionProcessor:
 
         return similarity_result
 
-    def correct_sentence_spelling(self, table, column_text, insert_column, use_ml=False, lang_filter=None):
+    def correct_sentence_spelling(self, table, column_text, insert_column, use_ml=False, lang_filter=None, only_new=False):
 
         # check if the selected language is in supported langs (langs where a model is available)
         # if not present, set ml to false, because it would make results worse
-        lang_support_ml = ["de"]
-        if lang_filter not in lang_support_ml:
-            use_ml = False
+        #lang_support_ml = ["de", "fr", "it", "en"]
+        #if lang_filter not in lang_support_ml:
+          #  use_ml = False
 
         if lang_filter is None:
-            condition = None
-            spellchecker_lang = "en"
+            if only_new:
+                condition = f'{table}.{insert_column} = ""'
+            else:
+                condition = None
         else:
-            condition = f"etiketten_infos.detected_language = '{lang_filter}'"
-            spellchecker_lang = lang_filter
+            if only_new:
+                condition = f'etiketten_infos.detected_language = "{lang_filter}"'
+            else:
+                condition = f'etiketten_infos.detected_language = "{lang_filter}" and {table}.{insert_column} = ""'
+
         select_result_text = self.database_service.select_from_table(table,
-                                                                     column_text,
+                                                                     f'{column_text}, detected_language',
                                                                      join=f"left join etiketten_infos ON {table}.path = etiketten_infos.path",
                                                                      condition=condition
                                                                      )
         print(select_result_text[:3])
         cleaned_string_list = [result[0] for result in select_result_text]
+        fetched_langs = [result[2] for result in select_result_text]
 
-        if spellchecker_lang == "de":
-            additional_dict = "dictionary_files\\german_extracted_words_20mio_uml.txt"
-        elif spellchecker_lang == "fr":
-            additional_dict = "dictionary_files\\french_extracted_words_20mio_uml_fr.txt"
-        elif spellchecker_lang == "it":
-            additional_dict = "dictionary_files\\italy_extracted_words_20mio_uml_it.txt"
-        else:
-            additional_dict = "dictionary_files\\english_extracted_words_20mio_uml_en.txt"
+        spell_de = SpellcheckerService('dictionary_files\\german_extracted_words_20mio_uml.txt', language="de")
+        spell_de.add_words_to_spellchecker_dict()
 
-        spell = SpellcheckerService(additional_dict, language=spellchecker_lang)
-        spell.add_words_to_spellchecker_dict()
+        spell_en = SpellcheckerService('dictionary_files\\english_extracted_words_20mio_uml_en.txt', language="en")
+        spell_en.add_words_to_spellchecker_dict()
+
+        spell_fr = SpellcheckerService('dictionary_files\\french_extracted_words_20mio_uml_fr.txt', language="fr")
+        spell_fr.add_words_to_spellchecker_dict()
+
+        spell_it = SpellcheckerService('dictionary_files\\italy_extracted_words_20mio_uml_it.txt', language="it")
+        spell_it.add_words_to_spellchecker_dict()
 
         pre_processor = PreProcessor()
         if use_ml:
-            machine_learning = MachineLearningService('german_extracted_words_750k_uml.txt', '256Dim_96Batch_adam_german_newTrainingData_uml2.h5')
-            ml_correction_init = machine_learning.ml_word_correction_init(pre_processor.form_dataframe_german_txt, language=spellchecker_lang)
+            machine_learning_de = MachineLearningService('german_extracted_words_750k_uml.txt', '256Dim_96Batch_adam_german_newTrainingData_uml2.h5')
+            ml_correction_init_de = machine_learning_de.ml_word_correction_init(pre_processor.form_dataframe_german_txt, language="de")
+
+            machine_learning_en = MachineLearningService('english_extracted_words_750k_uml_en.txt', '312Dim_96Batch_adam_english_uml.h5')
+            ml_correction_init_en = machine_learning_en.ml_word_correction_init(pre_processor.form_dataframe_german_txt, language="en")
+
+            machine_learning_it = MachineLearningService('italy_extracted_words_750k_uml_it.txt', '312Dim_96Batch_adam_italian_uml_2.h5')
+            ml_correction_init_it = machine_learning_it.ml_word_correction_init(pre_processor.form_dataframe_german_txt, language="it")
+
+            machine_learning_fr = MachineLearningService('french_extracted_words_750k_uml_fr.txt', '312Dim_96Batch_adam_french_uml_2.h5')
+            ml_correction_init_fr = machine_learning_fr.ml_word_correction_init(pre_processor.form_dataframe_german_txt, language="fr")
 
         for idx, item in enumerate(cleaned_string_list):
             modified_sentence = []
 
             item_words = item.split()
             for word in item_words:
-                cleaned_word = pre_processor.word_cleaning(word)
+                deepl = DeepLService()
+                word_lang = deepl.detect_language_on_the_fly(word)
+                if word_lang[1] >= 0.9:
+                    word_lang = word_lang[0]
+                else:
+                    word_lang = fetched_langs[idx]
+
+                if word_lang == "de":
+                    spell = spell_de
+                elif word_lang == "en":
+                    spell = spell_en
+                elif word_lang == "fr":
+                    spell = spell_fr
+                elif word_lang == "it":
+                    spell = spell_it
+                else:
+                    spell = SpellcheckerService(added_dict_file="", language="")
+
+                cleaned_word = pre_processor.word_cleaning(word, lang=word_lang)
                 cleaned_word = pre_processor.remove_numerics(cleaned_word)
                 special_characters = "!@#$%^&*()+?_=,<>/"
                 if len(cleaned_word) > 1:
                     if use_ml:
                         if len(cleaned_word) > 5 and not any(char in special_characters for char in cleaned_word) and not cleaned_word.isdigit():
                             is_word_correct = spell.is_word_correct_check(cleaned_word)
-
                             if not is_word_correct[0]:
                                 modified_word = cleaned_word
                                 iteration_count = 0
                                 max_iterations = 5
                                 while not spell.is_word_correct_check(modified_word)[0]:
-                                    modified_word = machine_learning.ml_word_correction_exec(cleaned_word, 256,ml_correction_init[0],ml_correction_init[1],ml_correction_init[2],ml_correction_init[3])
+                                    if word_lang == "de":
+                                        modified_word = machine_learning_de.ml_word_correction_exec(cleaned_word, 256 ,ml_correction_init_de[0],ml_correction_init_de[1],ml_correction_init_de[2],ml_correction_init_de[3])
+                                    elif word_lang == "fr":
+                                        modified_word = machine_learning_fr.ml_word_correction_exec(cleaned_word, 312,ml_correction_init_fr[0],ml_correction_init_fr[1],ml_correction_init_fr[2],ml_correction_init_fr[3])
+                                    elif word_lang == "it":
+                                        modified_word = machine_learning_it.ml_word_correction_exec(cleaned_word, 312, ml_correction_init_it[0],ml_correction_init_it[1],ml_correction_init_it[2],ml_correction_init_it[3])
+                                    else:
+                                        modified_word = machine_learning_en.ml_word_correction_exec(cleaned_word, 312,ml_correction_init_en[0],ml_correction_init_en[1],ml_correction_init_en[2],ml_correction_init_en[3])
                                     modified_word = re.sub(r'\s+', '', modified_word)
                                     iteration_count += 1
                                     if iteration_count >= max_iterations:
