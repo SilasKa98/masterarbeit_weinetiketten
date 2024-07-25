@@ -2,6 +2,7 @@ from Services.DataProcessService import DataProcessService
 from Services.DetailFinderService import DetailFinderService
 from ActionProcessor import ActionProcessor
 from Services.SpellcheckerService import SpellcheckerService
+from Services.SearchImagesService import SearchImagesService
 
 
 #loaded_input_file = preprocessor.load_data('data/english_words.csv')
@@ -13,10 +14,19 @@ from Services.SpellcheckerService import SpellcheckerService
 #output_file = "dictionary_files/english_extracted_words_750k_uml_en.txt"
 #data.create_txt_from_wikimedia(filepath, output_file, 750000, language="en")
 
-action_processor3 = ActionProcessor()
-action_processor3.correct_sentence_spelling("tesseract", "text_pure, tesseract.path",
-                                            "text_pure_spellchecker", use_ml=True, lang_filter="de")
+#action_processor3 = ActionProcessor()
+#action_processor3.correct_sentence_spelling("tesseract", "text_pure, tesseract.path",
+                                           # "text_pure_spellchecker", use_ml=True, lang_filter="de")
 
+
+#action = ActionProcessor()
+#action.modify_images("wine_images/")
+
+search = SearchImagesService()
+search.semantic_search("Zeige mir Riesling und Merlot Weine aus der Region Mosel aus 1900")
+#search.text_based_keyword_search("Zeige mir Riesling und Merlot Weine aus der Region Mosel aus 1900")
+#entities = search.named_entity_recognition("Zeige mir Riesling und Merlot Weine aus der Region Mosel von 1900")
+#print(entities)
 
 '''
 details = DetailFinderService()
