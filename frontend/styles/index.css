@@ -168,3 +168,7 @@
   display: inherit !important;
   padding: 0;
 }
+
+.result_category_wrap{
+  overflow: auto;
+}
