@@ -1,0 +1,8 @@
+Masterarbeit code todos:
+
+- verbesserung suchalgorithmus --> tokenisierung persistieren und nicht dynamisch?
+- französisches modell besser trainieren (spelling correction)
+- datenbank texte aktuallisieren / spelling correction auf alles anwenden
+- weitere verbesserungen für ocr readings versuchen (weitere litteratur recherche notwendig)
+- frontend schön machen
+
