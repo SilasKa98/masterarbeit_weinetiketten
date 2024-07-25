@@ -18,28 +18,53 @@ class ImageModificationService:
         self.image_src = cv2.cvtColor(self.image_src, cv2.COLOR_BGR2GRAY)
         return self
 
+    def bump_contrast(self):
+        mean, std_dev = cv2.meanStdDev(self.image_src)
+        mean = mean[0][0]
+        std_dev = std_dev[0][0]
+
+        # Dynamische Berechnung von alpha und beta
+        alpha = 1.0 + (0.05 * (127 - std_dev) / 127)   # Wert anpassen, um den Kontrast dynamisch zu erhöhen
+        beta = 5 * (127 - mean) / 127   # Wert anpassen, um die Helligkeit dynamisch zu korrigieren
+
+        # Anwendung der Kontrast- und Helligkeitsanpassung
+        self.image_src = cv2.convertScaleAbs(self.image_src, alpha=alpha, beta=beta)
+
+        # Histogrammausgleich, um den Kontrast zu verbessern
+        #self.image_src = cv2.equalizeHist(self.image_src)
+        return self
+
+    def sharpen_img(self):
+        # Unsharp Masking
+        gaussian_blur = cv2.GaussianBlur(self.image_src, (5, 5), 5.0)
+        self.image_src = cv2.addWeighted(self.image_src, 2.0, gaussian_blur, -1.0, 0)
+
+        # Normalisierung, um die Helligkeit zu kontrollieren
+        self.image_src = cv2.normalize(self.image_src, None, 0, 255, cv2.NORM_MINMAX)
+        return self
+
+    def adaptive_threshold(self):
+        self.image_src= cv2.adaptiveThreshold(self.image_src, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                              cv2.THRESH_BINARY, 73, 2)
+        return self
+
     def noise_remover(self):
         kernel = np.ones((1, 1), np.uint8)
         self.image_src = cv2.dilate(self.image_src, kernel, iterations=1)
         self.image_src = cv2.erode(self.image_src, kernel, iterations=1)
+
         return self
 
-    def blur_apply(self, filter_type):
+    def blur_apply(self, filter_type="median"):
 
         if 'gaussian' in filter_type:
-            cv2.threshold(cv2.GaussianBlur(self.image_src, (5, 5), 0), 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-            cv2.adaptiveThreshold(cv2.GaussianBlur(self.image_src, (5, 5), 0), 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,
-                              31, 2)
-
-        if 'bilateral' in filter_type:
-            cv2.threshold(cv2.bilateralFilter(self.image_src, 5, 75, 75), 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-            cv2.adaptiveThreshold(cv2.bilateralFilter(self.image_src, 9, 75, 75), 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                              cv2.THRESH_BINARY, 31, 2)
-
-        if 'median' in filter_type:
-            cv2.threshold(cv2.medianBlur(self.image_src, 3), 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-            cv2.adaptiveThreshold(cv2.medianBlur(self.image_src, 3), 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 2)
-
+            self.image_src = cv2.GaussianBlur(self.image_src, (5, 5), 0)
+        elif 'bilateral' in filter_type:
+            self.image_src = cv2.bilateralFilter(self.image_src, 9, 75, 75)
+        elif 'median' in filter_type:
+            self.image_src = cv2.medianBlur(self.image_src, 3)
+        else:
+            raise ValueError("Unsupported filter type: Choose from 'gaussian', 'bilateral', or 'median'")
         return self
 
     def save_modified_image(self, save_path):
