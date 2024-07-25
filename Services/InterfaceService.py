@@ -172,6 +172,28 @@ class InterfaceService:
             }
             return jsonify(response)
 
+        @self.app.route('/semantic_search', methods=['POST'])
+        def semantic_search():
+            data = request.json
+            search_text = data["search_text"]
+            task_id = str(uuid.uuid4())
+            task_name = "semantic_search"
+
+            threading.Thread(target=self.process_semantic_search, args=(task_id, task_name, search_text)).start()
+
+            self.tasks[task_name] = {
+                "task_id": task_id,
+                "status": "processing",
+                "name": task_name
+            }
+
+            response = {
+                "task_id": task_id,
+                "status": "processing",
+                "name": task_name
+            }
+            return jsonify(response)
+
     # ------------------------------------------------Processing--------------------------------------------------------
     # functions to async handle the processing
     def process_spelling_correction(self, task_id, task_name, table, sel_columns, insert_column, use_ml, lang_filter, only_new):
@@ -246,4 +268,22 @@ class InterfaceService:
         self.tasks[task_name] = {"status": "success",
                                  "name": task_name,
                                  "task_id": task_id
+                                 }
+
+    def process_semantic_search(self, task_id, task_name, search_text):
+        from Services.SearchImagesService import SearchImagesService
+        search = SearchImagesService()
+        search_results = search.semantic_search(search_text)
+        subset = search_results[0]
+        second_choice_hits = search_results[1]
+
+        for key in subset:
+            subset[key] = list(subset[key])
+
+        subset["second_choice_hits"] = second_choice_hits
+
+        self.tasks[task_name] = {"status": "success",
+                                 "name": task_name,
+                                 "task_id": task_id,
+                                 "result": subset
                                  }
