@@ -59,6 +59,17 @@ class DataProcessService:
     def similar(a, b):
         return SequenceMatcher(None, a, b).ratio()
 
+    def convert_set_to_list(self, obj):
+        # rekursiv transform sets to lists
+        if isinstance(obj, dict):
+            return {key: self.convert_set_to_list(value) for key, value in obj.items()}
+        elif isinstance(obj, set):
+            return list(obj)
+        elif isinstance(obj, list):
+            return [self.convert_set_to_list(item) for item in obj]
+        else:
+            return obj
+
     @staticmethod
     def find_similar_sentences(strings_list, paths, threshold=85):
         similar_pairs = []
