@@ -1,6 +1,9 @@
+import json
 import os
 import threading
 import uuid
+from collections import OrderedDict
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
@@ -172,14 +175,14 @@ class InterfaceService:
             }
             return jsonify(response)
 
-        @self.app.route('/semantic_search', methods=['POST'])
-        def semantic_search():
+        @self.app.route('/search_algorithm', methods=['POST'])
+        def search_algorithm():
             data = request.json
             search_text = data["search_text"]
             task_id = str(uuid.uuid4())
-            task_name = "semantic_search"
+            task_name = "search_algorithm"
 
-            threading.Thread(target=self.process_semantic_search, args=(task_id, task_name, search_text)).start()
+            threading.Thread(target=self.process_search_algorithm, args=(task_id, task_name, search_text)).start()
 
             self.tasks[task_name] = {
                 "task_id": task_id,
@@ -270,20 +273,26 @@ class InterfaceService:
                                  "task_id": task_id
                                  }
 
-    def process_semantic_search(self, task_id, task_name, search_text):
+    def process_search_algorithm(self, task_id, task_name, search_text):
         from Services.SearchImagesService import SearchImagesService
+        from Services.DataProcessService import DataProcessService
         search = SearchImagesService()
-        search_results = search.semantic_search(search_text)
-        subset = search_results[0]
+        search_results = search.search_algorithm(search_text)
+        top_hits = search_results[0]
         second_choice_hits = search_results[1]
+        text_based_hits = search_results[2]
 
-        for key in subset:
-            subset[key] = list(subset[key])
+        for key in top_hits:
+            top_hits[key] = list(top_hits[key])
 
-        subset["second_choice_hits"] = second_choice_hits
+        hits = {"top_hits": top_hits,  "text_based_hits": text_based_hits, "second_choice_hits": second_choice_hits}
 
-        self.tasks[task_name] = {"status": "success",
-                                 "name": task_name,
-                                 "task_id": task_id,
-                                 "result": subset
-                                 }
+        data_processing = DataProcessService()
+        hits = data_processing.convert_set_to_list(hits)
+
+        self.tasks[task_name] = {
+            "status": "success",
+            "name": task_name,
+            "task_id": task_id,
+            "result": hits
+        }
