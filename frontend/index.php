@@ -28,10 +28,10 @@
               <button id="index_search_btn" onclick="process_search()">Suchen</button>
             </span>
           </div>
-          <div class="spinner-border" id="spinner_semantic_search" role="status" style="float: right; display:none;">
+          <div class="spinner-border" id="spinner_search_algorithm" role="status" style="float: right; display:none;">
               <span class="sr-only"></span>
             </div>
-            <div id="success_semantic_search" role="status" style="float: right;display:none;">
+            <div id="success_search_algorithm" role="status" style="float: right;display:none;">
               <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16" style="border: 1px solid #5aa940; border-radius: 22px; background-color: #b5dfb5;">
                   <path style="color: #07c507;" d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
               </svg>
