@@ -105,7 +105,7 @@ class ActionProcessor:
             directory_results.append([image_string,image_path,image_name, detected_lang_iso639_1, image_directory_name])
         return directory_results
 
-    def read_and_save_ocr(self, ocr_model, path_to_read, table, column_addition, use_translation=False, only_new_entrys=False):
+    def read_and_save_ocr(self, ocr_model, path_to_read, table, insert_column, use_translation=False, only_new_entrys=False):
         action_processor = ActionProcessor()
         # use_translation True / False determines  wether language knowledge is used for ocr or not
         image_reads = action_processor.process_directory(path_to_read, use_translation, ocr_model, only_new_entrys)
@@ -152,14 +152,14 @@ class ActionProcessor:
             if len(select_result) == 0:
                 self.database_service.insert_into_table(
                     table,
-                    [f"text_{column_addition}", "path"],
+                    [f"{insert_column}", "path"],
                     [image_info[0], image_info[1]]
                 )
 
             else:
                 self.database_service.update_table(
                     table,
-                    [f"text_{column_addition}"],
+                    [f"{insert_column}"],
                     [image_info[0]],
                     "path",
                     image_info[1]
