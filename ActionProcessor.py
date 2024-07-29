@@ -276,7 +276,7 @@ class ActionProcessor:
             machine_learning_it = MachineLearningService('italy_extracted_words_750k_uml_it.txt', '312Dim_96Batch_adam_italian_uml_2.h5')
             ml_correction_init_it = machine_learning_it.ml_word_correction_init(pre_processor.form_dataframe_german_txt, language="it")
 
-            machine_learning_fr = MachineLearningService('french_extracted_words_750k_uml_fr.txt', '312Dim_96Batch_adam_french_uml_2.h5')
+            machine_learning_fr = MachineLearningService('french_extracted_words_750k_uml_fr.txt', '312Dim_96Batch_adam_french_uml_18epochs.h5')
             ml_correction_init_fr = machine_learning_fr.ml_word_correction_init(pre_processor.form_dataframe_german_txt, language="fr")
 
         for idx, item in enumerate(cleaned_string_list):
