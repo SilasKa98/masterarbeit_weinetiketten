@@ -142,6 +142,7 @@ function run_spelling_correction(){
         }),
         success: function(response){ 
             console.log(response)
+            tasksState["spelling_correction"] = "processing"; 
             status_polling()
         }
     });
@@ -154,6 +155,7 @@ function run_update_label_detail_infos(){
         contentType: 'application/json',
         success: function(response){ 
             console.log(response)
+            tasksState["update_label_detail_infos"] = "processing";  
             status_polling()
         }
     });
@@ -182,6 +184,7 @@ function run_search_for_duplicate_entrys(){
         }),
         success: function(response){ 
             console.log(response)
+            tasksState["search_for_duplicate_entrys"] = "processing";  
             status_polling()
         }
     });
@@ -221,6 +224,7 @@ function run_read_and_save_ocr(){
         }),
         success: function(response){ 
             console.log(response)
+            tasksState["read_and_save_ocr"] = "processing";  
             status_polling()
         }
     });
@@ -246,6 +250,7 @@ function run_read_db_and_detect_lang(){
         }),
         success: function(response){ 
             console.log(response)
+            tasksState["read_db_and_detect_lang"] = "processing";   
             status_polling()
         }
     });

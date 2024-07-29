@@ -9,9 +9,8 @@ function process_search(){
         }),
         success: function(response){ 
             console.log(response)
-            const test = status_polling()
-            console.log("test")
-            console.log(test)
+            tasksState["search_algorithm"] = "processing";     
+            status_polling()
         }
     });
 }
