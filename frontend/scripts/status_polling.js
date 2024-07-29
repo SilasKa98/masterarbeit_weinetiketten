@@ -1,5 +1,9 @@
 let tasksState = {};
-
+let pollingIntervals = {};
+let pollingRates = {
+    "default": 15000, 
+    "search_algorithm": 5000 
+};
 
 function handleTask(task_name, task_status, task_result) {
     var spinner_elem = document.getElementById("spinner_" + task_name);
@@ -18,10 +22,14 @@ function handleTask(task_name, task_status, task_result) {
         }
     }
 
-    if (task_name == "search_for_duplicate_entrys") {
-        handleDuplicateEntries(task_result && task_status == "success");
-    } else if (task_name == "search_algorithm" && task_status == "success") {
-        handleSearchAlgorithm(task_result);
+    // get current fileName to determine if polling for search is needed or not
+    let path = window.location.pathname;
+    const fileName = path.substring(path.lastIndexOf('/') + 1);
+
+    if (task_name == "search_for_duplicate_entrys" && task_status == "success" && fileName == "admin_page.php") {
+        handleDuplicateEntries(task_result);
+    } else if (task_name == "search_algorithm" && task_status == "success" && fileName != "admin_page.php") {
+        handleSearchAlgorithm(task_result, task_name);
     }
 }
 
@@ -40,9 +48,12 @@ function handleDuplicateEntries(result) {
 }
 
 
-function handleSearchAlgorithm(result) {
+function handleSearchAlgorithm(result, task_name) {
     
-    if (tasksState["search_algorithm"] === "success") return;
+    if (tasksState["search_algorithm"] === "success"){
+        clearInterval(pollingIntervals[task_name]); 
+        return;
+    }
 
     const image_result_holder = document.getElementById("image_result_holder");
     if (image_result_holder) {
@@ -86,8 +97,8 @@ function handleSearchAlgorithm(result) {
 }
 
 
-function status_polling(){
-    console.log("polling !")
+function statusPolling(){
+    console.log("polling current status...")
     $.ajax({
         type: "GET",
         url: "http://127.0.0.1:5000/status",
@@ -109,12 +120,16 @@ function status_polling(){
             }
         }
     });
-    console.log()
-    if(tasksState["search_algorithm"] != "success"){
-        setTimeout(status_polling, 5000)
-    }
-    if(tasksState["search_for_duplicate_entrys"] != "success"){
-        setTimeout(status_polling, 5000)
-    }
 }
 
+
+function startPolling() {
+    const tasks = ["default", "search_algorithm"];
+    tasks.forEach(task => {
+        if (!pollingIntervals[task]) {
+            pollingIntervals[task] = setInterval(() => {
+                statusPolling();
+            }, pollingRates[task] || pollingRates["default"]); 
+        }
+    });
+}

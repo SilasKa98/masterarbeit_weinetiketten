@@ -10,7 +10,7 @@ function process_search(){
         success: function(response){ 
             console.log(response)
             tasksState["search_algorithm"] = "processing";     
-            status_polling()
+            startPolling()
         }
     });
 }
