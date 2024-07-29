@@ -1,8 +1,12 @@
 import os
+import re
 from glob import glob
 from difflib import SequenceMatcher
 from collections import Counter
-from rapidfuzz import fuzz
+
+from nltk import RegexpTokenizer
+from rapidfuzz import process, fuzz
+from nltk.tokenize import word_tokenize
 
 class DataProcessService:
 
@@ -43,17 +47,67 @@ class DataProcessService:
         return all_keywords
 
     @staticmethod
-    def find_text_intersections(text1, text2):
-        import nltk
-        from nltk.tokenize import word_tokenize
+    def find_text_intersections(text1, text2, threshold=90):
+        def filter_short_tokens(tokens, min_length=4):
+            return [token for token in tokens if len(token) >= min_length]
 
-        tokens1 = set(word_tokenize(text1.lower()))
-        tokens2 = set(word_tokenize(text2.lower()))
+        search_tokens = filter_short_tokens(word_tokenize(text1.lower()))
+        doc_tokens = filter_short_tokens(word_tokenize(text2.lower()))
 
-        intersection = tokens1.intersection(tokens2)
+        intersection = {}
+        # general matching for string tokens
+        for t in search_tokens:
+            # find best match for both texts/tokens
+            matches = process.extract(t, doc_tokens, scorer=fuzz.partial_ratio, limit=5)
+            for match in matches:
+                token_match, score, _ = match
+                if score >= threshold:
+                    if t not in intersection:
+                        intersection[t] = list(set())
+                    intersection[t].append(token_match)
 
-        if len(intersection) > 0:
-            return intersection
+        # Regex to find year spans (e.g. "1900-2000")
+        year_range_regex = r'\b(\d{4})-(\d{4})\b'
+        # search for year spans in the search_tokens
+        year_ranges = []
+        for token in search_tokens:
+            ranges = re.findall(year_range_regex, token)
+            for start, end in ranges:
+                year_ranges.append(f'{start}-{end}')
+
+        # matching for century tokens
+        for year_range in year_ranges:
+            start, end = map(int, year_range.split('-'))
+            valid_years = set()
+            year_matches = []
+            for token in doc_tokens:
+                # prio to numbers with "er" at the end --> common on wine labels for year info
+                if re.match(r'^\d{4}\s?er$', token):
+                    try:
+                        year = int(token.replace(' er', '').replace('er', ''))
+                        if start <= year <= end:
+                            year_matches.append((year, token))
+                    except ValueError:
+                        continue
+                else:
+                    try:
+                        year = int(token)
+                        if start <= year <= end:
+                            valid_years.add(year)
+                    except ValueError:
+                        continue
+            if year_matches:
+                best_match = max(year_matches, key=lambda x: x[0])
+                if year_range not in intersection:
+                    intersection[year_range] = list(set())
+                intersection[year_range].append(best_match[1])
+            elif valid_years:
+                if year_range not in intersection:
+                    intersection[year_range] = list(set())
+                for year in valid_years:
+                    intersection[year_range].append(str(year))
+
+        return intersection if intersection else None
 
     @staticmethod
     def similar(a, b):
@@ -71,7 +125,7 @@ class DataProcessService:
             return obj
 
     @staticmethod
-    def find_similar_sentences(strings_list, paths, threshold=85):
+    def find_similar_images_by_sentence(strings_list, paths, threshold=85):
         similar_pairs = []
         checked_pairs = set()
         cleaned_string_list = [result[0] for result in strings_list]

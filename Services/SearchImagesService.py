@@ -60,15 +60,15 @@ class SearchImagesService:
         nlp_de = spacy.load('de_core_news_md')
         nlp_en = spacy.load('en_core_web_md')
 
-        matcher = PhraseMatcher(nlp_de.vocab)
+        matcher = PhraseMatcher(nlp_de.vocab, attr='LOWER')
         wine_types = []
         with open("C:\\Masterarbeit_ocr_env\\dictionary_files\\wine_types.txt", "r") as file:
-            wine_types = [item.strip() for item in file]
+            wine_types = [item.strip().lower() for item in file]
 
         patterns = [nlp_de(text) for text in wine_types]
         matcher.add("WEINSORTEN", patterns)
 
-        doc_de = nlp_de(search_text)
+        doc_de = nlp_de(search_text.lower())
         matches = matcher(doc_de)
         wine_type_matches = [doc_de[start:end].text for match_id, start, end in matches]
 
@@ -91,16 +91,21 @@ class SearchImagesService:
 
         return entitie_dict
 
-    def encode_text(self, text, tokenizer, model):
+    # sub function for semantic search
+    @staticmethod
+    def encode_text(text, tokenizer, model):
         inputs = tokenizer(text, return_tensors='pt', truncation=True, padding=True, max_length=512)
         outputs = model(**inputs)
         return outputs.last_hidden_state.mean(dim=1).squeeze().detach().numpy()
 
-    def split_text(self, text, tokenizer, max_length=512):
+    # sub function for semantic search
+    @staticmethod
+    def split_text(text, tokenizer, max_length=512):
         tokens = tokenizer.tokenize(text)
         chunks = [tokens[i:i + max_length] for i in range(0, len(tokens), max_length)]
         return [tokenizer.convert_tokens_to_string(chunk) for chunk in chunks if chunk]
 
+    # sub function for semantic search
     def aggregate_text_vector(self, text, tokenizer, model):
         chunks = self.split_text(text, tokenizer)
         if not chunks:
@@ -119,6 +124,7 @@ class SearchImagesService:
                 self.cache[key] = vector
         self.save_cache()
 
+    # sub function for semantic search
     def build_annoy_index(self):
         vectors = list(self.cache.values())
         f = len(vectors[0]) if vectors else 0
@@ -164,12 +170,24 @@ class SearchImagesService:
 
     def text_based_keyword_search(self, search_text, used_ocrs=["easyocr", "tesseract", "doctr"], sub_search=False, sub_search_paths=[]):
         search_entitys = self.named_entity_recognition(search_text)
-        search_text_keywords = []
+        search_text_keywords = list(set())
         if search_entitys:
             for k, v in search_entitys.items():
                 search_text_keywords.extend(v)
         else:
             search_text_keywords = DataProcessService.create_keywords_of_scentence(search_text, "de", 4, 6, 0.9)[0].split()
+
+        # filter for years again
+        year_regex = r'\b(\d{4})\b'
+        century_regex = r'(\d{1,2})\s*\.?\s*jahrhundert'
+        found_years = re.findall(year_regex, search_text)
+        centuries = re.findall(century_regex, search_text, re.IGNORECASE)
+        for century in centuries:
+            century = int(century)
+            start_year = (century - 1) * 100 + 1
+            end_year = century * 100
+            found_years.append(f'{start_year}-{end_year}')
+        search_text_keywords.extend(found_years)
 
         print("--------------------------SEARCH TEXT KEYWORDS (SUBSEARCH)------------------------------------")
         print(search_text_keywords)
@@ -184,8 +202,7 @@ class SearchImagesService:
                     db_result = self.database_service.select_from_table(ocr, "*", condition="path = %s", params=[item], as_dict=True)
                     db_results_all.append(db_result)
 
-        print(db_results_all)
-
+        # create dictionary with all texts and the matching image path
         path_text_dict = {}
         for inner_list in db_results_all:
             for item in inner_list:
@@ -198,10 +215,12 @@ class SearchImagesService:
                         else:
                             path_text_dict[current_path] = value
 
+        # create dict with the keyword the label was found with as key and corresponding path as value
         intersection_dict = {}
         for key, text in path_text_dict.items():
             for keyword in search_text_keywords:
                 text_intersection = DataProcessService.find_text_intersections(keyword, text)
+                #print(text_intersection)
                 if text_intersection:
                     text_intersection_str = next(iter(text_intersection))
                     if text_intersection_str in intersection_dict:
