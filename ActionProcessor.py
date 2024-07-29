@@ -190,7 +190,7 @@ class ActionProcessor:
         select_result_text = self.database_service.select_from_table(search_table, search_column)
         select_result_path = self.database_service.select_from_table(search_table, 'path')
 
-        similarity_result = self.data_process_service.find_similar_sentences(select_result_text, select_result_path, 80)
+        similarity_result = self.data_process_service.find_similar_images_by_sentence(select_result_text, select_result_path, 80)
         path_dup_dict = defaultdict(list)
         ratio_dup_dict = defaultdict(list)
 
