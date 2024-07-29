@@ -267,7 +267,7 @@ class ActionProcessor:
 
         pre_processor = PreProcessor()
         if use_ml:
-            machine_learning_de = MachineLearningService('german_extracted_words_750k_uml.txt', '256Dim_96Batch_adam_german_newTrainingData_uml2.h5')
+            machine_learning_de = MachineLearningService('german_extracted_words_750k_uml.txt', '312Dim_96Batch_adam_german_uml_15epochs_moreData.h5')
             ml_correction_init_de = machine_learning_de.ml_word_correction_init(pre_processor.form_dataframe_german_txt, language="de")
 
             machine_learning_en = MachineLearningService('english_extracted_words_750k_uml_en.txt', '312Dim_96Batch_adam_english_uml.h5')
@@ -315,7 +315,7 @@ class ActionProcessor:
                                 max_iterations = 5
                                 while not spell.is_word_correct_check(modified_word)[0]:
                                     if word_lang == "de":
-                                        modified_word = machine_learning_de.ml_word_correction_exec(cleaned_word, 256 ,ml_correction_init_de[0],ml_correction_init_de[1],ml_correction_init_de[2],ml_correction_init_de[3])
+                                        modified_word = machine_learning_de.ml_word_correction_exec(cleaned_word, 312 ,ml_correction_init_de[0],ml_correction_init_de[1],ml_correction_init_de[2],ml_correction_init_de[3])
                                     elif word_lang == "fr":
                                         modified_word = machine_learning_fr.ml_word_correction_exec(cleaned_word, 312,ml_correction_init_fr[0],ml_correction_init_fr[1],ml_correction_init_fr[2],ml_correction_init_fr[3])
                                     elif word_lang == "it":

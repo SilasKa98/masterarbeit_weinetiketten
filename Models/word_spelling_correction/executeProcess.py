@@ -6,13 +6,13 @@ preprocessor = PreProcessor()
 #loaded_input_file = preprocessor.load_data('data/english_words.csv')
 #print(loaded_input_file)
 
-input_file = "data/french_extracted_words_750k_uml_fr.txt"
+input_file = "data/german_extracted_words_750k_uml.txt"
 loaded_input_file = preprocessor.form_dataframe_german_txt(input_file)
-word_cleaning_lang = "fr"
+word_cleaning_lang = "de"
 print(loaded_input_file)
 
 # german
-# all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzüöä0123456789-")
+all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzüöäß0123456789-")
 
 # english
 #all_existing_chars = list(" abcdefghijklmnopqrstuvwxyz0123456789-")
@@ -21,7 +21,7 @@ print(loaded_input_file)
 #all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzàèéìòù0123456789-")
 
 # french
-all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzàâæçèéêëîïôœùûüÿ0123456789-")
+#all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzàâæçèéêëîïôœùûüÿ0123456789-")
 
 
 string_lines = preprocessor.count_lines(loaded_input_file)
@@ -40,7 +40,7 @@ int_char_dict = char_indexing[0]
 char_int_dict = char_indexing[1]
 
 model_preparation = ModelPreparation()
-training_data = model_preparation.create_training_data(string_lines, all_existing_chars, german=False)
+training_data = model_preparation.create_training_data(string_lines, all_existing_chars, german=True)
 
 input_vals = training_data[0]
 target_vals = training_data[1]
@@ -63,6 +63,6 @@ decoder_target_data = one_hots[2]
 
 #model_preparation.create_ml_model_2(256, 2000, 256, all_existing_chars, encoder_input_data, decoder_input_data, decoder_target_data)
 
-model_preparation.create_ml_model(96, 18, 312, all_existing_chars, encoder_input_data, decoder_input_data, decoder_target_data)
+model_preparation.create_ml_model(96, 15, 312, all_existing_chars, encoder_input_data, decoder_input_data, decoder_target_data)
 
 #model_preparation.create_ml_model_with_tuning(128, 100, all_existing_chars, encoder_input_data, decoder_input_data, decoder_target_data)

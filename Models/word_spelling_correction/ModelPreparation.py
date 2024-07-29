@@ -22,7 +22,7 @@ class ModelPreparation:
         print("string_lines ", len(string_lines))
         input_vals = []
         target_vals = []
-        start_factor = 0.85
+        start_factor = 0.75
         start_point = int(len(string_lines)*start_factor)
         #start_point = 0
         repeats = 3
@@ -198,8 +198,8 @@ class ModelPreparation:
                   callbacks=[early_stopping, reduce_lr]
                   )
 
-        model.save('savedModels/312Dim_96Batch_adam_french_uml_18epochs.h5')
-        model.save('savedModels/312Dim_96Batch_adam_french_uml_18epochs.keras')
+        model.save('savedModels/312Dim_96Batch_adam_german_uml_15epochs_moreData.h5')
+        model.save('savedModels/312Dim_96Batch_adam_german_uml_15epochs_moreData.keras')
 
         encoder_model = Model(encoder_inputs, encoder_states)
 
@@ -215,8 +215,8 @@ class ModelPreparation:
             [decoder_inputs] + decoder_states_inputs,
             [decoder_outputs] + decoder_states
         )
-        encoder_model.save('savedModels/encoder_312Dim_96Batch_adam_french_uml_18epochs.h5')
-        decoder_model.save('savedModels/decoder_312Dim_96Batch_adam_french_uml_18epochs.h5')
+        encoder_model.save('savedModels/encoder_312Dim_96Batch_adam_german_uml_15epochs_moreData.h5')
+        decoder_model.save('savedModels/decoder_312Dim_96Batch_adam_german_uml_15epochs_moreData.h5')
 
     @staticmethod
     def create_ml_model_2(batch_size, epochs, latent_dim, all_existing_chars, encoder_input_data, decoder_input_data,decoder_target_data):

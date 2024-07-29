@@ -159,7 +159,7 @@ class PreProcessor:
         if lang == "en":
             input_val = re.sub(r'[^0-9a-zA-Z ]','',input_val)
         elif lang == "de":
-            input_val = re.sub(r'[^0-9a-zA-ZäöüÄÖÜ ]', '', input_val)
+            input_val = re.sub(r'[^0-9a-zA-ZäöüÄÖÜß -]', '', input_val)
         elif lang == "it":
             input_val = re.sub(r'[^0-9a-zA-ZàèéìòùÀÈÉÌÒÙ ]', '', input_val)
         elif lang == "fr":
@@ -203,10 +203,9 @@ class PreProcessor:
     @staticmethod
     def gibberish_word_generator(input_word, all_existing_chars, german=False):
 
-        num_cases = random.randint(1,3)
+        num_cases = random.randint(1,5)
         input_fanned = list(input_word)
 
-        # all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzüöä0123456789-")
         for _ in range(num_cases):
             cases = random.randint(1, 6)
             # case to add a random char to the original string

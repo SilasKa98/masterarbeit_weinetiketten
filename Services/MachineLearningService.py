@@ -18,7 +18,7 @@ class MachineLearningService:
         model_prep = ModelPreparation()
 
         if language == "de":
-            all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzüöä0123456789-")
+            all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzüöäß0123456789-")
             use_german = True
         elif language == "fr":
             all_existing_chars = list(" abcdefghijklmnopqrstuvwxyzàâæçèéêëîïôœùûüÿ0123456789-")
