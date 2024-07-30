@@ -61,7 +61,7 @@
                         <label class="form-check-label" for="read_and_save_ocr_only_new_entries">Nur nach neuen Bildern suchen</label>
                     </div>
 
-                    <a href="#" class="btn btn-success" onclick="run_read_and_save_ocr()">Weinetiketten einlesen</a>
+                    <button class="btn btn-success" onclick="run_read_and_save_ocr()">Weinetiketten einlesen</button>
                 </div>
             </div>
             <div class="card-footer text-body-secondary" id="footer_read_and_save_ocr">
@@ -133,7 +133,7 @@
 
                     <br>
 
-                    <a href="#" class="btn btn-success" onclick="run_spelling_correction()">Fehlerkorrektur ausführen</a>
+                    <button class="btn btn-success" onclick="run_spelling_correction()">Fehlerkorrektur ausführen</button>
                 </div>
             </div>
             <div class="card-footer text-body-secondary" id="footer_spelling_correction">
@@ -164,7 +164,7 @@
                     Jeder erkannte Weinetikettentext wird hierbei nach all diesen Informationen durchsucht. 
                 </p>
                 <div>
-                    <a href="#" class="btn btn-success" onclick="run_update_label_detail_infos()">Detailsuche ausführen</a>
+                    <button class="btn btn-success" onclick="run_update_label_detail_infos()">Detailsuche ausführen</button>
                 </div>
             </div>
             <div class="card-footer text-body-secondary" id="footer_update_label_detail_infos">
@@ -210,7 +210,7 @@
                         <label class="form-check-label" for="search_for_duplicate_entrys_save">Ergebnisse in Datenbank speichern</label>
                     </div>
 
-                    <a href="#" class="btn btn-success" onclick="run_search_for_duplicate_entrys()">Duplikatsuche ausführen</a>
+                    <button class="btn btn-success" onclick="run_search_for_duplicate_entrys()">Duplikatsuche ausführen</button>
                 </div>
             </div>
             <div class="card-footer text-body-secondary" id="footer_search_for_duplicate_entrys">
@@ -259,7 +259,7 @@
                         <label class="form-check-label" for="read_db_and_detect_lang_force_update">Alles erneut erkennen</label>
                     </div>
 
-                    <a href="#" class="btn btn-success" onclick="run_read_db_and_detect_lang()">Sprachen erkennen</a>
+                    <button class="btn btn-success" onclick="run_read_db_and_detect_lang()">Sprachen erkennen</button>
                 </div>
             </div>
             <div class="card-footer text-body-secondary" id="footer_read_db_and_detect_lang">
