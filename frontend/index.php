@@ -16,45 +16,45 @@
   </head>
   <body>
     <?php include_once "components/navbar.php"?>
-
-    <main>
-      <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 text-center bg-body-tertiary">
-        <div class="col-md-6 p-lg-5 mx-auto my-5">
-          <h1 class="display-3 fw-bold">Weinetiketten</h1>
-          <h3 class="fw-normal text-muted mb-3">Die intelligente Suche nach Weinetiketten</h3>
-          <div class="input-group mb-3">
-            <input type="text" class="form-control" id="search_text" placeholder="" aria-label="..." aria-describedby="basic-addon2">
-            <span class="input-group-text" id="index_search_btn_wrapper">
-              <button id="index_search_btn" onclick="process_search()">Suchen</button>
-            </span>
-          </div>
-          <div class="spinner-border" id="spinner_search_algorithm" role="status" style="float: right; display:none;">
-              <span class="sr-only"></span>
+  	<div class="content_container">
+      <main>
+        <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 text-center h-100">
+          <div class="col-md-6 p-lg-5 mx-auto my-5">
+            <h1 class="display-3 fw-bold">Weinetiketten</h1>
+            <h3 class="fw-normal text-muted mb-3">Die intelligente Suche nach Weinetiketten</h3>
+            <div class="input-group mb-3">
+              <input type="text" class="form-control" id="search_text" placeholder="" aria-label="..." aria-describedby="basic-addon2">
+              <span class="input-group-text" id="index_search_btn_wrapper">
+                <button id="index_search_btn" onclick="process_search()">Suchen</button>
+              </span>
             </div>
-            <div id="success_search_algorithm" role="status" style="float: right;display:none;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16" style="border: 1px solid #5aa940; border-radius: 22px; background-color: #b5dfb5;">
-                  <path style="color: #07c507;" d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
-              </svg>
-          </div>
-
-        </div>
-      </div>
-
-      <div class="flex-md-equal my-md-3 ps-md-3">
-        <div class="text-bg-dark me-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center">
-          <div class="my-3 py-3">
-            <h2 class="display-5">Suchergebnisse</h2>
-            <p class="lead">Foo bar</p>
-          </div>
-          <div class="mx-auto" id="image_result_holder" style="width: 80%; min-height: 300px; border-radius: 21px 21px 0 0;">
+            <div class="spinner-border" id="spinner_search_algorithm" role="status" style="float: right; display:none;">
+                <span class="sr-only"></span>
+              </div>
+              <div id="success_search_algorithm" role="status" style="float: right;display:none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16" style="border: 1px solid #5aa940; border-radius: 22px; background-color: #b5dfb5;">
+                    <path style="color: #07c507;" d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+                </svg>
+            </div>
 
           </div>
         </div>
-      </div>
-    </main>
 
-<?php include_once "components/footer.php"?>
-<script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
+        <div class="flex-md-equal my-md-3 ps-md-3" id="search_background">
+          <div class="text-bg-dark me-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center">
+            <div class="my-3 py-3">
+              <h2 class="display-5">Suchergebnisse</h2>
+            </div>
+            <div class="mx-auto" id="image_result_holder" style="width: 80%; min-height: 300px; border-radius: 21px 21px 0 0;">
 
-    </body>
+            </div>
+          </div>
+        </div>
+      </main>
+      <footer>
+        <?php include_once "components/footer.php"?>
+      </footer>
+      <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
+    </div>
+  </body>
 </html>
