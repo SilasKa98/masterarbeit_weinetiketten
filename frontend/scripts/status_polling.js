@@ -1,8 +1,8 @@
 let tasksState = {};
-let pollingIntervals = {};
+let pollingTasks = {};
 let pollingRates = {
     "default": 15000, 
-    "search_algorithm": 5000 
+    "search_algorithm": 1000 
 };
 
 function handleTask(task_name, task_status, task_result) {
@@ -51,7 +51,7 @@ function handleDuplicateEntries(result) {
 function handleSearchAlgorithm(result, task_name) {
     
     if (tasksState["search_algorithm"] === "success"){
-        clearInterval(pollingIntervals[task_name]); 
+        clearInterval(pollingTasks["search_algorithm"])
         return;
     }
 
@@ -91,6 +91,12 @@ function handleSearchAlgorithm(result, task_name) {
                 });
             }
         }
+        let search_background = document.getElementById("search_background")
+        if(!search_background.classList.contains('show')){
+            search_background.classList.toggle("show")
+        }
+        //let search_background = document.getElementById('search_background');
+        //search_background.classList.toggle('show');
     }
 
     tasksState["search_algorithm"] = "success";
@@ -124,10 +130,13 @@ function statusPolling(){
 
 
 function startPolling() {
+    console.log(pollingTasks)
     const tasks = ["default", "search_algorithm"];
     tasks.forEach(task => {
-        if (!pollingIntervals[task]) {
-            pollingIntervals[task] = setInterval(() => {
+        console.log(pollingTasks[task])
+        if (!pollingTasks[task]) {
+            console.log("rein für "+pollingTasks[task])
+            pollingTasks[task] = setInterval(() => {
                 statusPolling();
             }, pollingRates[task] || pollingRates["default"]); 
         }

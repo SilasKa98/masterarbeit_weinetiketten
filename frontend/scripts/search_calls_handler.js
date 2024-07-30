@@ -9,7 +9,8 @@ function process_search(){
         }),
         success: function(response){ 
             console.log(response)
-            tasksState["search_algorithm"] = "processing";     
+            tasksState["search_algorithm"] = "processing"
+            delete pollingTasks["search_algorithm"]
             startPolling()
         }
     });
