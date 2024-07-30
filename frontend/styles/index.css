@@ -1,5 +1,11 @@
-.container {
-  max-width: 960px;
+.content_container {
+  display: flex;
+  flex-direction: column;
+  min-height: 92vh;
+}
+
+main {
+  flex: 1;
 }
 
 .icon-link > .bi {
@@ -172,4 +178,16 @@
 .result_category_wrap{
   overflow: auto;
   margin-bottom: 50px;
+}
+
+#search_background{
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+  height: 0;
+  overflow: hidden;
+}
+
+#search_background.show {
+  opacity: 1;
+  height: auto;
 }
