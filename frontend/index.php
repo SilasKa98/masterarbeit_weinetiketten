@@ -54,7 +54,6 @@
       <footer>
         <?php include_once "components/footer.php"?>
       </footer>
-      <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
     </div>
   </body>
 </html>
