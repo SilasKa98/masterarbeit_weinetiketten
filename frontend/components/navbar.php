@@ -1,4 +1,5 @@
 <nav class="navbar navbar-expand-md bg-dark sticky-top border-bottom" data-bs-theme="dark">
+<a href="/frontend/index.php"><img src="/frontend/media/wine_logo_white.png" alt="our logo" width="125"></a>
     <div class="container">
         <div class="offcanvas-body">
             <ul class="navbar-nav flex-grow-1 justify-content-between">
