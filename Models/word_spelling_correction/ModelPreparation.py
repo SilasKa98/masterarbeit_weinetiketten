@@ -273,14 +273,14 @@ class ModelPreparation:
         input_token_index = dict([(char, i) for i, char in enumerate(char_int_dict)])
         target_token_index = dict([(char, i) for i, char in enumerate(char_int_dict)])
 
-        num_dec_tokens = len(all_existing_chars) + 2  # includes \n \t
+        num_dec_tokens = len(all_existing_chars) + 2  # adding  \n \t
 
-        encoder_inputs = model.input[0]  # input_1
-        encoder_outputs, state_h_enc, state_c_enc = model.layers[2].output  # lstm_1
+        encoder_inputs = model.input[0]
+        encoder_outputs, state_h_enc, state_c_enc = model.layers[2].output
         encoder_states = [state_h_enc, state_c_enc]
         encoder_model = tf.keras.Model(encoder_inputs, encoder_states)
 
-        decoder_inputs = model.input[1]  # input_2
+        decoder_inputs = model.input[1]
         decoder_state_input_h = tf.keras.Input(shape=(latent_dim,), name="input_3")
         decoder_state_input_c = tf.keras.Input(shape=(latent_dim,), name="input_4")
         decoder_states_inputs = [decoder_state_input_h, decoder_state_input_c]
@@ -310,17 +310,29 @@ class ModelPreparation:
         # (to simplify, here we assume a batch of size 1).
         stop_condition = False
         decoded_sentence = ""
+        temperature = 0.3
         while not stop_condition:
             output_tokens, h, c = decoder_model.predict([target_seq] + states_value)
 
             # Sample a token
             #sampled_token_index = np.argmax(output_tokens[0, -1, :])
+            # allow model to do different predictions with for the same word different seeding
+            '''
             output_tokens = output_tokens[0, -1, :]
             output_tokens = np.asarray(output_tokens).astype('float64')
             output_tokens = np.log(output_tokens + 1e-8)  # prevent log(0)
             exp_preds = np.exp(output_tokens)
             output_tokens = exp_preds / np.sum(exp_preds)
             sampled_token_index = np.random.choice(range(num_dec_tokens), p=output_tokens)
+            sampled_char = reverse_target_char_index[sampled_token_index]
+            decoded_sentence += sampled_char
+            '''
+            output_tokens = output_tokens[0, -1, :]
+            output_tokens = np.log(output_tokens + 1e-8) / temperature
+            exp_preds = np.exp(output_tokens)
+            output_tokens = exp_preds / np.sum(exp_preds)
+
+            sampled_token_index = np.random.choice(range(len(output_tokens)), p=output_tokens)
             sampled_char = reverse_target_char_index[sampled_token_index]
             decoded_sentence += sampled_char
 
