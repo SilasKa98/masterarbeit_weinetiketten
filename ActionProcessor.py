@@ -307,9 +307,21 @@ class ActionProcessor:
                 special_characters = "!@#$%^&*()+?_=,<>/"
                 if len(cleaned_word) > 1:
                     if use_ml:
-                        if len(cleaned_word) > 5 and not any(char in special_characters for char in cleaned_word) and not cleaned_word.isdigit():
-                            is_word_correct = spell.is_word_correct_check(cleaned_word)
-                            if not is_word_correct[0]:
+                        if 5 < len(cleaned_word) < 80 and not any(char in special_characters for char in cleaned_word) and not cleaned_word.isdigit():
+                            # create list with 1 and 0 for is word correct check
+                            # checking in all available dictionarys (de, en, it, fr)
+                            # if correct append 1 if not append 0
+                            is_word_correct_all_langs = []
+                            spell_dicts = [spell_de, spell_en, spell_fr, spell_it]
+                            for s_dict in spell_dicts:
+                                multi_correct_check = s_dict.is_word_correct_check(cleaned_word)
+                                if multi_correct_check[0]:
+                                    is_word_correct_all_langs.append(1)
+                                else:
+                                    is_word_correct_all_langs.append(0)
+                            # check for 1 and 0 in the list, to check if word is correct in any language
+                            # if correct, skip the word for correction
+                            if 1 not in is_word_correct_all_langs:
                                 modified_word = cleaned_word
                                 iteration_count = 0
                                 max_iterations = 5
