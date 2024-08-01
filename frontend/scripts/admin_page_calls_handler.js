@@ -100,6 +100,7 @@ function showLangFilter(e){
     }
 }
 
+
 function run_spelling_correction(){
     const spell_correction_table_select = document.getElementById("spell_correction_table_select").value
     const spell_correction_column_input_select = document.getElementById("spell_correction_column_input_select").value
@@ -147,6 +148,7 @@ function run_spelling_correction(){
         }
     });
 }
+
 
 function run_update_label_detail_infos(){
     $.ajax({

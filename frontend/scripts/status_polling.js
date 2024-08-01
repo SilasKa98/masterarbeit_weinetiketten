@@ -5,6 +5,7 @@ let pollingRates = {
     "search_algorithm": 1000 
 };
 
+
 function handleTask(task_name, task_status, task_result) {
     var spinner_elem = document.getElementById("spinner_" + task_name);
     var success_elem = document.getElementById("success_" + task_name);
@@ -32,6 +33,7 @@ function handleTask(task_name, task_status, task_result) {
         handleSearchAlgorithm(task_result, task_name);
     }
 }
+
 
 function handleDuplicateEntries(result) {
 
