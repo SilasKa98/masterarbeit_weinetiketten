@@ -28,6 +28,10 @@
                 <button id="index_search_btn" onclick="process_search()">Suchen</button>
               </span>
             </div>
+            <div class="form-check form-switch input_option_admin text-start">
+              <input class="form-check-input" type="checkbox" role="switch" id="search_logic_combined">
+              <label class="form-check-label" for="read_and_save_ocr_only_new_entries">Suchtext zusammenhängend betrachten</label>
+            </div>
             <div class="spinner-border" id="spinner_search_algorithm" role="status" style="float: right; display:none;">
                 <span class="sr-only"></span>
               </div>
