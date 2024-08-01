@@ -179,10 +179,11 @@ class InterfaceService:
         def search_algorithm():
             data = request.json
             search_text = data["search_text"]
+            search_logic_combined = data["search_logic_combined"]
             task_id = str(uuid.uuid4())
             task_name = "search_algorithm"
 
-            threading.Thread(target=self.process_search_algorithm, args=(task_id, task_name, search_text)).start()
+            threading.Thread(target=self.process_search_algorithm, args=(task_id, task_name, search_text, search_logic_combined)).start()
 
             self.tasks[task_name] = {
                 "task_id": task_id,
@@ -273,11 +274,11 @@ class InterfaceService:
                                  "task_id": task_id
                                  }
 
-    def process_search_algorithm(self, task_id, task_name, search_text):
+    def process_search_algorithm(self, task_id, task_name, search_text, search_logic_combined):
         from Services.SearchImagesService import SearchImagesService
         from Services.DataProcessService import DataProcessService
         search = SearchImagesService()
-        search_results = search.search_algorithm(search_text)
+        search_results = search.search_algorithm(search_text, search_logic_combined)
         top_hits = search_results[0]
         second_choice_hits = search_results[1]
         text_based_hits = search_results[2]
