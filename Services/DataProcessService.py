@@ -53,7 +53,8 @@ class DataProcessService:
 
         search_tokens = filter_short_tokens(word_tokenize(text1.lower()))
         doc_tokens = filter_short_tokens(word_tokenize(text2.lower()))
-
+        print("####################search tokens########################")
+        print(search_tokens)
         intersection = {}
         # general matching for string tokens
         for t in search_tokens:
@@ -106,6 +107,8 @@ class DataProcessService:
                     intersection[year_range] = list(set())
                 for year in valid_years:
                     intersection[year_range].append(str(year))
+
+        print(intersection)
 
         return intersection if intersection else None
 
