@@ -310,7 +310,7 @@ class ModelPreparation:
         # (to simplify, here we assume a batch of size 1).
         stop_condition = False
         decoded_sentence = ""
-        temperature = 0.3
+        temperature = 0.4
         while not stop_condition:
             output_tokens, h, c = decoder_model.predict([target_seq] + states_value)
 
