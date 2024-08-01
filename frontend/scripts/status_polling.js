@@ -130,12 +130,17 @@ function statusPolling(){
 
 
 function startPolling() {
-    console.log(pollingTasks)
-    const tasks = ["default", "search_algorithm"];
+    let path = window.location.pathname;
+    var tasks = [];
+    const fileName = path.substring(path.lastIndexOf('/') + 1);
+    if(fileName == "admin_page.php"){
+        tasks.push("default")
+    }else{
+        tasks.push("search_algorithm")
+    }
     tasks.forEach(task => {
         console.log(pollingTasks[task])
         if (!pollingTasks[task]) {
-            console.log("rein für "+pollingTasks[task])
             pollingTasks[task] = setInterval(() => {
                 statusPolling();
             }, pollingRates[task] || pollingRates["default"]); 
