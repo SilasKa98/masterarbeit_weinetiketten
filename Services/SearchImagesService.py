@@ -1,6 +1,9 @@
+import itertools
 import re
 import os
 import pickle
+import pprint
+
 import numpy as np
 from transformers import BertTokenizer, BertModel
 from annoy import AnnoyIndex
@@ -26,21 +29,96 @@ class SearchImagesService:
         with open(self.cache_file, 'wb') as f:
             pickle.dump(self.cache, f)
 
-    def search_algorithm(self, search_text):
+    def search_algorithm(self, search_text, search_logic_combined):
 
         entity_search_dict = self.named_entity_recognition(search_text)
         entity_search_text = " ".join(ent for ents in entity_search_dict.values() for ent in ents)
 
         query = entity_search_text.strip() or search_text
-
+        print("########################(query)##################################")
+        print(query)
         found_paths_semantic = self.semantic_search(query)
         text_based_result = self.text_based_keyword_search(search_text)
 
         print("########################(text_based_result)##################################")
-        print(text_based_result)
+        pprint.pp(text_based_result)
 
         found_paths_only = [path for path, _, _ in found_paths_semantic]
         top_hits = self.text_based_keyword_search(search_text, sub_search=True, sub_search_paths=found_paths_only)
+
+        if search_logic_combined:
+            def combined_search_result_adjustment(input_result, entity_dict):
+                '''
+                all_keys = list(input_result.keys())
+                all_paths = [input_result[key] for key in all_keys]
+
+                common_paths = all_paths[0]
+                for s in all_paths[1:]:
+                    common_paths = common_paths.intersection(s)
+
+                common_key = ' '.join(all_keys)
+                return {common_key: common_paths}
+                '''
+
+                def is_valid_combination(combo, types_dict):
+                    # Bestimme die Kategorien der Elemente in der Kombination
+                    category_count = {key: 0 for key in types_dict}
+
+                    for key, values in types_dict.items():
+                        category_count[key] = sum(1 for item in combo if item in values)
+
+                    # Überprüfe, ob irgendeine Kategorie mehr als ein Element enthält
+                    if any(count > 1 for count in category_count.values()):
+                        return False
+
+                    # Überprüfe, ob jede Kategorie mindestens ein Element in der Kombination hat
+                    return all(count > 0 for count in category_count.values())
+
+                all_values_for_comb = []
+                for res in input_result.keys():
+                    all_values_for_comb.append(res)
+
+                print("all vals for comb")
+                print(all_values_for_comb)
+
+                combinations = []
+                for r in range(2, len(all_values_for_comb) + 1):
+                    for combo in itertools.combinations(all_values_for_comb, r):
+                        print("combo:")
+                        print(combo)
+                        print(entity_dict)
+                        if is_valid_combination(combo, entity_dict):
+                            combinations.append(combo)
+
+                combination_text_based_result = {}
+                print("combinations: ")
+                print(combinations)
+                for combs in combinations:
+                    all_paths = [input_result[comb_key] for comb_key in combs]
+
+                    common_paths = all_paths[0]
+                    for s in all_paths[1:]:
+                        common_paths = common_paths.intersection(s)
+
+                    common_key = ' '.join(combs)
+                    combination_text_based_result[common_key] = common_paths
+
+                return combination_text_based_result
+
+            # doing result adjustment for normal textbased results
+            text_based_result_combinations = combined_search_result_adjustment(text_based_result, entity_search_dict)
+            print("blaaaaaaaaaaaaaaaaaaaaaaa")
+            print(text_based_result_combinations)
+            if text_based_result_combinations:
+                text_based_result = text_based_result_combinations
+
+            # doing result adjustments for top hits
+            top_hits_combinations = combined_search_result_adjustment(top_hits, entity_search_dict)
+            if top_hits_combinations:
+                top_hits = top_hits_combinations
+
+            print("---------------------------new text based result------------------------------------------------")
+            pprint.pp(text_based_result)
 
         sub_search_values_list = list(set())
         for value_set in top_hits.values():
@@ -79,6 +157,15 @@ class SearchImagesService:
         dates_from_regex = date_pattern.findall(search_text)
         found_dates.extend(dates_from_regex)
         found_dates = list(set(found_dates))
+
+        # search for centuries
+        century_regex = r'(\d{1,2})\s*\.?\s*jahrhundert'
+        centuries = re.findall(century_regex, search_text, re.IGNORECASE)
+        for century in centuries:
+            century = int(century)
+            start_year = (century - 1) * 100 + 1
+            end_year = century * 100
+            found_dates.append(f'{start_year}-{end_year}')
 
         entitie_dict = {"wine_types": wine_type_matches}
         for ent in doc_de.ents:
@@ -142,8 +229,6 @@ class SearchImagesService:
                                                         }):
         tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         model = BertModel.from_pretrained('bert-base-uncased')
-        self.tokenizer = tokenizer
-        self.model = model
 
         db_results_all = []
         for ocr_model, columns in used_ocrs.items():
@@ -178,6 +263,7 @@ class SearchImagesService:
             search_text_keywords = DataProcessService.create_keywords_of_scentence(search_text, "de", 4, 6, 0.9)[0].split()
 
         # filter for years again
+        '''
         year_regex = r'\b(\d{4})\b'
         century_regex = r'(\d{1,2})\s*\.?\s*jahrhundert'
         found_years = re.findall(year_regex, search_text)
@@ -188,6 +274,7 @@ class SearchImagesService:
             end_year = century * 100
             found_years.append(f'{start_year}-{end_year}')
         search_text_keywords.extend(found_years)
+        '''
 
         print("--------------------------SEARCH TEXT KEYWORDS (SUBSEARCH)------------------------------------")
         print(search_text_keywords)
