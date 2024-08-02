@@ -1,0 +1,102 @@
+Chardonnay
+Sauvignon Blanc
+Sauvignon-Blanc
+Riesling
+Pinot Grigio
+Pinot-Grigio
+Gewürztraminer
+Chenin Blanc
+Chenin-Blanc
+Semillon
+Muscat
+Grüner Veltliner
+Grüner-Veltliner
+Viognier
+Albarino
+Verdicchio
+Soave
+Trebbiano
+Roussanne
+Fiano
+Vermentino
+Marsanne
+Torrontes
+Petit Manseng
+Petit-Manseng
+Semillon
+Müller Thurgau
+Müller-Thurgau
+Arneis
+Assyrtiko
+Muscadet
+Gavi
+Pedro Ximenez
+Pedro-Ximenez
+Xarel lo
+Xarel-lo
+Gros Manseng
+Gros-Manseng
+Picpoul
+Cava
+Brut
+Cabernet Sauvignon
+Cabernet-Sauvignon
+Merlot
+Pinot Noir
+Pinot-Noir
+Syrah
+Shiraz
+Zinfandel
+Malbec
+Tempranillo
+Sangiovese
+Grenache
+Nebbiolo
+Barbera
+Montepulciano
+Mourvedre
+Carmenere
+Chianti
+Cabernet Franc
+Cabernet-Franc
+Petit Verdot
+Petit-Verdot
+Tannat
+Dolcetto
+Primitivo
+Aglianico
+Touriga Nacional
+Touriga-Nacional
+Zweigelt
+Blaufränkisch
+Gamay
+Valpolicella
+Lagrein
+Nero d'Avola
+Carignan
+Pomerol
+Saint Emilion
+Saint-Emilion
+Rioja
+Barolo
+Barbaresco
+Grenache Rose
+Sangiovese Rose
+Pinot Noir Rose
+Syrah Rose
+Tempranillo Rose
+Zinfandel Rose
+Mourvedre Rose
+Cabernet Sauvignon Rose
+Merlot Rose
+Cinsault Rose
+Gamay Rose
+Nebbiolo Rose
+Malbec Rose
+Pinot Gris Rose
+Pinot-Gris Rose
+Grenache-Syrah Rose
+Grenache Syrah Rose
+Provence Rose
+Tavel
+Clairet
