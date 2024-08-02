@@ -45,75 +45,16 @@ class SearchImagesService:
 
         found_paths_only = [path for path, _, _ in found_paths_semantic]
         top_hits = self.text_based_keyword_search(search_text, sub_search=True, sub_search_paths=found_paths_only)
-
+        print("entity_search_dict")
+        print(entity_search_dict)
         if search_logic_combined:
-            def combined_search_result_adjustment(input_result, entity_dict):
-                '''
-                all_keys = list(input_result.keys())
-                all_paths = [input_result[key] for key in all_keys]
-
-                common_paths = all_paths[0]
-                for s in all_paths[1:]:
-                    common_paths = common_paths.intersection(s)
-
-                common_key = ' '.join(all_keys)
-                return {common_key: common_paths}
-                '''
-
-                def is_valid_combination(combo, types_dict):
-                    # Bestimme die Kategorien der Elemente in der Kombination
-                    category_count = {key: 0 for key in types_dict}
-
-                    for key, values in types_dict.items():
-                        category_count[key] = sum(1 for item in combo if item in values)
-
-                    # Überprüfe, ob irgendeine Kategorie mehr als ein Element enthält
-                    if any(count > 1 for count in category_count.values()):
-                        return False
-
-                    # Überprüfe, ob jede Kategorie mindestens ein Element in der Kombination hat
-                    return all(count > 0 for count in category_count.values())
-
-                all_values_for_comb = []
-                for res in input_result.keys():
-                    all_values_for_comb.append(res)
-
-                print("all vals for comb")
-                print(all_values_for_comb)
-
-                combinations = []
-                for r in range(2, len(all_values_for_comb) + 1):
-                    for combo in itertools.combinations(all_values_for_comb, r):
-                        print("combo:")
-                        print(combo)
-                        print(entity_dict)
-                        if is_valid_combination(combo, entity_dict):
-                            combinations.append(combo)
-
-                combination_text_based_result = {}
-                print("combinations: ")
-                print(combinations)
-                for combs in combinations:
-                    all_paths = [input_result[comb_key] for comb_key in combs]
-
-                    common_paths = all_paths[0]
-                    for s in all_paths[1:]:
-                        common_paths = common_paths.intersection(s)
-
-                    common_key = ' '.join(combs)
-                    combination_text_based_result[common_key] = common_paths
-
-                return combination_text_based_result
-
             # doing result adjustment for normal textbased results
-            text_based_result_combinations = combined_search_result_adjustment(text_based_result, entity_search_dict)
-            print("blaaaaaaaaaaaaaaaaaaaaaaa")
-            print(text_based_result_combinations)
+            text_based_result_combinations = self.combined_search_result_adjustment(text_based_result, entity_search_dict)
             if text_based_result_combinations:
                 text_based_result = text_based_result_combinations
 
             # doing result adjustments for top hits
-            top_hits_combinations = combined_search_result_adjustment(top_hits, entity_search_dict)
+            top_hits_combinations = self.combined_search_result_adjustment(top_hits, entity_search_dict)
             if top_hits_combinations:
                 top_hits = top_hits_combinations
 
@@ -134,22 +75,87 @@ class SearchImagesService:
         return top_hits, second_choice_hits, text_based_result
 
     @staticmethod
+    def combined_search_result_adjustment(input_result, entity_dict):
+
+        def is_valid_combination(inner_comb, types_dict):
+            # get categories with 0 as placeholder value
+            category_count = {key: 0 for key in types_dict}
+
+            # now actually count for existing values
+            for c_key, values in types_dict.items():
+                category_count[c_key] = sum(1 for item in inner_comb if item in values)
+
+            print("category_count")
+            print(category_count)
+            # check if there are multiple values for one category for this combination
+            if any(count > 1 for count in category_count.values()):
+                print("return false")
+                return False
+
+            # check if every category has one elem in the current combination
+            # so no incomplete combinations are made
+            if not all(count > 0 for count in category_count.values()):
+                return False
+
+            return True
+
+        all_values_for_comb = []
+        for res in input_result.keys():
+            all_values_for_comb.append(res)
+
+        print("all vals for comb")
+        print(all_values_for_comb)
+
+        combinations = []
+        for r in range(2, len(all_values_for_comb) + 1):
+            for combo in itertools.combinations(all_values_for_comb, r):
+                print("combo:")
+                print(combo)
+                print(entity_dict)
+                print(is_valid_combination(combo, entity_dict))
+                if is_valid_combination(combo, entity_dict):
+                    combinations.append(combo)
+
+        combination_text_based_result = {}
+        print("combinations: ")
+        print(combinations)
+        for combs in combinations:
+            all_paths = [input_result[comb_key] for comb_key in combs]
+            common_paths = all_paths[0]
+            for s in all_paths[1:]:
+                common_paths = common_paths.intersection(s)
+            common_key = ' '.join(combs)
+            combination_text_based_result[common_key] = common_paths
+
+        return combination_text_based_result
+
+    @staticmethod
     def named_entity_recognition(search_text):
         nlp_de = spacy.load('de_core_news_md')
         nlp_en = spacy.load('en_core_web_md')
 
-        matcher = PhraseMatcher(nlp_de.vocab, attr='LOWER')
-        wine_types = []
-        with open("C:\\Masterarbeit_ocr_env\\dictionary_files\\wine_types.txt", "r") as file:
-            wine_types = [item.strip().lower() for item in file]
+        def create_matcher_for_additional_entities(filename, matcher_name):
+            matcher = PhraseMatcher(nlp_de.vocab, attr='LOWER')
+            with open(f"C:\\Masterarbeit_ocr_env\\dictionary_files\\{filename}.txt", "r", encoding="utf-8") as file:
+                new_data = [item.strip().lower() for item in file]
+            patterns = [nlp_de(text) for text in new_data]
+            matcher.add(matcher_name, patterns)
+            return matcher
 
-        patterns = [nlp_de(text) for text in wine_types]
-        matcher.add("WEINSORTEN", patterns)
+        matcher_names = create_matcher_for_additional_entities("wine_names", "WINENAMES")
+        matcher_types = create_matcher_for_additional_entities("wine_types", "WINETYPES")
 
-        doc_de = nlp_de(search_text.lower())
-        matches = matcher(doc_de)
-        wine_type_matches = [doc_de[start:end].text for match_id, start, end in matches]
+        non_accent_search_text = DataProcessService.remove_accent_chars(search_text)
 
+        doc_de = nlp_de(non_accent_search_text.lower())
+        matches_names = matcher_names(doc_de)
+        matches_types = matcher_types(doc_de)
+        wine_name_matches = [doc_de[start:end].text for match_id, start, end in matches_names]
+        # if statement ignores all values that are already present in wine_name_matches
+        # -> this shouldn`t be necessary, however its to make sure that no double entries are generated
+        wine_type_matches = [doc_de[start:end].text for match_id, start, end in matches_types if doc_de[start:end].text not in wine_name_matches]
+
+        # en model is used for date recognition
         doc_en = nlp_en(search_text)
         found_dates = [ent.text for ent in doc_en.ents if ent.label_ == "DATE"]
 
@@ -167,16 +173,26 @@ class SearchImagesService:
             end_year = century * 100
             found_dates.append(f'{start_year}-{end_year}')
 
-        entitie_dict = {"wine_types": wine_type_matches}
+        entities_dict = {}
+        if wine_name_matches:
+            entities_dict["wine_names"] = wine_name_matches
+        if wine_type_matches:
+            entities_dict["wine_types"] = wine_type_matches
         for ent in doc_de.ents:
             if ent.label_ in ["LOC", "GPE"]:
-                if "loc" not in entitie_dict:
-                    entitie_dict["loc"] = []
-                entitie_dict["loc"].append(ent.text)
+                if "loc" not in entities_dict:
+                    entities_dict["loc"] = []
+                # ignore possible found location if its already found as wine_name
+                # eg. chardonnay. Otherwise there will be problems later
+                if "wine_names" in entities_dict:
+                    if ent.text not in entities_dict["wine_names"]:
+                        entities_dict["loc"].append(ent.text)
+                else:
+                    entities_dict["loc"].append(ent.text)
         if found_dates:
-            entitie_dict["date"] = found_dates
+            entities_dict["date"] = found_dates
 
-        return entitie_dict
+        return entities_dict
 
     # sub function for semantic search
     @staticmethod
@@ -230,6 +246,8 @@ class SearchImagesService:
         tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         model = BertModel.from_pretrained('bert-base-uncased')
 
+        print("--------------semantic search text:------------")
+        print(search_text)
         db_results_all = []
         for ocr_model, columns in used_ocrs.items():
             for column in columns:
@@ -248,7 +266,7 @@ class SearchImagesService:
         indices = t.get_nns_by_vector(query_vector, 50)
         print(indices)
 
-        found_paths = [list(self.cache.keys())[i] for i in indices]
+        found_paths = [list(set(self.cache.keys()))[i] for i in indices]
         print(found_paths)
 
         return found_paths
@@ -261,20 +279,6 @@ class SearchImagesService:
                 search_text_keywords.extend(v)
         else:
             search_text_keywords = DataProcessService.create_keywords_of_scentence(search_text, "de", 4, 6, 0.9)[0].split()
-
-        # filter for years again
-        '''
-        year_regex = r'\b(\d{4})\b'
-        century_regex = r'(\d{1,2})\s*\.?\s*jahrhundert'
-        found_years = re.findall(year_regex, search_text)
-        centuries = re.findall(century_regex, search_text, re.IGNORECASE)
-        for century in centuries:
-            century = int(century)
-            start_year = (century - 1) * 100 + 1
-            end_year = century * 100
-            found_years.append(f'{start_year}-{end_year}')
-        search_text_keywords.extend(found_years)
-        '''
 
         print("--------------------------SEARCH TEXT KEYWORDS (SUBSEARCH)------------------------------------")
         print(search_text_keywords)

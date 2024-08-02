@@ -1,3 +1,4 @@
+import math
 import os
 import re
 from glob import glob
@@ -49,12 +50,25 @@ class DataProcessService:
     @staticmethod
     def find_text_intersections(text1, text2, threshold=90):
         def filter_short_tokens(tokens, min_length=4):
-            return [token for token in tokens if len(token) >= min_length]
+            return [token for token in tokens if len(token) >= max(math.ceil(len(token)*0.6), min_length)]
 
-        search_tokens = filter_short_tokens(word_tokenize(text1.lower()))
+        # load blacklisted words (e.g. wein)
+        with open(f"C:\\Masterarbeit_ocr_env\\dictionary_files\\blacklisted_words.txt", "r", encoding="utf-8") as file:
+            blacklisted_words = [item.strip().lower() for item in file]
+
+        with open(f"C:\\Masterarbeit_ocr_env\\dictionary_files\\wine_names.txt", "r", encoding="utf-8") as file:
+            wine_names = [item.strip().lower() for item in file]
+        with open(f"C:\\Masterarbeit_ocr_env\\dictionary_files\\wine_types.txt", "r", encoding="utf-8") as file:
+            wine_types = [item.strip().lower() for item in file]
+
+        if text1.strip() in wine_names or text1.strip() in wine_types:
+            search_tokens = [text1.lower()]
+        else:
+            search_tokens = filter_short_tokens(word_tokenize(text1.lower()))
+
         doc_tokens = filter_short_tokens(word_tokenize(text2.lower()))
-        print("####################search tokens########################")
-        print(search_tokens)
+        #print("####################search tokens########################")
+        #print(search_tokens)
         intersection = {}
         # general matching for string tokens
         for t in search_tokens:
@@ -63,9 +77,12 @@ class DataProcessService:
             for match in matches:
                 token_match, score, _ = match
                 if score >= threshold:
-                    if t not in intersection:
-                        intersection[t] = list(set())
-                    intersection[t].append(token_match)
+                    # if the token_match (the word) the image is found with is in the blacklist
+                    # don't insert, so its not a hit/match. Example for this case is the word "wein"
+                    if token_match.lower() not in blacklisted_words:
+                        if t not in intersection:
+                            intersection[t] = list(set())
+                        intersection[t].append(token_match)
 
         # Regex to find year spans (e.g. "1900-2000")
         year_range_regex = r'\b(\d{4})-(\d{4})\b'
@@ -108,7 +125,8 @@ class DataProcessService:
                 for year in valid_years:
                     intersection[year_range].append(str(year))
 
-        print(intersection)
+        if intersection:
+            print(intersection)
 
         return intersection if intersection else None
 
@@ -144,6 +162,21 @@ class DataProcessService:
                             checked_pairs.add((i, j))
 
         return similar_pairs
+
+    @staticmethod
+    def remove_accent_chars(input_word):
+        accents = {
+            'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e',
+            'á': 'a', 'à': 'a', 'â': 'a',
+            'í': 'i', 'ì': 'i', 'î': 'i', 'ï': 'i',
+            'ó': 'o', 'ò': 'o', 'ô': 'o',
+            'ú': 'u', 'ù': 'u', 'û': 'u',
+            'ç': 'c', 'ñ': 'n'
+        }
+        for accented_char, normal_char in accents.items():
+            input_word = input_word.replace(accented_char, normal_char)
+
+        return input_word
 
     @staticmethod
     def create_txt_from_wikimedia(file_path, output_file, max_words, language="de"):
