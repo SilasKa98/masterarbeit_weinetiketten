@@ -70,7 +70,7 @@ function handleSearchAlgorithm(result, task_name) {
                 sortedResponse[newKey] = result[oldKey];
             }
         });
-
+        console.log(sortedResponse)
         image_result_holder.innerHTML = "";
         for (const [category, item] of Object.entries(sortedResponse)) {
             const newDiv = document.createElement("div");
