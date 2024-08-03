@@ -3,37 +3,37 @@ import re
 import pycountry
 from Services.DatabaseService import DatabaseService
 from collections import Counter
+from collections import defaultdict
 from countryinfo import CountryInfo
 
 
 class DetailFinderService:
 
-    def __init__(self):
+    def __init__(self, init_path_text_dict=True):
         self.database_service = DatabaseService()
-        self.country_provinces_dict = self.get_provinces()
-        self.country_info_dict = self.get_all_countries_with_infos()
-        self.path_text_dict = self.fetch_all_texts()
+        if init_path_text_dict:
+            self.country_provinces_dict = self.get_provinces()
+            self.country_info_dict = self.get_all_countries_with_infos()
+            self.path_text_dict = self.fetch_all_texts()
+        else:
+            self.country_provinces_dict = None
+            self.country_info_dict = None
+            self.path_text_dict = None
 
     def fetch_all_texts(self, used_ocrs=["doctr", "easyocr", "tesseract"]):
 
         db_results_all = []
         for ocr in used_ocrs:
             db_result = self.database_service.select_from_table(ocr, "*", as_dict=True)
-            db_results_all.append(db_result)
+            db_results_all.extend(db_result)  # direkt in eine Liste einfügen
 
-        path_text_dict = {}
-        for inner_list in db_results_all:
-            for item in inner_list:
-                for key, value in item.items():
-                    if key == "path":
-                        current_path = value
-                    else:
-                        if current_path in path_text_dict:
-                            path_text_dict[current_path] = path_text_dict[current_path] + " " + value
-                        else:
-                            path_text_dict[current_path] = value
+        path_text_dict = defaultdict(str)
+        for item in db_results_all:
+            current_path = item.pop("path", None)
+            if current_path:
+                path_text_dict[current_path] += " " + " ".join(item.values())
 
-        return path_text_dict
+        return dict(path_text_dict)
 
     def find_anno(self, path):
         text = self.path_text_dict[path]
