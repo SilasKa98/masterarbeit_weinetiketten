@@ -11,23 +11,43 @@ import spacy
 from spacy.matcher import PhraseMatcher
 from Services.DatabaseService import DatabaseService
 from Services.DataProcessService import DataProcessService
+from Services.DetailFinderService import DetailFinderService
 
 class SearchImagesService:
 
-    def __init__(self, cache_file='vector_cache.pkl'):
+    def __init__(self, semantic_vector_cache_file='vector_cache.pkl', country_cache_file="country_cache.pkl"):
         self.database_service = DatabaseService()
-        self.cache_file = cache_file
-        self.cache = self.load_cache()
+        self.semantic_vector_cache_file = semantic_vector_cache_file
+        self.country_cache_file = country_cache_file
+        self.semantic_vector_cache = self.load_cache(self.semantic_vector_cache_file)
+        self.country_list_cache = self.load_cache(self.country_cache_file)
 
-    def load_cache(self):
-        if os.path.exists(self.cache_file):
-            with open(self.cache_file, 'rb') as f:
+    @staticmethod
+    def load_cache(cache_file):
+        if os.path.exists(cache_file):
+            with open(cache_file, 'rb') as f:
                 return pickle.load(f)
         return {}
 
-    def save_cache(self):
-        with open(self.cache_file, 'wb') as f:
-            pickle.dump(self.cache, f)
+    @staticmethod
+    def save_cache(cache_file, cache_data):
+        with open(cache_file, 'wb') as f:
+            pickle.dump(cache_data, f)
+
+    def update_cache_semantic_search(self, db_results, tokenizer, model):
+        for result in db_results:
+            key = (result['path'], result['ocr_model'], result['column'])
+            text = result['text']
+            if key not in self.semantic_vector_cache:
+                vector = self.aggregate_text_vector(text, tokenizer, model)
+                self.semantic_vector_cache[key] = vector
+        self.save_cache(self.semantic_vector_cache_file, self.semantic_vector_cache)
+
+    def update_cache_details_label_search(self):
+        if self.country_list_cache == {}:
+            details = DetailFinderService(init_path_text_dict=False)
+            self.country_list_cache = details.get_all_countries_with_infos()
+            self.save_cache(self.country_cache_file, self.country_list_cache)
 
     def search_algorithm(self, search_text, search_logic_combined):
 
@@ -39,6 +59,11 @@ class SearchImagesService:
         print(query)
         found_paths_semantic = self.semantic_search(query)
         text_based_result = self.text_based_keyword_search(search_text)
+        label_details_result = self.search_with_db_label_details(entity_search_dict)
+        # WIP check for double entries here, so no labels are redundant in this dict
+        text_based_result = text_based_result | label_details_result
+        print("label_details_result")
+        print(label_details_result)
 
         print("########################(text_based_result)##################################")
         pprint.pp(text_based_result)
@@ -48,12 +73,12 @@ class SearchImagesService:
         print("entity_search_dict")
         print(entity_search_dict)
         if search_logic_combined:
-            # doing result adjustment for normal textbased results
+            # doing result adjustment for normal textbased results if combined box is checked
             text_based_result_combinations = self.combined_search_result_adjustment(text_based_result, entity_search_dict)
             if text_based_result_combinations:
                 text_based_result = text_based_result_combinations
 
-            # doing result adjustments for top hits
+            # doing result adjustments for top hits if combined box is checked
             top_hits_combinations = self.combined_search_result_adjustment(top_hits, entity_search_dict)
             if top_hits_combinations:
                 top_hits = top_hits_combinations
@@ -218,22 +243,13 @@ class SearchImagesService:
             return np.zeros(model.config.hidden_size)
         return np.mean(vectors, axis=0)
 
-    def update_cache(self, db_results):
-        for result in db_results:
-            key = (result['path'], result['ocr_model'], result['column'])
-            text = result['text']
-            if key not in self.cache:
-                vector = self.aggregate_text_vector(text, self.tokenizer, self.model)
-                self.cache[key] = vector
-        self.save_cache()
-
     # sub function for semantic search
     def build_annoy_index(self):
-        vectors = list(self.cache.values())
+        vectors = list(self.semantic_vector_cache.values())
         f = len(vectors[0]) if vectors else 0
         t = AnnoyIndex(f, 'angular')
 
-        for i, (key, vector) in enumerate(self.cache.items()):
+        for i, (key, vector) in enumerate(self.semantic_vector_cache.items()):
             t.add_item(i, vector)
 
         t.build(10)
@@ -257,7 +273,7 @@ class SearchImagesService:
                     res['column'] = column
                 db_results_all.extend(db_result)
 
-        self.update_cache(db_results_all)
+        self.update_cache_semantic_search(db_results_all, tokenizer, model)
 
         t = self.build_annoy_index()
 
@@ -266,7 +282,7 @@ class SearchImagesService:
         indices = t.get_nns_by_vector(query_vector, 50)
         print(indices)
 
-        found_paths = [list(set(self.cache.keys()))[i] for i in indices]
+        found_paths = [list(set(self.semantic_vector_cache.keys()))[i] for i in indices]
         print(found_paths)
 
         return found_paths
@@ -320,3 +336,45 @@ class SearchImagesService:
                         intersection_dict[text_intersection_str] = {key}
 
         return intersection_dict
+
+    def search_with_db_label_details(self, search_entity_dict):
+        self.update_cache_details_label_search()
+
+        db_details_result = self.database_service.select_from_table("etiketten_infos", "path, country, provinces, anno, vol", as_dict=True)
+        entity_list = list()
+
+        for key, item in search_entity_dict.items():
+            for item_text in item:
+                entity_list.append(item_text)
+
+        country_entity_relation_list = list(set())
+        for value in self.country_list_cache.values():
+            print(entity_list)
+            print(value)
+            #if bool(set(entity_list) & set(item)):
+            if any(i.lower() in (s.lower() for s in entity_list) for i in value):
+                print("self.country_list_cache key and item")
+                print(value)
+                country_entity_relation_list.extend(value)
+
+        detail_search_findings = {}
+        for elem in db_details_result:
+            for key, item in elem.items():
+                if key in {"anno", "vol"} and str(item) in entity_list:
+                    if str(item) in detail_search_findings:
+                        detail_search_findings[str(item)].add(elem["path"])
+                    else:
+                        detail_search_findings[str(item)] = {elem["path"]}
+
+                if key in {"country", "provinces"} and str(item) in country_entity_relation_list:
+                    if str(item) in detail_search_findings:
+                        detail_search_findings[str(item)].add(elem["path"])
+                    else:
+                        detail_search_findings[str(item)] = {elem["path"]}
+
+        return detail_search_findings
+
+
+
+
+
