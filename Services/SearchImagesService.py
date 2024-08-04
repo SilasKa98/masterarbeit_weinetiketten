@@ -15,12 +15,18 @@ from Services.DetailFinderService import DetailFinderService
 
 class SearchImagesService:
 
-    def __init__(self, semantic_vector_cache_file='vector_cache.pkl', country_cache_file="country_cache.pkl"):
+    def __init__(self, semantic_vector_cache_file='vector_cache.pkl', country_cache_file="country_cache.pkl", province_cache_file="province_cache.pkl"):
         self.database_service = DatabaseService()
+
         self.semantic_vector_cache_file = semantic_vector_cache_file
         self.country_cache_file = country_cache_file
+        self.province_cache_file = province_cache_file
+
         self.semantic_vector_cache = self.load_cache(self.semantic_vector_cache_file)
         self.country_list_cache = self.load_cache(self.country_cache_file)
+        self.province_list_cache = self.load_cache(self.province_cache_file)
+        self.additional_country_infos = []
+        self.entity_search_dict_with_adds = {}
 
     @staticmethod
     def load_cache(cache_file):
@@ -44,10 +50,13 @@ class SearchImagesService:
         self.save_cache(self.semantic_vector_cache_file, self.semantic_vector_cache)
 
     def update_cache_details_label_search(self):
-        if self.country_list_cache == {}:
+        if self.country_list_cache == {} or self.province_list_cache == {}:
             details = DetailFinderService(init_path_text_dict=False)
             self.country_list_cache = details.get_all_countries_with_infos()
             self.save_cache(self.country_cache_file, self.country_list_cache)
+
+            self.province_list_cache = details.get_provinces()
+            self.save_cache(self.province_cache_file, self.province_list_cache)
 
     def search_algorithm(self, search_text, search_logic_combined):
 
@@ -58,10 +67,19 @@ class SearchImagesService:
         print("########################(query)##################################")
         print(query)
         found_paths_semantic = self.semantic_search(query)
-        text_based_result = self.text_based_keyword_search(search_text)
         label_details_result = self.search_with_db_label_details(entity_search_dict)
+        text_based_result = self.text_based_keyword_search(search_text)
         # WIP check for double entries here, so no labels are redundant in this dict
-        text_based_result = text_based_result | label_details_result
+        text_based_x_label_details = {}
+        for key in set(text_based_result.keys()).union(label_details_result.keys()):
+            if key in text_based_result and key in label_details_result:
+                text_based_x_label_details[key] = text_based_result[key].union(label_details_result[key])
+            elif key in text_based_result:
+                text_based_x_label_details[key] = text_based_result[key]
+            elif key in label_details_result:
+                text_based_x_label_details[key] = label_details_result[key]
+
+        text_based_result = text_based_x_label_details
         print("label_details_result")
         print(label_details_result)
 
@@ -74,12 +92,12 @@ class SearchImagesService:
         print(entity_search_dict)
         if search_logic_combined:
             # doing result adjustment for normal textbased results if combined box is checked
-            text_based_result_combinations = self.combined_search_result_adjustment(text_based_result, entity_search_dict)
+            text_based_result_combinations = self.combined_search_result_adjustment(text_based_result, self.entity_search_dict_with_adds)
             if text_based_result_combinations:
                 text_based_result = text_based_result_combinations
 
             # doing result adjustments for top hits if combined box is checked
-            top_hits_combinations = self.combined_search_result_adjustment(top_hits, entity_search_dict)
+            top_hits_combinations = self.combined_search_result_adjustment(top_hits, self.entity_search_dict_with_adds)
             if top_hits_combinations:
                 top_hits = top_hits_combinations
 
@@ -288,6 +306,9 @@ class SearchImagesService:
         return found_paths
 
     def text_based_keyword_search(self, search_text, used_ocrs=["easyocr", "tesseract", "doctr"], sub_search=False, sub_search_paths=[]):
+        if len(self.additional_country_infos) > 0:
+            additional_country_infos_str = " ".join(self.additional_country_infos)
+            search_text = search_text+" "+additional_country_infos_str
         search_entitys = self.named_entity_recognition(search_text)
         search_text_keywords = list(set())
         if search_entitys:
@@ -347,16 +368,38 @@ class SearchImagesService:
             for item_text in item:
                 entity_list.append(item_text)
 
+        # check if the search_entity aka search text has common words with the countries dict
         country_entity_relation_list = list(set())
-        for value in self.country_list_cache.values():
+        for key, value in self.country_list_cache.items():
             print(entity_list)
             print(value)
             #if bool(set(entity_list) & set(item)):
             if any(i.lower() in (s.lower() for s in entity_list) for i in value):
-                print("self.country_list_cache key and item")
-                print(value)
+                # country a province/country name was found for
+                found_country_key = key
                 country_entity_relation_list.extend(value)
+        country_entity_relation_list = [item.lower() for item in country_entity_relation_list]
 
+        if len(country_entity_relation_list) > 0:
+            found_provinces_list = [item.lower() for item in self.province_list_cache[found_country_key]]
+
+            # check if searchentitys/searchwords are provinces. If so, remove the found provinces from the provinces -
+            # list now the provinces list can be used to remove the remaining provinces from the country_entity_relation_list
+            # with this logic, its only searched for the specific province and not for other provinces,
+            # which arent desired to be shown
+            found_provinces_intersection = set(found_provinces_list).intersection(entity_list)
+            print("found_provinces_intersection")
+            print(found_provinces_intersection)
+            if len(found_provinces_intersection) > 0:
+                found_provinces_list = [element for element in found_provinces_list if element not in found_provinces_intersection]
+                country_entity_relation_list = [element for element in country_entity_relation_list if element not in found_provinces_list]
+
+            self.additional_country_infos = country_entity_relation_list
+            search_entity_dict["loc"].extend(country_entity_relation_list)
+            self.entity_search_dict_with_adds = search_entity_dict
+
+        print("country_entity_relation_list")
+        print(country_entity_relation_list)
         detail_search_findings = {}
         for elem in db_details_result:
             for key, item in elem.items():
@@ -365,12 +408,11 @@ class SearchImagesService:
                         detail_search_findings[str(item)].add(elem["path"])
                     else:
                         detail_search_findings[str(item)] = {elem["path"]}
-
-                if key in {"country", "provinces"} and str(item) in country_entity_relation_list:
-                    if str(item) in detail_search_findings:
-                        detail_search_findings[str(item)].add(elem["path"])
+                if key in {"country", "provinces"} and str(item.lower()) in country_entity_relation_list:
+                    if str(item.lower()) in detail_search_findings:
+                        detail_search_findings[str(item.lower())].add(elem["path"])
                     else:
-                        detail_search_findings[str(item)] = {elem["path"]}
+                        detail_search_findings[str(item.lower())] = {elem["path"]}
 
         return detail_search_findings
 
