@@ -27,6 +27,8 @@ class SearchImagesService:
         self.province_list_cache = self.load_cache(self.province_cache_file)
         self.additional_country_infos = []
         self.entity_search_dict_with_adds = {}
+        self.search_for_province = False
+        self.search_for_country = False
 
     @staticmethod
     def load_cache(cache_file):
@@ -79,6 +81,9 @@ class SearchImagesService:
             elif key in label_details_result:
                 text_based_x_label_details[key] = label_details_result[key]
 
+
+
+
         text_based_result = text_based_x_label_details
         print("label_details_result")
         print(label_details_result)
@@ -98,6 +103,8 @@ class SearchImagesService:
 
             # doing result adjustments for top hits if combined box is checked
             top_hits_combinations = self.combined_search_result_adjustment(top_hits, self.entity_search_dict_with_adds)
+            print("top_hits_combinations")
+            print(top_hits_combinations)
             if top_hits_combinations:
                 top_hits = top_hits_combinations
 
@@ -117,19 +124,25 @@ class SearchImagesService:
         print("Search DONE !")
         return top_hits, second_choice_hits, text_based_result
 
-    @staticmethod
-    def combined_search_result_adjustment(input_result, entity_dict):
+    def combined_search_result_adjustment(self, input_result, entity_dict):
 
         def is_valid_combination(inner_comb, types_dict):
+
+            print("types_dict_inner")
+            print(types_dict)
             # get categories with 0 as placeholder value
-            category_count = {key: 0 for key in types_dict}
+            category_count = {inner_key: 0 for inner_key in types_dict}
+
+            print("category_count1")
+            print(category_count)
 
             # now actually count for existing values
             for c_key, values in types_dict.items():
                 category_count[c_key] = sum(1 for item in inner_comb if item in values)
 
-            print("category_count")
+            print("category_count2")
             print(category_count)
+
             # check if there are multiple values for one category for this combination
             if any(count > 1 for count in category_count.values()):
                 print("return false")
@@ -146,6 +159,10 @@ class SearchImagesService:
         for res in input_result.keys():
             all_values_for_comb.append(res)
 
+        # if there is only 1 val there is no need to do combinations, so just return initial input dictionary
+        if len(all_values_for_comb) == 1:
+            return input_result
+
         print("all vals for comb")
         print(all_values_for_comb)
 
@@ -154,7 +171,6 @@ class SearchImagesService:
             for combo in itertools.combinations(all_values_for_comb, r):
                 print("combo:")
                 print(combo)
-                print(entity_dict)
                 print(is_valid_combination(combo, entity_dict))
                 if is_valid_combination(combo, entity_dict):
                     combinations.append(combo)
@@ -169,6 +185,27 @@ class SearchImagesService:
                 common_paths = common_paths.intersection(s)
             common_key = ' '.join(combs)
             combination_text_based_result[common_key] = common_paths
+
+        print("combination_text_based_result")
+        print(combination_text_based_result)
+        if self.search_for_province is False and self.search_for_country is True:
+            country_combined_dict = {}
+            for key, item in combination_text_based_result.items():
+                print("combination_text_based_resultkey")
+                print(key)
+                if any(word in entity_dict["loc"] for word in key.split()):
+                    print("rein in neues dict")
+                    new_dict_key = ""
+                    for entity_item in entity_dict.values():
+                        new_dict_key += entity_item[0] + " "
+
+                    if new_dict_key not in country_combined_dict:
+                        country_combined_dict[new_dict_key] = list(set())
+                    for txt_based_item in combination_text_based_result[key]:
+                        country_combined_dict[new_dict_key].append(txt_based_item)
+                else:
+                    country_combined_dict[key] = combination_text_based_result[key]
+            combination_text_based_result = country_combined_dict
 
         return combination_text_based_result
 
@@ -375,14 +412,14 @@ class SearchImagesService:
             print(value)
             #if bool(set(entity_list) & set(item)):
             if any(i.lower() in (s.lower() for s in entity_list) for i in value):
-                # country a province/country name was found for
+                # a province/country name was found for
                 found_country_key = key
                 country_entity_relation_list.extend(value)
         country_entity_relation_list = [item.lower() for item in country_entity_relation_list]
 
         if len(country_entity_relation_list) > 0:
             found_provinces_list = [item.lower() for item in self.province_list_cache[found_country_key]]
-
+            self.search_for_country = True
             # check if searchentitys/searchwords are provinces. If so, remove the found provinces from the provinces -
             # list now the provinces list can be used to remove the remaining provinces from the country_entity_relation_list
             # with this logic, its only searched for the specific province and not for other provinces,
@@ -391,12 +428,14 @@ class SearchImagesService:
             print("found_provinces_intersection")
             print(found_provinces_intersection)
             if len(found_provinces_intersection) > 0:
+                self.search_for_province = True
                 found_provinces_list = [element for element in found_provinces_list if element not in found_provinces_intersection]
                 country_entity_relation_list = [element for element in country_entity_relation_list if element not in found_provinces_list]
 
             self.additional_country_infos = country_entity_relation_list
             search_entity_dict["loc"].extend(country_entity_relation_list)
-            self.entity_search_dict_with_adds = search_entity_dict
+
+        self.entity_search_dict_with_adds = search_entity_dict
 
         print("country_entity_relation_list")
         print(country_entity_relation_list)
