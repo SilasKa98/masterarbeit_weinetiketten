@@ -1,10 +1,11 @@
+import hashlib
 import itertools
 import re
 import os
 import pickle
 import pprint
-
 import numpy as np
+import torch
 from transformers import BertTokenizer, BertModel
 from annoy import AnnoyIndex
 import spacy
@@ -15,16 +16,23 @@ from Services.DetailFinderService import DetailFinderService
 
 class SearchImagesService:
 
-    def __init__(self, semantic_vector_cache_file='vector_cache.pkl', country_cache_file="country_cache.pkl", province_cache_file="province_cache.pkl"):
+    def __init__(self, semantic_vector_cache_file='vector_cache.pkl',
+                 country_cache_file="country_cache.pkl",
+                 province_cache_file="province_cache.pkl",
+                 annoy_index_cache_file="annoy_cache.ann"):
         self.database_service = DatabaseService()
 
         self.semantic_vector_cache_file = semantic_vector_cache_file
+        self.annoy_index_cache_file = annoy_index_cache_file
         self.country_cache_file = country_cache_file
         self.province_cache_file = province_cache_file
 
         self.semantic_vector_cache = self.load_cache(self.semantic_vector_cache_file)
+        self.annoy_index_cache = self.load_annoy_cache(self.annoy_index_cache_file)
         self.country_list_cache = self.load_cache(self.country_cache_file)
         self.province_list_cache = self.load_cache(self.province_cache_file)
+
+        self.semantic_vector_cache_hash = self._compute_cache_hash()
         self.additional_country_infos = []
         self.entity_search_dict_with_adds = {}
         self.search_for_province = False
@@ -50,6 +58,44 @@ class SearchImagesService:
                 vector = self.aggregate_text_vector(text, tokenizer, model)
                 self.semantic_vector_cache[key] = vector
         self.save_cache(self.semantic_vector_cache_file, self.semantic_vector_cache)
+        self.semantic_vector_cache_hash = self._compute_cache_hash()
+
+
+    def load_annoy_cache(self, cache_file):
+        if os.path.exists(cache_file):
+            vectors = list(self.semantic_vector_cache.values())
+            f = len(vectors[0]) if vectors else 0
+            annoy_index = AnnoyIndex(f, 'angular')
+            annoy_index.load(cache_file)
+            return annoy_index
+        return None
+
+    @staticmethod
+    def save_annoy_cache(cache_file, annoy_index):
+        annoy_index.save(cache_file)
+
+    def _compute_cache_hash(self):
+        # calc hash value for vectors in cache
+        vector_data = pickle.dumps(self.semantic_vector_cache)
+        return hashlib.md5(vector_data).hexdigest()
+
+    def update_annoy_index_cache(self):
+        if not self.semantic_vector_cache:
+            print("No semantic vectors to build the Annoy index.")
+            return
+
+        current_hash = self._compute_cache_hash()
+        print(f"Current hash: {current_hash}")
+        print(f"Stored hash: {self.semantic_vector_cache_hash}")
+        if self.semantic_vector_cache_hash == current_hash:
+            print("No changes detected in semantic vectors. Annoy index is up to date.")
+            return
+
+        annoy_index = self.build_annoy_index()
+
+        self.save_annoy_cache(self.annoy_index_cache_file, annoy_index)
+        self.annoy_index_cache = annoy_index
+        self.semantic_vector_cache_hash = current_hash
 
     def update_cache_details_label_search(self):
         if self.country_list_cache == {} or self.province_list_cache == {}:
@@ -81,9 +127,6 @@ class SearchImagesService:
             elif key in label_details_result:
                 text_based_x_label_details[key] = label_details_result[key]
 
-
-
-
         text_based_result = text_based_x_label_details
         print("label_details_result")
         print(label_details_result)
@@ -108,18 +151,28 @@ class SearchImagesService:
             if top_hits_combinations:
                 top_hits = top_hits_combinations
 
-            print("---------------------------new text based result------------------------------------------------")
-            pprint.pp(text_based_result)
+        # limit top hits to 24 items
+        data_processing = DataProcessService()
+        top_hits = data_processing.limit_dict_items(top_hits, 24)
 
+        # extend all values from top_hits in a new list set to create second_choice_hits out of it
         sub_search_values_list = list(set())
         for value_set in top_hits.values():
             sub_search_values_list.extend(value_set)
 
+        # create second_choice_hits without already seen items and limit it to max 32 items
         second_choice_hits = list(filter(lambda x: x not in sub_search_values_list, found_paths_only))
+        second_choice_hits = second_choice_hits[:32]
+
+        print("---------------------------new text based result------------------------------------------------")
+        pprint.pp(text_based_result)
+        pprint.pp(top_hits)
 
         # remove all paths from text_based_results that are already in top hits
-        for key in text_based_result:
-            text_based_result[key] = {path for path in text_based_result[key] if path not in top_hits}
+        top_hits_values = set(v for values in top_hits.values() for v in values)
+        if len(top_hits_values) > 0:
+            for key, values in text_based_result.items():
+                text_based_result[key] = {value for value in values if value not in top_hits_values}
 
         print("Search DONE !")
         return top_hits, second_choice_hits, text_based_result
@@ -262,10 +315,17 @@ class SearchImagesService:
             if ent.label_ in ["LOC", "GPE"]:
                 if "loc" not in entities_dict:
                     entities_dict["loc"] = []
-                # ignore possible found location if its already found as wine_name
+                # ignore possible found location if its already found as wine_name or wine_type
                 # eg. chardonnay. Otherwise there will be problems later
-                if "wine_names" in entities_dict:
+
+                if "wine_names" in entities_dict and "wine_types" in entities_dict:
+                    if ent.text not in entities_dict["wine_names"] and ent.text not in entities_dict["wine_types"]:
+                        entities_dict["loc"].append(ent.text)
+                elif "wine_names" in entities_dict:
                     if ent.text not in entities_dict["wine_names"]:
+                        entities_dict["loc"].append(ent.text)
+                elif "wine_types" in entities_dict:
+                    if ent.text not in entities_dict["wine_types"]:
                         entities_dict["loc"].append(ent.text)
                 else:
                     entities_dict["loc"].append(ent.text)
@@ -278,8 +338,11 @@ class SearchImagesService:
     @staticmethod
     def encode_text(text, tokenizer, model):
         inputs = tokenizer(text, return_tensors='pt', truncation=True, padding=True, max_length=512)
-        outputs = model(**inputs)
-        return outputs.last_hidden_state.mean(dim=1).squeeze().detach().numpy()
+        #outputs = model(**inputs)
+        #return outputs.last_hidden_state.mean(dim=1).squeeze().detach().numpy()
+        with torch.no_grad():
+            outputs = model(**inputs)
+        return outputs.last_hidden_state.mean(dim=1).squeeze().cpu().numpy()
 
     # sub function for semantic search
     @staticmethod
@@ -307,7 +370,7 @@ class SearchImagesService:
         for i, (key, vector) in enumerate(self.semantic_vector_cache.items()):
             t.add_item(i, vector)
 
-        t.build(10)
+        t.build(100000)
         return t
 
     def semantic_search(self, search_text, used_ocrs={"doctr": ["text_final", "text_pure_modified_images"],
@@ -319,6 +382,7 @@ class SearchImagesService:
 
         print("--------------semantic search text:------------")
         print(search_text)
+
         db_results_all = []
         for ocr_model, columns in used_ocrs.items():
             for column in columns:
@@ -328,13 +392,27 @@ class SearchImagesService:
                     res['column'] = column
                 db_results_all.extend(db_result)
 
+        # update sematic_search cache
         self.update_cache_semantic_search(db_results_all, tokenizer, model)
+        # update annoy_index cache
+        self.update_annoy_index_cache()
 
-        t = self.build_annoy_index()
+        #t = self.build_annoy_index()
+        if not self.annoy_index_cache:
+            self.annoy_index_cache = self.build_annoy_index()
+            self.save_annoy_cache(self.annoy_index_cache_file, self.annoy_index_cache)
+        else:
+            vectors = list(self.semantic_vector_cache.values())
+            f = len(vectors[0]) if vectors else 0
+            #self.annoy_index_cache = AnnoyIndex(
+                #self.semantic_vector_cache[list(self.semantic_vector_cache.keys())[0]].shape[0], 'angular')
+            self.annoy_index_cache = AnnoyIndex(f, 'angular')
+            self.annoy_index_cache.load(self.annoy_index_cache_file)
 
         query = search_text
         query_vector = self.encode_text(query, tokenizer, model)
-        indices = t.get_nns_by_vector(query_vector, 50)
+        #indices = t.get_nns_by_vector(query_vector, 50)
+        indices = self.annoy_index_cache.get_nns_by_vector(query_vector, 600)
         print(indices)
 
         found_paths = [list(set(self.semantic_vector_cache.keys()))[i] for i in indices]
