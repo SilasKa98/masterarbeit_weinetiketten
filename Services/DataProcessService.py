@@ -48,6 +48,28 @@ class DataProcessService:
         return all_keywords
 
     @staticmethod
+    def limit_dict_items(d, limit=24):
+        new_dict = {}
+        for key, values in d.items():
+            if len(values) > limit:
+                new_dict[key] = set(list(values)[:limit])
+            else:
+                new_dict[key] = values
+        return new_dict
+
+    @staticmethod
+    def remove_duplicate_val_from_dict(d):
+        seen_values = set()
+        for key, values in d.items():
+            if isinstance(values, set):
+                d[key] = {value for value in values if value not in seen_values}
+                seen_values.update(d[key])
+            else:
+                d[key] = [value for value in values if value not in seen_values]
+                seen_values.update(d[key])
+        return d
+
+    @staticmethod
     def find_text_intersections(text1, text2, threshold=90):
         def filter_short_tokens(tokens, min_length=4):
             return [token for token in tokens if len(token) >= max(math.ceil(len(token)*0.6), min_length)]
