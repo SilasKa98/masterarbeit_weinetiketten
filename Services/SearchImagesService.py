@@ -476,7 +476,7 @@ class SearchImagesService:
     def search_with_db_label_details(self, search_entity_dict):
         self.update_cache_details_label_search()
 
-        db_details_result = self.database_service.select_from_table("etiketten_infos", "path, country, provinces, anno, vol", as_dict=True)
+        db_details_result = self.database_service.select_from_table("etiketten_infos", "path, country, provinces, anno, vol, wine_type", as_dict=True)
         entity_list = list()
 
         for key, item in search_entity_dict.items():
@@ -525,6 +525,24 @@ class SearchImagesService:
                         detail_search_findings[str(item)].add(elem["path"])
                     else:
                         detail_search_findings[str(item)] = {elem["path"]}
+                if key in {"wine_type"}:
+                    found_weiß = any("weiß" in word for word in entity_list)
+                    found_weiss = any("weiss" in word for word in entity_list)
+                    found_red = any("rot" in word for word in entity_list)
+                    if found_red and str(item) == "red wine":
+                        if "rotwein" in detail_search_findings:
+                            detail_search_findings["rotwein"].add(elem["path"])
+                        else:
+                            detail_search_findings["rotwein"] = {elem["path"]}
+                    if (found_weiß or found_weiss) and str(item) == "white wine":
+                        if found_weiß:
+                            dict_key = "weißwein"
+                        else:
+                            dict_key = "weisswein"
+                        if dict_key in detail_search_findings:
+                            detail_search_findings[dict_key].add(elem["path"])
+                        else:
+                            detail_search_findings[dict_key] = {elem["path"]}
                 if key in {"country", "provinces"} and str(item.lower()) in country_entity_relation_list:
                     if str(item.lower()) in detail_search_findings:
                         detail_search_findings[str(item.lower())].add(elem["path"])
