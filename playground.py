@@ -39,7 +39,9 @@ print(countries)
 provinces = details.find_provinces("wine_images\\archiv20a\\merl_koenigslay_terrassen.jpg")
 print(provinces)
 
-print(details.get_provinces())
+wine_types = details.find_wine_type("wine_images\\archiv20a\\merl_koenigslay_terrassen.jpg")
+print(wine_types)
+
 #action = ActionProcessor()
 
 #all_paths_in_db_tupels = action.update_label_detail_infos()
