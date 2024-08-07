@@ -2,6 +2,7 @@ import re
 
 import pycountry
 from Services.DatabaseService import DatabaseService
+from Services.DataProcessService import DataProcessService
 from collections import Counter
 from collections import defaultdict
 from countryinfo import CountryInfo
@@ -116,3 +117,30 @@ class DetailFinderService:
                 if re.search(rf"\b{re.escape(item)}\b", text, flags=re.IGNORECASE) and item != "" and item is not None:
                     found_countries.append(key)
         return found_countries
+
+    def find_wine_type(self, path):
+        text = self.path_text_dict[path]
+        with open(f"C:\\Masterarbeit_ocr_env\\dictionary_files\\red_wine_names.txt", "r", encoding="utf-8") as file:
+            red_wine_names = [item.strip().lower() for item in file]
+        with open(f"C:\\Masterarbeit_ocr_env\\dictionary_files\\white_wine_names.txt", "r", encoding="utf-8") as file:
+            white_wine_names = [item.strip().lower() for item in file]
+        data = DataProcessService()
+        is_red_wine = False
+        for red_wine in red_wine_names:
+            if data.find_text_intersections(red_wine.lower(), text.lower()):
+                is_red_wine = True
+                break
+        is_white_wine = False
+        for white_wine in white_wine_names:
+            if data.find_text_intersections(white_wine.lower(), text.lower()):
+                is_white_wine = True
+                break
+
+        if is_red_wine and is_white_wine:
+            return "unclear"
+        elif is_white_wine:
+            return "white wine"
+        elif is_red_wine:
+            return "red wine"
+        else:
+            return ""
