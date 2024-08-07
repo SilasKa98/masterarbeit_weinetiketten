@@ -98,12 +98,15 @@ class DataProcessService:
         intersection = {}
         # general matching for string tokens
         for t in search_tokens:
+            # if searchword is blacklisted skip this itteration and dont search for matches (e.g. wine)
+            if t in blacklisted_words:
+                continue
             # find best match for both texts/tokens
             matches = process.extract(t, doc_tokens, scorer=fuzz.partial_ratio, limit=5)
             for match in matches:
                 token_match, score, _ = match
                 if score >= threshold:
-                    # if the token_match (the word) the image is found with is in the blacklist
+                    # if the token_match (a word in the label text) the image is found with, is in the blacklist
                     # don't insert, so its not a hit/match. Example for this case is the word "wein"
                     if token_match.lower() not in blacklisted_words:
                         if t not in intersection:
