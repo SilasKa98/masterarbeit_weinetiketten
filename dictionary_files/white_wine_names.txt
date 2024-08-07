@@ -1,0 +1,61 @@
+Chardonnay
+Sauvignon Blanc
+Riesling
+Pinot Grigio
+Pinot Gris
+Gewürztraminer
+Chenin Blanc
+Moscato
+Muscat Blanc
+Semillon
+Viognier
+Albariño
+Verdejo
+Grüner Veltliner
+Torrontés
+Trebbiano
+Ugni Blanc
+Roussanne
+Marsanne
+Vermentino
+Fiano
+Gavi
+Cortese
+Arneis
+Aligoté
+Assyrtiko
+Melon de Bourgogne
+Muscadet
+Müller-Thurgau
+Scheurebe
+Silvaner
+Petit Manseng
+Gros Manseng
+Picpoul
+Piquepoul
+Muscadelle
+Cortese
+Verdicchio
+Friulano
+Inzolia 
+Ansonica
+Rolle 
+Vermentino
+Fernao Pires 
+Maria Gomes
+Greco
+Grechetto
+Carricante
+Catarratto
+Falanghina
+Pálava
+Vidadillo
+Treixadura
+Moschofilero
+Savagnin
+Elbling
+Ehrenfelser
+Madeleine Angevine
+Rotgipfler
+Weißwein
+Weisswein
