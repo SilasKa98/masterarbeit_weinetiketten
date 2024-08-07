@@ -400,9 +400,10 @@ class ActionProcessor:
             anno = details.find_anno(item)
             countries = ', '.join(list(set(details.find_country(item))))
             provinces = ', '.join(list(set(details.find_provinces(item))))
+            wine_type = details.find_wine_type(item)
             self.database_service.update_table("etiketten_infos",
-                                               ["country", "provinces", "anno", "vol"],
-                                               [countries, provinces, anno, vol],
+                                               ["country", "provinces", "anno", "vol", "wine_type"],
+                                               [countries, provinces, anno, vol, wine_type],
                                                "path",
                                                item
                                                )
