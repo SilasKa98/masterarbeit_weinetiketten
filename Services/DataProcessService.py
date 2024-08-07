@@ -71,8 +71,12 @@ class DataProcessService:
 
     @staticmethod
     def find_text_intersections(text1, text2, threshold=90):
-        def filter_short_tokens(tokens, min_length=4):
-            return [token for token in tokens if len(token) >= max(math.ceil(len(token)*0.6), min_length)]
+        def filter_short_tokens(tokens, source="search"):
+            if source == "search":
+                min_length = 3
+            else:
+                min_length = 5
+            return [token for token in tokens if len(token) >= min_length]
 
         # load blacklisted words (e.g. wein)
         with open(f"C:\\Masterarbeit_ocr_env\\dictionary_files\\blacklisted_words.txt", "r", encoding="utf-8") as file:
@@ -86,9 +90,9 @@ class DataProcessService:
         if text1.strip() in wine_names or text1.strip() in wine_types:
             search_tokens = [text1.lower()]
         else:
-            search_tokens = filter_short_tokens(word_tokenize(text1.lower()))
+            search_tokens = filter_short_tokens(word_tokenize(text1.lower()), source="search")
 
-        doc_tokens = filter_short_tokens(word_tokenize(text2.lower()))
+        doc_tokens = filter_short_tokens(word_tokenize(text2.lower()), source="text")
         #print("####################search tokens########################")
         #print(search_tokens)
         intersection = {}
