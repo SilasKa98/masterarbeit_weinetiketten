@@ -267,27 +267,39 @@ class SearchImagesService:
         nlp_de = spacy.load('de_core_news_md')
         nlp_en = spacy.load('en_core_web_md')
 
-        def create_matcher_for_additional_entities(filename, matcher_name):
-            matcher = PhraseMatcher(nlp_de.vocab, attr='LOWER')
+        def create_matcher_for_additional_entities(filename, matcher_name, used_attr="LOWER"):
+            matcher = PhraseMatcher(nlp_de.vocab, attr=used_attr)
             with open(f"C:\\Masterarbeit_ocr_env\\dictionary_files\\{filename}.txt", "r", encoding="utf-8") as file:
                 new_data = [item.strip().lower() for item in file]
-            patterns = [nlp_de(text) for text in new_data]
+
+            if used_attr == "LEMMA":
+                patterns = [nlp_de(text).to_array([spacy.attrs.LEMMA]) for text in new_data]
+            else:
+                patterns = [nlp_de(text) for text in new_data]
+
             matcher.add(matcher_name, patterns)
             return matcher
 
-        matcher_names = create_matcher_for_additional_entities("wine_names", "WINENAMES")
-        matcher_types = create_matcher_for_additional_entities("wine_types", "WINETYPES")
+        matcher_names = create_matcher_for_additional_entities("wine_names", "WINENAMES", used_attr="LOWER")
+        matcher_types = create_matcher_for_additional_entities("wine_types", "WINETYPES", used_attr="LOWER")
+        matcher_attributes = create_matcher_for_additional_entities("wine_attributes", "WINEATTRIBUTES", used_attr="LEMMA")
 
         non_accent_search_text = DataProcessService.remove_accent_chars(search_text)
 
         doc_de = nlp_de(non_accent_search_text.lower())
         matches_names = matcher_names(doc_de)
         matches_types = matcher_types(doc_de)
+        matches_attributes = matcher_attributes(doc_de)
+        print("matches_attributes")
+        print(matcher_attributes)
+        print(doc_de)
+        print(matches_attributes)
         wine_name_matches = [doc_de[start:end].text for match_id, start, end in matches_names]
         # if statement ignores all values that are already present in wine_name_matches
         # -> this shouldn`t be necessary, however its to make sure that no double entries are generated
         wine_type_matches = [doc_de[start:end].text for match_id, start, end in matches_types if doc_de[start:end].text not in wine_name_matches]
-
+        wine_attributes_matches = [doc_de[start:end].text for match_id, start, end in matches_attributes]
+        print(wine_attributes_matches)
         # en model is used for date recognition
         doc_en = nlp_en(search_text)
         found_dates = [ent.text for ent in doc_en.ents if ent.label_ == "DATE"]
@@ -311,6 +323,8 @@ class SearchImagesService:
             entities_dict["wine_names"] = wine_name_matches
         if wine_type_matches:
             entities_dict["wine_types"] = wine_type_matches
+        if wine_attributes_matches:
+            entities_dict["wine_attributes"] = wine_attributes_matches
         for ent in doc_de.ents:
             if ent.label_ in ["LOC", "GPE"]:
                 if "loc" not in entities_dict:
@@ -430,7 +444,7 @@ class SearchImagesService:
             for k, v in search_entitys.items():
                 search_text_keywords.extend(v)
         else:
-            search_text_keywords = DataProcessService.create_keywords_of_scentence(search_text, "de", 4, 6, 0.9)[0].split()
+            search_text_keywords = DataProcessService.create_keywords_of_scentence(search_text, "de", 4, 6, 0.9)[0][0].split()
 
         print("--------------------------SEARCH TEXT KEYWORDS (SUBSEARCH)------------------------------------")
         print(search_text_keywords)
