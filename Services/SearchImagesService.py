@@ -117,7 +117,7 @@ class SearchImagesService:
         print(query)
         found_paths_semantic = self.semantic_search(query)
         label_details_result = self.search_with_db_label_details(entity_search_dict)
-        text_based_result = self.text_based_keyword_search(search_text)
+        text_based_result = self.text_based_keyword_search(entity_search_dict, search_text)
         # TODO check for double entries here, so no labels are redundant in this dict
         text_based_x_label_details = {}
         for key in set(text_based_result.keys()).union(label_details_result.keys()):
@@ -386,6 +386,8 @@ class SearchImagesService:
         # all other keys with empty lists will get removed too. Its to be save that no empty list remains, which would
         # conflict with the combination logic
         entities_dict = {key: value for key, value in entities_dict.items() if value}
+        print("entities_dict_finals")
+        print(entities_dict)
         return entities_dict
 
     # sub function for semantic search
@@ -474,14 +476,21 @@ class SearchImagesService:
 
         return found_paths
 
-    def text_based_keyword_search(self, search_text, used_ocrs=["easyocr", "tesseract", "doctr"], sub_search=False, sub_search_paths=[]):
+    def text_based_keyword_search(self, entity_search_dict, search_text, used_ocrs=["easyocr", "tesseract", "doctr"], sub_search=False, sub_search_paths=[]):
         if len(self.additional_country_infos) > 0:
             additional_country_infos_str = " ".join(self.additional_country_infos)
+
             search_text = search_text+" "+additional_country_infos_str
-        search_entitys = self.named_entity_recognition(search_text)
+
+            values_to_add = []
+            for value_list in self.additional_country_infos.values():
+                values_to_add.extend(value_list)
+            entity_search_dict["loc"].extend(values_to_add)
+            entity_search_dict["loc"] = list(set(entity_search_dict["loc"]))
+
         search_text_keywords = list(set())
-        if search_entitys:
-            for k, v in search_entitys.items():
+        if entity_search_dict:
+            for k, v in entity_search_dict.items():
                 search_text_keywords.extend(v)
         else:
             search_text_keywords = DataProcessService.create_keywords_of_scentence(search_text, "de", 4, 6, 0.9)[0][0].split()
