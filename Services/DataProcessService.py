@@ -110,8 +110,8 @@ class DataProcessService:
                     # don't insert, so its not a hit/match. Example for this case is the word "wein"
                     if token_match.lower() not in blacklisted_words:
                         if t not in intersection:
-                            intersection[t] = list(set())
-                        intersection[t].append(token_match)
+                            intersection[text1] = list(set())
+                        intersection[text1].append(token_match)
 
         # Regex to find year spans (e.g. "1900-2000")
         year_range_regex = r'\b(\d{4})-(\d{4})\b'
