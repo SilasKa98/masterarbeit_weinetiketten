@@ -244,11 +244,10 @@ class SearchImagesService:
         print(all_values_for_comb)
 
         combinations = []
-        for r in range(2, len(all_values_for_comb) + 1):
+        for r in range(2, len(entity_dict.keys()) + 1):
             for combo in itertools.combinations(all_values_for_comb, r):
                 print("combo:")
                 print(combo)
-                print(is_valid_combination(combo, entity_dict))
                 if is_valid_combination(combo, entity_dict):
                     combinations.append(combo)
 
@@ -268,17 +267,25 @@ class SearchImagesService:
         if self.search_for_province is False and self.search_for_country is True:
             country_combined_dict = {}
             for key, item in combination_text_based_result.items():
-                print("combination_text_based_resultkey")
-                print(key)
-                if any(word in entity_dict["loc"] for word in key.split()):
-                    country_infos = self.additional_country_infos
-                    print("country_infos")
-                    print(country_infos)
-                    current_country = next((inner_key for inner_key, inner_list in country_infos.items() if any(word in inner_list for word in key.split())))
-                    current_key_splitted = key.split()
-                    non_country_words = [i for i in current_key_splitted if i not in country_infos[current_country]]
+                country_infos = self.additional_country_infos
+
+                #current_country = next((inner_key for inner_key, inner_list in country_infos.items() if any(word in inner_list for word in key.split())), None)
+                for c_key, c_info in self.additional_country_infos.items():
+                    if bool([ele for ele in c_info if(ele in key)]):
+                        current_country = c_key
+                        break
+                    else:
+                        current_country = None
+
+                if current_country is not None:
+                    non_country_words = key.split()
+                    country_infos_words = [word for item in country_infos[current_country] for word in item.split()]
+
+                    filtered_non_country_words = [word for word in non_country_words if word not in country_infos_words]
+                    non_country_words = " ".join(filtered_non_country_words)
+
                     current_country = GoogleTranslator(source='en', target='de').translate(current_country).lower()
-                    new_dict_key = " ".join(non_country_words)+" "+current_country
+                    new_dict_key = non_country_words+" "+current_country
 
                     if new_dict_key not in country_combined_dict:
                         country_combined_dict[new_dict_key] = list(set())
@@ -316,16 +323,11 @@ class SearchImagesService:
         matcher_attributes = create_matcher_for_additional_entities("wine_attributes", "WINEATTRIBUTES", used_attr="LEMMA")
 
         non_accent_search_text = DataProcessService.remove_accent_chars(search_text)
-        print("non_accent_search_text")
-        print(non_accent_search_text)
+
         doc_de = nlp_de(non_accent_search_text.lower())
         matches_names = matcher_names(doc_de)
         matches_types = matcher_types(doc_de)
         matches_attributes = matcher_attributes(doc_de)
-        print("matches_attributes")
-        print(matcher_attributes)
-        print(doc_de)
-        print(matches_attributes)
         wine_name_matches = [doc_de[start:end].text for match_id, start, end in matches_names]
         # if statement ignores all values that are already present in wine_name_matches
         # -> this shouldn`t be necessary, however its to make sure that no double entries are generated
@@ -478,9 +480,9 @@ class SearchImagesService:
 
     def text_based_keyword_search(self, entity_search_dict, search_text, used_ocrs=["easyocr", "tesseract", "doctr"], sub_search=False, sub_search_paths=[]):
         if len(self.additional_country_infos) > 0:
-            additional_country_infos_str = " ".join(self.additional_country_infos)
+            #additional_country_infos_str = " ".join(self.additional_country_infos.values())
 
-            search_text = search_text+" "+additional_country_infos_str
+            #search_text = search_text+" "+additional_country_infos_str
 
             values_to_add = []
             for value_list in self.additional_country_infos.values():
@@ -488,6 +490,10 @@ class SearchImagesService:
             entity_search_dict["loc"].extend(values_to_add)
             entity_search_dict["loc"] = list(set(entity_search_dict["loc"]))
 
+
+
+        print("currentEntitySearchDict")
+        print(entity_search_dict)
         search_text_keywords = list(set())
         if entity_search_dict:
             for k, v in entity_search_dict.items():
@@ -526,7 +532,6 @@ class SearchImagesService:
         for key, text in path_text_dict.items():
             for keyword in search_text_keywords:
                 text_intersection = DataProcessService.find_text_intersections(keyword, text)
-                #print(text_intersection)
                 if text_intersection:
                     text_intersection_str = next(iter(text_intersection))
                     if text_intersection_str in intersection_dict:
