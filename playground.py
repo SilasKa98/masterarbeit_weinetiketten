@@ -22,13 +22,13 @@ from Services.SearchImagesService import SearchImagesService
 #action = ActionProcessor()
 #action.modify_images("wine_images/")
 
-#search = SearchImagesService()
-#search.semantic_search("Zeige mir Riesling und Merlot Weine aus der Region Mosel aus 1900")
+search = SearchImagesService()
+search.search_algorithm("riesling aus deutschland", False)
 #search.text_based_keyword_search("Zeige mir Riesling und Merlot Weine aus der Region Mosel aus 1900")
 #entities = search.named_entity_recognition("Zeige mir Riesling und Merlot Weine aus der Region Mosel von 1900")
 #print(entities)
 
-
+'''
 details = DetailFinderService(init_path_text_dict=True)
 vol = details.find_vol("wine_images\\archiv20a\\merl_koenigslay_terrassen.jpg")
 print(vol)
@@ -41,7 +41,7 @@ print(provinces)
 
 wine_types = details.find_wine_type("wine_images\\archiv20a\\merl_koenigslay_terrassen.jpg")
 print(wine_types)
-
+'''
 #action = ActionProcessor()
 
 #all_paths_in_db_tupels = action.update_label_detail_infos()
