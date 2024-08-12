@@ -13,7 +13,7 @@ class DoctrService:
         result = result.export()
 
         text_list = []
-        # Zugriff auf die "words" in jedem "line" unter "blocks"
+        # Zugriff auf die "words" in jeder "line" unter "blocks"
         for page in result['pages']:
             for block in page['blocks']:
                 for line in block['lines']:
