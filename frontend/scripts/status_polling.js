@@ -29,7 +29,9 @@ function handleTask(task_name, task_status, task_result) {
 
     if (task_name == "search_for_duplicate_entrys" && task_status == "success" && fileName == "admin_page.php") {
         handleDuplicateEntries(task_result);
-    } else if (task_name == "search_algorithm" && task_status == "success" && fileName != "admin_page.php") {
+    }else if(task_name == "check_directory_for_duplicates" && task_status == "success" && fileName == "admin_page.php"){
+        handleDirectoryDuplicationCheck(task_result)
+    }else if (task_name == "search_algorithm" && task_status == "success" && fileName != "admin_page.php") {
         handleSearchAlgorithm(task_result, task_name);
     }
 }
@@ -47,6 +49,20 @@ function handleDuplicateEntries(result) {
     });
 
     tasksState["search_for_duplicate_entrys"] = "success";
+}
+
+function handleDirectoryDuplicationCheck(result){
+
+    if (tasksState["check_directory_for_duplicates"] === "success") return;
+
+    var result_elem = document.getElementById("result_check_directory_for_duplicates");
+    document.getElementById("result_check_directory_for_duplicates_btn").style.display = "block";
+    result_elem.innerHTML = "";
+    result.forEach(resElem => {
+        result_elem.innerHTML += resElem + "<br>";
+    });
+
+    tasksState["check_directory_for_duplicates"] = "success";
 }
 
 

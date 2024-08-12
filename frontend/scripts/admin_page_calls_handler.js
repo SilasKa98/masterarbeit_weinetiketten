@@ -278,3 +278,28 @@ function run_modify_images(){
     });
 }
 
+
+function run_check_directory_for_duplicates(){
+    const directoryInput = document.getElementById("duplicate_directory_file")
+    const files = directoryInput.files;
+    const formData = new FormData();
+
+    for (let i = 0; i < files.length; i++) {
+        formData.append('images', files[i]);
+    }
+
+    $.ajax({
+        type: "POST",
+        url: "http://127.0.0.1:5000/check_directory_for_duplicates",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response){ 
+            console.log(response)
+            tasksState["check_directory_for_duplicates"] = "processing";   
+            startPolling()
+        }
+    });
+
+}
+
