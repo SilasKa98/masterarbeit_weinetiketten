@@ -233,11 +233,53 @@
             </div>
             <div class="collapse" id="result_search_for_duplicate_entrys_wrp">
                 <div class="card card-body" id="result_search_for_duplicate_entrys">
-                    
                 </div>
             </div>
         </div>
     </div>
+
+
+
+    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary">
+        <div class="card">
+            <div class="card-header">
+                <span style="color: #d7a900;">check_directory_for_duplicates</span>()
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Duplikate erkennen</h5>
+                <p class="card-text">
+                   Dieses Modul kann zum finden von Duplikaten vor dem eigentlichen hochladen der neuen Etiketten genutzt werden.<br>
+                   So soll sichergestellt werden, dass keine Etiketten hochgeladen werden, die sich bereits in der Sammlung befinden.                          
+                </p>
+                <div>
+                    <input type="file"  name="images" id="duplicate_directory_file" webkitdirectory directory multiple><br><br>
+                    <button class="btn btn-success" onclick="run_check_directory_for_duplicates()">Nach Duplikaten suchen</button>
+                </div>
+            </div>
+            <div class="card-footer text-body-secondary" id="footer_check_directory_for_duplicates">
+                Vorsicht! Eine große Anzahl an Etiketten kann eine lange Verarbeitungszeit bedeuten.
+                <div class="spinner-border" id="spinner_check_directory_for_duplicates" role="status" style="float: right; display:none;">
+                    <span class="sr-only"></span>
+                </div>
+                <div id="success_check_directory_for_duplicates" role="status" style="float: right;display:none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16" style="border: 1px solid #5aa940; border-radius: 22px; background-color: #b5dfb5;">
+                        <path style="color: #07c507;" d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+                    </svg>
+                </div>
+                <div class="d-flex justify-content-end" style="margin-top: 20px;">
+                    <button class="btn btn-info text-right" style="display: none;" id="result_check_directory_for_duplicates_btn" type="button" data-bs-toggle="collapse" data-bs-target="#result_check_directory_for_duplicates_wrp" aria-expanded="false" aria-controls="result_check_directory_for_duplicates">
+                       Ergebnisse anzeigen
+                    </button>
+                </div>
+            </div>
+            <div class="collapse" id="result_check_directory_for_duplicates_wrp">
+                <div class="card card-body" id="result_check_directory_for_duplicates">
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 
 
     <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary">
