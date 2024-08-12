@@ -1,4 +1,8 @@
+import itertools
+import pprint
 import re
+
+from werkzeug.utils import secure_filename
 
 from Services.DataProcessService import DataProcessService
 from Services.DeepLService import DeepLService
@@ -407,6 +411,40 @@ class ActionProcessor:
                                                "path",
                                                item
                                                )
+
+    def check_directory_for_duplicates(self, upload_folder):
+
+        # create path-text dict for all uploaded images
+        all_upload_image_texts = {}
+        for filename in os.listdir(upload_folder):
+            image_path = os.path.join(upload_folder, filename)
+            if os.path.isfile(image_path):
+                image_string = self.doctr_service.read_in_files(image_path)
+                all_upload_image_texts[image_path] = image_string
+
+        search_table = "doctr"
+        search_column = "text_pure"
+        select_result_text = self.database_service.select_from_table(search_table, search_column)
+        select_result_path = self.database_service.select_from_table(search_table, 'path')
+
+        for key, item in all_upload_image_texts.items():
+            select_result_path.append((key,))
+            select_result_text.append((item,))
+
+        similarity_result = self.data_process_service.find_similar_images_by_sentence(select_result_text,
+                                                                                      select_result_path, 80)
+
+        poped_similarity_result = [
+            item for item in similarity_result
+            if item[3][0] in all_upload_image_texts.keys() or item[4][0] in all_upload_image_texts.keys()
+        ]
+
+        return poped_similarity_result
+
+
+
+
+
 
 
 

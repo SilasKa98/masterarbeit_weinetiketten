@@ -6,6 +6,7 @@ from collections import OrderedDict
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from werkzeug.utils import secure_filename
 
 
 class InterfaceService:
@@ -242,6 +243,45 @@ class InterfaceService:
             }
             return jsonify(response)
 
+        @self.app.route('/check_directory_for_duplicates', methods=["POST"])
+        def check_directory_for_duplicates():
+            if 'images' not in request.files:
+                return "no files have been uploaded!", 400
+
+            images = request.files.getlist('images')
+
+            # save files which need to be checked for dups to upload folder
+            # TODO put in .env
+            UPLOAD_FOLDER = 'C:\Masterarbeit_ocr_env\duplicate_check_upload'
+            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+            for file in images:
+                # check if filename exists and is secure
+                if file and file.filename:
+                    filename = secure_filename(file.filename)
+                    file_path = os.path.join(UPLOAD_FOLDER, filename)
+                    try:
+                        file.save(file_path)
+                        print(f"file saved: {file_path}")
+                    except Exception as e:
+                        print(f"error while saving {filename}: {e}")
+
+            task_id = str(uuid.uuid4())
+            task_name = "check_directory_for_duplicates"
+            threading.Thread(target=self.process_check_directory_for_duplicates, args=(task_id, task_name, UPLOAD_FOLDER)).start()
+
+            self.tasks[task_name] = {
+                "task_id": task_id,
+                "status": "processing",
+                "name": task_name
+            }
+
+            response = {
+                "task_id": task_id,
+                "status": "processing",
+                "name": task_name
+            }
+            return jsonify(response)
 
     # ------------------------------------------------Processing--------------------------------------------------------
     # functions to async handle the processing
@@ -372,3 +412,44 @@ class InterfaceService:
             "name": task_name,
             "task_id": task_id
         }
+
+    def process_check_directory_for_duplicates(self, task_id, task_name, upload_folder):
+
+        from ActionProcessor import ActionProcessor
+        action = ActionProcessor()
+        found_duplicates = action.check_directory_for_duplicates(upload_folder=upload_folder)
+        print(found_duplicates)
+
+        return_strings = []
+        for item in found_duplicates:
+            # extract paths out of the tupels
+            path1 = item[3][0] if isinstance(item[3], tuple) else item[3]
+            path2 = item[4][0] if isinstance(item[4], tuple) else item[4]
+
+            append_string = f"<p>Ratio: {item[2]} | Paths: <a href=/{path1} target='_blank'>{path1}</a> & <a href=/{path2} target='_blank'>{path2}</a></p>"
+            return_strings.append(append_string)
+
+        # after everything is done, clear the upload folder
+        if os.path.exists(upload_folder):
+            for filename in os.listdir(upload_folder):
+                file_path = os.path.join(upload_folder, filename)
+                try:
+                    if os.path.isfile(file_path):
+                        os.remove(file_path)
+                        print(f"Deleted file: {file_path}")
+                except Exception as e:
+                    print(f"Error deleting file {file_path}: {e}")
+        else:
+            print(f"Upload folder {upload_folder} does not exist.")
+
+        self.tasks[task_name] = {
+            "status": "success",
+            "name": task_name,
+            "task_id": task_id,
+            "result": return_strings
+        }
+
+
+
+
+
