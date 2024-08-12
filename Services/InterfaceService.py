@@ -198,6 +198,51 @@ class InterfaceService:
             }
             return jsonify(response)
 
+
+        @self.app.route('/get_image_informations', methods=['POST'])
+        def get_image_informations():
+            data = request.json
+            path = data["path"]
+            task_id = str(uuid.uuid4())
+            task_name = "get_image_informations"
+            threading.Thread(target=self.process_get_image_informations, args=(task_id, task_name, path)).start()
+
+            self.tasks[task_name] = {
+                "task_id": task_id,
+                "status": "processing",
+                "name": task_name
+            }
+
+            response = {
+                "task_id": task_id,
+                "status": "processing",
+                "name": task_name
+            }
+            return jsonify(response)
+
+
+        @self.app.route('/modify_images', methods=["POST"])
+        def modify_images():
+            data = request.json
+            directory = data["directory"]
+            task_id = str(uuid.uuid4())
+            task_name = "modify_images"
+            threading.Thread(target=self.process_modify_images, args=(task_id, task_name, directory)).start()
+
+            self.tasks[task_name] = {
+                "task_id": task_id,
+                "status": "processing",
+                "name": task_name
+            }
+
+            response = {
+                "task_id": task_id,
+                "status": "processing",
+                "name": task_name
+            }
+            return jsonify(response)
+
+
     # ------------------------------------------------Processing--------------------------------------------------------
     # functions to async handle the processing
     def process_spelling_correction(self, task_id, task_name, table, sel_columns, insert_column, use_ml, lang_filter, only_new):
@@ -296,4 +341,34 @@ class InterfaceService:
             "name": task_name,
             "task_id": task_id,
             "result": hits
+        }
+
+    def process_get_image_informations(self, task_id, task_name, path):
+        from Services.DatabaseService import DatabaseService
+        database = DatabaseService()
+        db_results = database.select_from_table("etiketten_infos", "*", condition="path = %s", params=[path])
+        print("frontend_db_results")
+        print(db_results)
+        image_name = db_results[0][2]
+        image_lang = db_results[0][4]
+        image_directory = db_results[0][5]
+
+        result = {"image_name": image_name, "image_lang": image_lang, "image_directory": image_directory}
+
+        self.tasks[task_name] = {
+            "status": "success",
+            "name": task_name,
+            "task_id": task_id,
+            "result": result
+        }
+
+    def process_modify_images(self, task_id, task_name, directory):
+        from ActionProcessor import ActionProcessor
+        action = ActionProcessor()
+        action.modify_images(directory)
+
+        self.tasks[task_name] = {
+            "status": "success",
+            "name": task_name,
+            "task_id": task_id
         }

@@ -79,11 +79,13 @@ function getImageDirectories(){
         success: function(response){ 
             const json_response =  JSON.parse(response);
             const read_and_save_ocr_path_select = document.getElementById("read_and_save_ocr_path_select");
+            const modify_images_path_select = document.getElementById("modify_images_path_select");
             json_response.forEach(path => {
                 const option = document.createElement('option');
                 option.value = path;
                 option.text = path;
                 read_and_save_ocr_path_select.appendChild(option);
+                modify_images_path_select.append(option);
             });
             
         }
@@ -259,4 +261,20 @@ function run_read_db_and_detect_lang(){
 }
 
 
+function run_modify_images(){
+    const modify_images_path_select = document.getElementById("modify_images_path_select").value
+    $.ajax({
+        type: "POST",
+        url: "http://127.0.0.1:5000/modify_images",
+        contentType: 'application/json',
+        data: JSON.stringify({
+            directory: modify_images_path_select
+        }),
+        success: function(response){ 
+            console.log(response)
+            tasksState["modify_images"] = "processing";   
+            startPolling()
+        }
+    });
+}
 

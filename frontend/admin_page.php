@@ -275,5 +275,44 @@
             </div>
         </div>
     </div>
+
+
+    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary">
+        <div class="card">
+            <div class="card-header">
+                <span style="color: #d7a900;">modify_images</span>()
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Etikettenbilder modifizieren</h5>
+                <p class="card-text">
+                    Mit diesem Modul können die Etikettenbilder visuell modifiziert werden. Durch die modifizierung wird das einlesen mittels OCR verbessert.<br>
+                    Zur Modifikation werden folgende Schritte durchgeführt: <b>"Grayscaling", "Sharpening", "Contrast bumping", "Noise removing", "Blur applying"</b> <br>
+                    und alternativ auch <b>"Image rescaling"</b>, wenn die Bildauflösung kleiner als 300 dpi ist.<br>
+                    Die modifizierten Bilder werden in <b>"wine_images/edited_wine_imgages"</b> gespeichert.
+                </p>
+                <div>
+                    
+                    <select class="form-select input_option_admin" id="modify_images_path_select">
+                        <option>Pfad mit Bildern auswählen</option>
+                    </select>
+
+                    <button class="btn btn-success" onclick="run_modify_images()">Bildmodifikationen ausführen</button>
+                </div>
+            </div>
+            <div class="card-footer text-body-secondary" id="footer_modify_images">
+                Vorsicht! Dieser Prozess kann einige Zeit in anspruch nehmen!
+                <div class="spinner-border" id="spinner_modify_images" role="status" style="float: right; display:none;">
+                    <span class="sr-only"></span>
+                </div>
+                <div id="success_modify_images" role="status" style="float: right;display:none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16" style="border: 1px solid #5aa940; border-radius: 22px; background-color: #b5dfb5;">
+                        <path style="color: #07c507;" d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 </body>
 </html>
