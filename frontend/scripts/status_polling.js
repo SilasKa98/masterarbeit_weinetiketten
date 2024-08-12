@@ -2,7 +2,7 @@ let tasksState = {};
 let pollingTasks = {};
 let pollingRates = {
     "default": 15000, 
-    "search_algorithm": 1000 
+    "search_algorithm": 2000 
 };
 
 
@@ -84,12 +84,14 @@ function handleSearchAlgorithm(result, task_name) {
                     newDiv.append(newDiv_inner)
                     newDiv_inner.innerHTML += "<h3>Gefunden durch: " + category_inner + "</h3>";
                     item_inner.forEach(path => {
-                        newDiv_inner.innerHTML += "<a href='../" + path + "' target='_blank'><img src='../" + path + "' width='150px' height='150px' style='margin-right:10px;margin-bottom:10px;'></a>";
+                        let content_string = handel_image_content_filling(path)
+                        newDiv_inner.innerHTML += content_string;
                     });
                 }
             } else {
                 item.forEach(path => {
-                    newDiv.innerHTML += "<a href='../" + path + "' target='_blank'><img src='../" + path + "' width='150px' height='150px' style='margin-right:10px;margin-bottom:10px;'></a>";
+                    let content_string = handel_image_content_filling(path)
+                    newDiv.innerHTML += content_string ;
                 });
             }
         }
@@ -127,6 +129,22 @@ function statusPolling(){
 
             }
         }
+    });
+}
+
+function specificTaskStatusPolling(name) {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            type: "GET",
+            url: "http://127.0.0.1:5000/status/" + name,
+            contentType: 'application/json',
+            success: function(response) { 
+                resolve(response);
+            },
+            error: function(error) {
+                reject(error);
+            }
+        });
     });
 }
 

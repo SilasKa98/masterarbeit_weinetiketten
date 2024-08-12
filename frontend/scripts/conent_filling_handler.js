@@ -1,0 +1,68 @@
+function handel_offcanvas_content_filling(path){
+    console.log("current_path")
+    console.log(path)
+    $.ajax({
+        type: "POST",
+        url: "http://127.0.0.1:5000/get_image_informations",
+        contentType: 'application/json',
+        data: JSON.stringify({
+            path: path,
+        }),
+        success: function(response){ 
+            console.log(response)
+            for (const [category, item] of Object.entries(response)) {
+                console.log(category)
+                console.log(item)
+                if(category == "name"){
+                    var taskName = item
+                }
+            }
+            specificTaskStatusPolling(taskName).then(response => {
+                console.log(response);
+                console.log(response.status);
+                console.log(response.result);
+                var result = response.result
+                
+                let contentString = '<button type="button" onclick="removeElement(this)" class="btn btn-danger delDetailImgBtn"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"></path><path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"></path></svg></button>'+
+                                    '<div class="card mb-3 offCanvasCard">'+
+                                        '<a href="../'+ path +'" target="_blank"><img src="../' + path + '" class="card-img-top offCanvasCardImg" alt="Etikettenbild"></a>'+
+                                        '<div class="card-body">'+
+                                            '<h5 class="card-title">'+result["image_name"]+'</h5>'+
+                                            '<p class="card-text">'+
+                                                '<span class="offCanvasCardLabel">Etiketten-Verzeichnis: </span><span>'+result["image_directory"]+'</span><br>'+
+                                                '<span class="offCanvasCardLabel">Etikettensprache: </span><span>'+result["image_lang"]+'</span>'+
+                                            '</p>'+
+                                            '<p class="card-text"><small class="text-body-secondary">Last updated just now</small></p>'+
+                                        '</div>'+
+                                      '</div>';
+
+                document.getElementById("offcanvas_imgDetails_body").insertAdjacentHTML("afterbegin", contentString);
+                
+
+            }).catch(error => {
+                console.error("Error:", error);
+                let errorString = "<p>Fehler beim laden der Etikettendetails. <br> Bitte versuchen Sie es erneut!</p>"
+                document.getElementById("offcanvas_imgDetails_body").insertAdjacentHTML("afterbegin", errorString);
+            });
+        }
+    });
+}
+
+function removeElement(elem){
+    elem.nextElementSibling.remove();
+    elem.remove();
+}
+                        
+
+
+
+function handel_image_content_filling(path){
+
+    const escapedPath = path.replace(/\\/g, "\\\\");
+
+    let content_string = "<a data-bs-toggle='offcanvas' data-bs-target='#offcanvas_imgDetails' aria-controls='offcanvas_imgDetails' id='"+path+"' href='../" + path + "' onclick='handel_offcanvas_content_filling(\""+escapedPath+"\")'>" +
+                            "<img class='wine_image' src='../" + path + "'>"+
+                      "</a>"
+    
+    return content_string
+}

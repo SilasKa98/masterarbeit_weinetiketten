@@ -191,3 +191,29 @@ main {
   opacity: 1;
   height: auto;
 }
+
+.wine_image{
+  width: 150px;
+  height: 150px;
+  margin-right:10px;
+  margin-bottom:10px;
+}
+
+.offCanvas_image{
+  width: 95%;
+  margin-left: 3%;
+}
+
+.offCanvasCardLabel{
+  font-weight: bold;
+}
+
+.delDetailImgBtn{
+  position: relative;
+  left: 95%;
+  top: 2%;
+  z-index: 12;
+  padding: 6px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}

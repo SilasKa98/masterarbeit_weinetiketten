@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="author" content="Silas Kammerer">
     <title>Weinetiketten App</title>
+    <script src="scripts/conent_filling_handler.js"></script>
     <script src="scripts/status_polling.js"></script>
     <script src="scripts/search_calls_handler.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
@@ -54,6 +55,7 @@
             </div>
           </div>
         </div>
+        <?php include_once "components/imageDetailOffcanvas.php"?>
       </main>
       <footer>
         <?php include_once "components/footer.php"?>
