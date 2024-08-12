@@ -490,8 +490,6 @@ class SearchImagesService:
             entity_search_dict["loc"].extend(values_to_add)
             entity_search_dict["loc"] = list(set(entity_search_dict["loc"]))
 
-
-
         print("currentEntitySearchDict")
         print(entity_search_dict)
         search_text_keywords = list(set())
