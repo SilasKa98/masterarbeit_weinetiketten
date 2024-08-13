@@ -1,15 +1,19 @@
+import os
+
 import deepl
 from iso639 import Lang
 import langid
 from langid.langid import LanguageIdentifier, model
 from Services.DataProcessService import DataProcessService
 from Services.DatabaseService import DatabaseService
+from dotenv import load_dotenv
+load_dotenv()
 
 class DeepLService:
 
     def __init__(self):
         #include with .env file later
-        auth_key = "91de05aa-d746-6ef2-3b96-0151d03ca5bf:fx"
+        auth_key = os.getenv('DEEPL_API_KEY')
         self.translator = deepl.Translator(auth_key)
 
     @staticmethod

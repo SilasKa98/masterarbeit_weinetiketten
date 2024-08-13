@@ -14,7 +14,6 @@ class DataProcessService:
     @staticmethod
     def iterate_directory(directory):
 
-        # Durch das Hauptverzeichnis iterieren
         image_path = ''
         for root, dirs, files in os.walk(directory):
             for file in files:
