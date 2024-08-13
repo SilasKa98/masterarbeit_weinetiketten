@@ -306,3 +306,20 @@ function run_check_directory_for_duplicates(){
 
 }
 
+
+function toggleOnlyNewImgs_readSaveOcr(switch_elem){
+    console.log("fooo")
+    let ocr_sel = document.getElementById("read_and_save_ocr_table_select")
+    let col_sel = document.getElementById("read_and_save_ocr_column_input_select")
+
+    ocr_sel.disabled = !ocr_sel.disabled;
+    col_sel.disabled = !col_sel.disabled;
+
+    if(switch_elem.checked){
+        ocr_sel.innerHTML = '<option>tesseract, easyocr, doctr, kerasocr</option>'
+        col_sel.innerHTML = '<option value="text_pure">text_pure</option>'
+    }else{
+        location.reload()
+    }
+}
+

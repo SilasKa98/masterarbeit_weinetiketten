@@ -57,7 +57,7 @@
                     </div>
 
                     <div class="form-check form-switch input_option_admin">
-                        <input class="form-check-input" type="checkbox" role="switch" id="read_and_save_ocr_only_new_entries">
+                        <input class="form-check-input" type="checkbox" role="switch" id="read_and_save_ocr_only_new_entries" onclick="toggleOnlyNewImgs_readSaveOcr(this)">
                         <label class="form-check-label" for="read_and_save_ocr_only_new_entries">Nur nach neuen Bildern suchen</label>
                     </div>
 
