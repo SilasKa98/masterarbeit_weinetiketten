@@ -1,9 +1,14 @@
-from Services.DataProcessService import DataProcessService
-from Services.DetailFinderService import DetailFinderService
-from ActionProcessor import ActionProcessor
-from Services.SpellcheckerService import SpellcheckerService
-from Services.SearchImagesService import SearchImagesService
+#from Services.DataProcessService import DataProcessService
+#from Services.DetailFinderService import DetailFinderService
+#from ActionProcessor import ActionProcessor
+#from Services.SpellcheckerService import SpellcheckerService
+#from Services.SearchImagesService import SearchImagesService
+from Services.KerasOCRService import KerasOCRService
 
+
+keras_ocr = KerasOCRService()
+text = keras_ocr.read_in_files("C:\\Masterarbeit_ocr_env\\wine_images\\archiv20\\abenheim_liebfrauenmorgen.jpg")
+print(text)
 
 #loaded_input_file = preprocessor.load_data('data/english_words.csv')
 #print(loaded_input_file)
@@ -19,8 +24,8 @@ from Services.SearchImagesService import SearchImagesService
                                           #  "text_final", use_ml=True)
 
 
-action = ActionProcessor()
-action.check_directory_for_duplicates(None)
+#action = ActionProcessor()
+#action.check_directory_for_duplicates(None)
 
 #search = SearchImagesService()
 #search.search_algorithm("riesling aus deutschland", False)
