@@ -311,9 +311,11 @@ function toggleOnlyNewImgs_readSaveOcr(switch_elem){
     console.log("fooo")
     let ocr_sel = document.getElementById("read_and_save_ocr_table_select")
     let col_sel = document.getElementById("read_and_save_ocr_column_input_select")
+    let translation_switch = document.getElementById("read_and_save_ocr_use_translation")
 
     ocr_sel.disabled = !ocr_sel.disabled;
     col_sel.disabled = !col_sel.disabled;
+    translation_switch.disabled = !translation_switch.disabled
 
     if(switch_elem.checked){
         ocr_sel.innerHTML = '<option>tesseract, easyocr, doctr, kerasocr</option>'
