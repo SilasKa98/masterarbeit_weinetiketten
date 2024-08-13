@@ -85,9 +85,12 @@ function getImageDirectories(){
                 option.value = path;
                 option.text = path;
                 read_and_save_ocr_path_select.appendChild(option);
-                modify_images_path_select.append(option);
+
+                const option2 = document.createElement('option');
+                option2.value = path;
+                option2.text = path;
+                modify_images_path_select.appendChild(option2);
             });
-            
         }
     });
 }
