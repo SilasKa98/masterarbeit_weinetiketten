@@ -10,8 +10,12 @@ class ImageModificationService:
         if self.image_src is None:
             raise ValueError(f"Couldn't load image! {image_path}")
 
-    def image_rescaler(self):
-        self.image_src = cv2.resize(self.image_src, None, fx=1.2, fy=1.2, interpolation=cv2.INTER_CUBIC)
+    def image_rescaler(self, current_dpi, target_dpi=300):
+
+        scale_factor_x = target_dpi / current_dpi[0]
+        scale_factor_y = target_dpi / current_dpi[1]
+        scale_factor = (scale_factor_x + scale_factor_y) / 2
+        self.image_src = cv2.resize(self.image_src, None, fx=scale_factor, fy=scale_factor, interpolation=cv2.INTER_CUBIC)
         return self
 
     def image_grayscaler(self):
@@ -75,11 +79,14 @@ class ImageModificationService:
     def save_modified_image2(self, save_path):
 
         original_image_pil = Image.open(self.image_path)
-        dpi = original_image_pil.info.get('dpi', (300, 300))  # set dpi to 300x300 if info not available
+        original_dpi = original_image_pil.info.get('dpi', (300, 300))  # set dpi to 300x300 if info not available
 
+        target_dpi = original_dpi
+        if original_dpi[0] < 300 or original_dpi[1] < 300:
+            target_dpi = (300, 300)
         # Konvertiere das OpenCV-Bild zu einem Pillow-Image
         image_pil = Image.fromarray(cv2.cvtColor(self.image_src, cv2.COLOR_BGR2RGB))
-        image_pil.save(save_path, dpi=dpi)
+        image_pil.save(save_path, dpi=target_dpi)
         print('Successfully saved Image ' + save_path)
 
     def get_image_dpi(self):

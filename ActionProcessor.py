@@ -412,7 +412,7 @@ class ActionProcessor:
                 image_mod.image_grayscaler().sharpen_img().bump_contrast().noise_remover().blur_apply("median").save_modified_image2(save_path)
             else:
                 print("dpi < 300")
-                image_mod.image_grayscaler().sharpen_img().bump_contrast().image_rescaler().noise_remover().blur_apply("median").save_modified_image2(save_path)
+                image_mod.image_grayscaler().sharpen_img().bump_contrast().image_rescaler(image_mod.get_image_dpi()).noise_remover().blur_apply("median").save_modified_image2(save_path)
 
     def update_label_detail_infos(self):
         all_paths_in_db_tupels = self.database_service.select_from_table("etiketten_infos", "path")
