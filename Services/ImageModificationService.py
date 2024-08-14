@@ -12,9 +12,12 @@ class ImageModificationService:
 
     def image_rescaler(self, current_dpi, target_dpi=300):
 
-        scale_factor_x = target_dpi / current_dpi[0]
-        scale_factor_y = target_dpi / current_dpi[1]
-        scale_factor = (scale_factor_x + scale_factor_y) / 2
+        if not(current_dpi[0] == 0 or current_dpi[1] == 0):
+            scale_factor_x = target_dpi / current_dpi[0]
+            scale_factor_y = target_dpi / current_dpi[1]
+            scale_factor = float((scale_factor_x + scale_factor_y) / 2)
+        else:
+            scale_factor = 1.2
         self.image_src = cv2.resize(self.image_src, None, fx=scale_factor, fy=scale_factor, interpolation=cv2.INTER_CUBIC)
         return self
 
