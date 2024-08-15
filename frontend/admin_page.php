@@ -185,6 +185,37 @@
     <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary">
         <div class="card">
             <div class="card-header">
+                <span style="color: #d7a900;">update_entities_for_labels</span>()
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Etiketten-Entitäten finden und aktuallisieren</h5>
+                <p class="card-text">
+                    Mit diesem Modul können für jedes Etikett in der Datenbank Entitäten erstellt werden. <br>
+                    Die Entitäten werden durch Natural Language Processing aus dem Etikettentext extrahiert und kategorisiert.<br>
+                    Die gewonnenen Informationen werden im JSON Format in der Datenbank abgelegt um sie so später optimal weiter verarbeiten zu können.
+                </p>
+                <div>
+                    <button class="btn btn-success" onclick="run_update_entities_for_labels()">Entitäten finden und aktuallisieren</button>
+                </div>
+            </div>
+            <div class="card-footer text-body-secondary" id="footer_update_entities_for_labels">
+                Vorsicht! Dieser Prozess kann einige Zeit in anspruch nehmen!
+                <div class="spinner-border" id="spinner_update_entities_for_labels" role="status" style="float: right; display:none;">
+                    <span class="sr-only"></span>
+                </div>
+                <div id="success_update_entities_for_labels" role="status" style="float: right;display:none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16" style="border: 1px solid #5aa940; border-radius: 22px; background-color: #b5dfb5;">
+                        <path style="color: #07c507;" d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary">
+        <div class="card">
+            <div class="card-header">
                 <span style="color: #d7a900;">search_for_duplicate_entrys</span>()
             </div>
             <div class="card-body">
