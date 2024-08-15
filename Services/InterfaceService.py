@@ -392,8 +392,21 @@ class InterfaceService:
         image_name = db_results[0][2]
         image_lang = db_results[0][4]
         image_directory = db_results[0][5]
+        image_country = db_results[0][6]
+        image_provinces = db_results[0][7]
+        image_anno = db_results[0][8]
+        image_vol = db_results[0][9]
+        image_wine_type = db_results[0][10]
 
-        result = {"image_name": image_name, "image_lang": image_lang, "image_directory": image_directory}
+        result = {"image_name": image_name,
+                  "image_lang": image_lang,
+                  "image_directory": image_directory,
+                  "image_country": image_country,
+                  "image_provinces": image_provinces,
+                  "image_anno": image_anno,
+                  "image_vol": image_vol,
+                  "image_wine_type": image_wine_type
+                  }
 
         self.tasks[task_name] = {
             "status": "success",
