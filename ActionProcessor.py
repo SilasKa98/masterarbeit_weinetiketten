@@ -123,9 +123,6 @@ class ActionProcessor:
         # use_translation True / False determines  wether language knowledge is used for ocr or not
         if only_new_entrys is True:
             all_ocr_models = ["tesseract", "easyocr", "doctr", "kerasocr"]
-            # if searching for new entries, use text_pure which is currently the only column in common for all ocrs
-            # TODO adjust frontend so only text_pure is shown, this hardcode can be delete then
-            insert_column = "text_pure"
         else:
             all_ocr_models = [ocr_model]
 

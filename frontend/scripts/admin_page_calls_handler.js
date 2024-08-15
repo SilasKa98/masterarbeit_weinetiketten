@@ -311,15 +311,17 @@ function toggleOnlyNewImgs_readSaveOcr(switch_elem){
     console.log("fooo")
     let ocr_sel = document.getElementById("read_and_save_ocr_table_select")
     let col_sel = document.getElementById("read_and_save_ocr_column_input_select")
+    let path_sel = document.getElementById("read_and_save_ocr_path_select")
     let translation_switch = document.getElementById("read_and_save_ocr_use_translation")
 
     ocr_sel.disabled = !ocr_sel.disabled;
-    col_sel.disabled = !col_sel.disabled;
     translation_switch.disabled = !translation_switch.disabled
 
     if(switch_elem.checked){
         ocr_sel.innerHTML = '<option>tesseract, easyocr, doctr, kerasocr</option>'
-        col_sel.innerHTML = '<option value="text_pure">text_pure</option>'
+        col_sel.innerHTML = '<option value="text_pure">text_pure</option><option value="text_pure_modified_images">text_pure_modified_images</option>'
+        path_sel.innerHTML = '<option value="/wine_images">/wine_images</option>'+
+                             '<option value="/wine_images/edited_wine_images">/wine_images/edited_wine_images</option>'
     }else{
         location.reload()
     }
