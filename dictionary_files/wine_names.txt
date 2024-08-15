@@ -2,6 +2,7 @@ Chardonnay
 Sauvignon Blanc
 Sauvignon-Blanc
 Riesling
+Silvaner
 Pinot Grigio
 Pinot-Grigio
 Gewürztraminer
