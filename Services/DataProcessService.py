@@ -78,12 +78,12 @@ class DataProcessService:
             return [token for token in tokens if len(token) >= min_length]
 
         # load blacklisted words (e.g. wein)
-        with open(f"C:\\Masterarbeit_ocr_env\\dictionary_files\\blacklisted_words.txt", "r", encoding="utf-8") as file:
+        with open(os.getenv("BLACKLISTED_WORDS_FILE"), "r", encoding="utf-8") as file:
             blacklisted_words = [item.strip().lower() for item in file]
 
-        with open(f"C:\\Masterarbeit_ocr_env\\dictionary_files\\wine_names.txt", "r", encoding="utf-8") as file:
+        with open(os.getenv("WINE_NAMES_FILE"), "r", encoding="utf-8") as file:
             wine_names = [item.strip().lower() for item in file]
-        with open(f"C:\\Masterarbeit_ocr_env\\dictionary_files\\wine_types.txt", "r", encoding="utf-8") as file:
+        with open(os.getenv("WINE_TYPES_FILE"), "r", encoding="utf-8") as file:
             wine_types = [item.strip().lower() for item in file]
 
         if text1.strip() in wine_names or text1.strip() in wine_types:
@@ -254,9 +254,9 @@ class DataProcessService:
                             break
                     if count >= max_words:
                         break
-            print(f"Extrahierte Wörter wurden in die Datei {output_file} geschrieben.")
+            print(f"extracted words have been written in file: {output_file}.")
         except Exception as e:
-            print(f"Fehler beim Parsen der XML-Datei: {e}")
+            print(f"Error while parsing XML-File: {e}")
 
 
 

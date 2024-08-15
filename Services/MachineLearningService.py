@@ -9,8 +9,8 @@ class MachineLearningService:
 
     def __init__(self, data_file, model_name):
         self.current_path = os.getcwd()
-        self.input_file = os.path.join(self.current_path, f'C:/Masterarbeit_ocr_env/Models/word_spelling_correction/data/{data_file}')
-        self.model_to_use = os.path.join(self.current_path, f'C:/Masterarbeit_ocr_env/Models/word_spelling_correction/savedModels/{model_name}')
+        self.input_file = os.path.join(self.current_path, f'{os.getenv("SPELLING_CORRECTION_INPUT_FILE_PATH")}{data_file}')
+        self.model_to_use = os.path.join(self.current_path, f'{os.getenv("SPELLING_CORRECTION_SAVED_MODELS_PATH")}{model_name}')
 
     def ml_word_correction_init(self, dataframe_function, language="en"):
 

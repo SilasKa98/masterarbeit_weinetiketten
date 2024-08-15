@@ -1,15 +1,15 @@
 import mysql.connector
+import os
 
 
 class DatabaseService:
 
     def __init__(self):
-        # include with .env file later
         self.mydb = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="",
-            database="weinetiketten"
+            host=os.getenv("HOST"),
+            user=os.getenv("USER"),
+            password=os.getenv("PASSWORD"),
+            database=os.getenv("database")
         )
 
     def select_from_table(self, table, selected_cols, condition=None, params=None, join=None, as_dict=False):

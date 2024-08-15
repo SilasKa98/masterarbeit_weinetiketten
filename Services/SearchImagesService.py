@@ -307,7 +307,8 @@ class SearchImagesService:
 
         def create_matcher_for_additional_entities(filename, matcher_name, used_attr="LOWER"):
             matcher = PhraseMatcher(nlp_de.vocab, attr=used_attr)
-            with open(f"C:\\Masterarbeit_ocr_env\\dictionary_files\\{filename}.txt", "r", encoding="utf-8") as file:
+            directory_path = os.getenv("DICTIONARY_FOLDER")
+            with open(f"{directory_path}{filename}.txt", "r", encoding="utf-8") as file:
                 new_data = [item.strip().lower() for item in file]
 
             if used_attr == "LEMMA":

@@ -20,7 +20,7 @@ class DetailFinderService:
             self.country_info_dict = None
             self.path_text_dict = None
 
-    def fetch_all_texts(self, used_ocrs=["doctr", "easyocr", "tesseract"]):
+    def fetch_all_texts(self, used_ocrs=["doctr", "easyocr", "tesseract", "kerasocr"]):
 
         db_results_all = []
         for ocr in used_ocrs:

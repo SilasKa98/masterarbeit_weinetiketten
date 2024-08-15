@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from PIL import Image
 
+
 class ImageModificationService:
 
     def __init__(self, image_path):

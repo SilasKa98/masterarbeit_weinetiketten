@@ -12,7 +12,6 @@ load_dotenv()
 class DeepLService:
 
     def __init__(self):
-        #include with .env file later
         auth_key = os.getenv('DEEPL_API_KEY')
         self.translator = deepl.Translator(auth_key)
 

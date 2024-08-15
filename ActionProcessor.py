@@ -401,7 +401,7 @@ class ActionProcessor:
             image_name = os.path.basename(img_path)
 
             image_mod = ImageModificationService(image_directory+"/"+image_name)
-            processed_path = f"C:/Masterarbeit_ocr_env/wine_images/edited_wine_images/{image_directory_name}"
+            processed_path = f"{os.getenv('EDITED_WINE_IMAGES_PATH')}{image_directory_name}"
             if not os.path.exists(processed_path):
                 os.makedirs(processed_path)
 
