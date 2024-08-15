@@ -148,7 +148,8 @@ function run_spelling_correction(){
         }),
         success: function(response){ 
             console.log(response)
-            tasksState["spelling_correction"] = "processing"; 
+            tasksState["spelling_correction"] = "processing";
+            statusPolling()  
             startPolling()
         }
     });
@@ -162,7 +163,8 @@ function run_update_label_detail_infos(){
         contentType: 'application/json',
         success: function(response){ 
             console.log(response)
-            tasksState["update_label_detail_infos"] = "processing";  
+            tasksState["update_label_detail_infos"] = "processing";
+            statusPolling()   
             startPolling()
         }
     });
@@ -191,7 +193,8 @@ function run_search_for_duplicate_entrys(){
         }),
         success: function(response){ 
             console.log(response)
-            tasksState["search_for_duplicate_entrys"] = "processing";  
+            tasksState["search_for_duplicate_entrys"] = "processing";
+            statusPolling()   
             startPolling()
         }
     });
@@ -231,7 +234,8 @@ function run_read_and_save_ocr(){
         }),
         success: function(response){ 
             console.log(response)
-            tasksState["read_and_save_ocr"] = "processing";  
+            tasksState["read_and_save_ocr"] = "processing";
+            statusPolling()   
             startPolling()
         }
     });
@@ -257,7 +261,8 @@ function run_read_db_and_detect_lang(){
         }),
         success: function(response){ 
             console.log(response)
-            tasksState["read_db_and_detect_lang"] = "processing";   
+            tasksState["read_db_and_detect_lang"] = "processing";
+            statusPolling()    
             startPolling()
         }
     });
@@ -275,7 +280,8 @@ function run_modify_images(){
         }),
         success: function(response){ 
             console.log(response)
-            tasksState["modify_images"] = "processing";   
+            tasksState["modify_images"] = "processing";
+            statusPolling()    
             startPolling()
         }
     });
@@ -299,7 +305,8 @@ function run_check_directory_for_duplicates(){
         contentType: false,
         success: function(response){ 
             console.log(response)
-            tasksState["check_directory_for_duplicates"] = "processing";   
+            tasksState["check_directory_for_duplicates"] = "processing";
+            statusPolling()   
             startPolling()
         }
     });
