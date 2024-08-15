@@ -14,6 +14,8 @@ from spacy.matcher import PhraseMatcher
 from Services.DatabaseService import DatabaseService
 from Services.DataProcessService import DataProcessService
 from Services.DetailFinderService import DetailFinderService
+from collections import defaultdict
+
 
 class SearchImagesService:
 
@@ -244,12 +246,20 @@ class SearchImagesService:
         print(all_values_for_comb)
 
         combinations = []
-        for r in range(2, len(entity_dict.keys()) + 1):
-            for combo in itertools.combinations(all_values_for_comb, r):
-                print("combo:")
-                print(combo)
-                if is_valid_combination(combo, entity_dict):
+        if entity_dict != {}:
+            for r in range(2, len(entity_dict.keys()) + 1):
+                for combo in itertools.combinations(all_values_for_comb, r):
+                    print("combo:")
+                    print(combo)
+                    if is_valid_combination(combo, entity_dict):
+                        combinations.append(combo)
+        else:
+            for r in range(2, len(input_result.keys()) + 1):
+                for combo in itertools.combinations(all_values_for_comb, r):
+                    print("combo:")
+                    print(combo)
                     combinations.append(combo)
+
 
         combination_text_based_result = {}
         print("combinations: ")
@@ -513,6 +523,27 @@ class SearchImagesService:
                     db_result = self.database_service.select_from_table(ocr, "*", condition="path = %s", params=[item], as_dict=True)
                     db_results_all.append(db_result)
 
+        path_text_dict = defaultdict(list)
+        for inner_list in db_results_all:
+            for item in inner_list:
+                current_path = item.get("path")
+                if current_path:
+                    # join all texts of the current path
+                    texts = " ".join(v for k, v in item.items() if k != "path")
+                    path_text_dict[current_path].append(texts)
+
+        # create final path_text_dict string
+        path_text_dict = {k: " ".join(v) for k, v in path_text_dict.items()}
+
+        # Step 2: Erstelle intersection_dict
+        intersection_dict = defaultdict(set)
+        for key, text in path_text_dict.items():
+            for keyword in search_text_keywords:
+                text_intersection = DataProcessService.find_text_intersections(keyword, text)
+                if text_intersection:
+                    text_intersection_str = next(iter(text_intersection))
+                    intersection_dict[text_intersection_str].add(key)
+        '''
         # create dictionary with all texts and the matching image path
         path_text_dict = {}
         for inner_list in db_results_all:
@@ -537,6 +568,7 @@ class SearchImagesService:
                         intersection_dict[text_intersection_str].add(key)
                     else:
                         intersection_dict[text_intersection_str] = {key}
+        '''
 
         return intersection_dict
 

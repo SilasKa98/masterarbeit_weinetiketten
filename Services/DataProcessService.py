@@ -101,7 +101,7 @@ class DataProcessService:
             if t in blacklisted_words:
                 continue
             # find best match for both texts/tokens
-            matches = process.extract(t, doc_tokens, scorer=fuzz.partial_ratio, limit=5)
+            matches = process.extract(t, doc_tokens, scorer=fuzz.partial_ratio, limit=1)
             for match in matches:
                 token_match, score, _ = match
                 if score >= threshold:
