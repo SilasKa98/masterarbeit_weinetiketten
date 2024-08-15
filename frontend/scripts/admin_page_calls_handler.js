@@ -314,6 +314,21 @@ function run_check_directory_for_duplicates(){
 }
 
 
+function run_update_entities_for_labels(){
+    $.ajax({
+        type: "POST",
+        url: "http://127.0.0.1:5000/update_entities_for_labels",
+        contentType: 'application/json',
+        success: function(response){ 
+            console.log(response)
+            tasksState["update_entities_for_labels"] = "processing";
+            statusPolling()   
+            startPolling()
+        }
+    });
+}
+
+
 function toggleOnlyNewImgs_readSaveOcr(switch_elem){
     console.log("fooo")
     let ocr_sel = document.getElementById("read_and_save_ocr_table_select")
