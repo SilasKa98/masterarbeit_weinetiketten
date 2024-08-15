@@ -1,4 +1,5 @@
 import itertools
+import json
 import pprint
 import re
 
@@ -459,7 +460,47 @@ class ActionProcessor:
 
         return poped_similarity_result
 
+    def update_entities_for_labels(self, used_ocrs=["doctr"]):
 
+        db_results_all = []
+        for ocr in used_ocrs:
+            db_result = self.database_service.select_from_table(ocr, "*", as_dict=True)
+            db_results_all.append(db_result)
+
+        path_text_dict = defaultdict(list)
+        for inner_list in db_results_all:
+            for item in inner_list:
+                current_path = item.get("path")
+                if current_path:
+                    # join all texts of the current path
+                    texts = " ".join(v for k, v in item.items() if k != "path")
+                    path_text_dict[current_path].append(texts)
+
+        # create final path_text_dict string
+        path_text_dict = {k: " ".join(v) for k, v in path_text_dict.items()}
+
+        from Services.SearchImagesService import SearchImagesService
+        search_service = SearchImagesService()
+        for key, item in path_text_dict.items():
+            entities = search_service.named_entity_recognition(item)
+
+            if 'date' in entities:
+                entities['date'] = [value for value in entities['date'] if len(value) >= 4]
+
+            if 'loc' in entities:
+                entities['loc'] = [loc for loc in entities['loc'] if
+                                            self.data_process_service.word_is_meaningful(loc)]
+
+            json_data = json.dumps(entities)
+            if entities:
+                self.database_service.update_table("etiketten_infos",
+                                                   ["label_entities"],
+                                                   [json_data],
+                                                   "path",
+                                                   key
+                                                   )
+
+                print("updated entities for: ", key)
 
 
 
