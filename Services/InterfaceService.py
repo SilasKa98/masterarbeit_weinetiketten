@@ -283,6 +283,26 @@ class InterfaceService:
             }
             return jsonify(response)
 
+        @self.app.route('/update_entities_for_labels', methods=["POST"])
+        def update_entities_for_labels():
+            task_id = str(uuid.uuid4())
+            task_name = "update_entities_for_labels"
+            threading.Thread(target=self.process_update_entities_for_labels, args=(task_id, task_name)).start()
+
+            self.tasks[task_name] = {
+                "task_id": task_id,
+                "status": "processing",
+                "name": task_name
+            }
+
+            response = {
+                "task_id": task_id,
+                "status": "processing",
+                "name": task_name
+            }
+            return jsonify(response)
+
+
     # ------------------------------------------------Processing--------------------------------------------------------
     # functions to async handle the processing
     def process_spelling_correction(self, task_id, task_name, table, sel_columns, insert_column, use_ml, lang_filter, only_new):
@@ -462,6 +482,16 @@ class InterfaceService:
             "result": return_strings
         }
 
+    def process_update_entities_for_labels(self, task_id, task_name):
+        from ActionProcessor import ActionProcessor
+        action = ActionProcessor()
+        action.update_entities_for_labels()
+
+        self.tasks[task_name] = {
+            "status": "success",
+            "name": task_name,
+            "task_id": task_id
+        }
 
 
 
