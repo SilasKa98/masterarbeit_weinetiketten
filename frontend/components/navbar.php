@@ -4,10 +4,6 @@
         <div class="offcanvas-body">
             <ul class="navbar-nav flex-grow-1 justify-content-between">
                 <li class="nav-item"><a class="nav-link" href="" data-bs-toggle='offcanvas' data-bs-target='#offcanvas_imgDetails' aria-controls='offcanvas_imgDetails'>Etikettendetails</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">foo</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">bar</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">buz</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">bla</a></li>
                 <li class="nav-item"><a class="nav-link" href="admin_page.php">Admin</a></li>
             </ul>
         </div>
