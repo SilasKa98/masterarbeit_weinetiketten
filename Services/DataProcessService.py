@@ -259,6 +259,16 @@ class DataProcessService:
             print(f"Error while parsing XML-File: {e}")
 
 
+    @staticmethod
+    def word_is_meaningful(word):
+        # filter words that do not contains vocals
+        if not re.search(r'[aeiouAEIOUäöüÄÖÜ]', word):
+            return False
+        # filter words that contain less than 2 different chars
+        if len(set(word)) < 2:
+            return False
+        return True
+
 
 
 
