@@ -195,6 +195,10 @@
                     Die gewonnenen Informationen werden im JSON Format in der Datenbank abgelegt um sie so später optimal weiter verarbeiten zu können.
                 </p>
                 <div>
+                    <div class="form-check form-switch input_option_admin">
+                        <input class="form-check-input" type="checkbox" role="switch" id="update_entities_for_labels_only_missings">
+                        <label class="form-check-label" for="update_entities_for_labels_only_missings">Nur fehlende Werte</label>
+                    </div>
                     <button class="btn btn-success" onclick="run_update_entities_for_labels()">Entitäten finden und aktuallisieren</button>
                 </div>
             </div>

@@ -285,9 +285,11 @@ class InterfaceService:
 
         @self.app.route('/update_entities_for_labels', methods=["POST"])
         def update_entities_for_labels():
+            data = request.json
+            only_update_missings = data["only_update_missings"]
             task_id = str(uuid.uuid4())
             task_name = "update_entities_for_labels"
-            threading.Thread(target=self.process_update_entities_for_labels, args=(task_id, task_name)).start()
+            threading.Thread(target=self.process_update_entities_for_labels, args=(task_id, task_name, only_update_missings)).start()
 
             self.tasks[task_name] = {
                 "task_id": task_id,
@@ -482,10 +484,10 @@ class InterfaceService:
             "result": return_strings
         }
 
-    def process_update_entities_for_labels(self, task_id, task_name):
+    def process_update_entities_for_labels(self, task_id, task_name, only_update_missings):
         from ActionProcessor import ActionProcessor
         action = ActionProcessor()
-        action.update_entities_for_labels()
+        action.update_entities_for_labels(only_update_missings=only_update_missings)
 
         self.tasks[task_name] = {
             "status": "success",

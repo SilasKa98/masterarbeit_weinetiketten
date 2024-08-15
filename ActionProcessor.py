@@ -460,13 +460,23 @@ class ActionProcessor:
 
         return poped_similarity_result
 
-    def update_entities_for_labels(self, used_ocrs=["doctr"]):
+    def update_entities_for_labels(self, used_ocrs=["doctr"], only_update_missings=False):
 
         db_results_all = []
         for ocr in used_ocrs:
-            db_result = self.database_service.select_from_table(ocr, "*", as_dict=True)
+            if only_update_missings is False:
+                db_result = self.database_service.select_from_table(ocr, "*", as_dict=True)
+            else:
+                empty_string = ""
+                db_result = self.database_service.select_from_table(f'{ocr} as dr',
+                                                                    "dr.*",
+                                                                    join="left join etiketten_infos as ei on dr.path = ei.path",
+                                                                    condition="ei.label_entities=%s",
+                                                                    params=[empty_string],
+                                                                    as_dict=True)
             db_results_all.append(db_result)
-
+        print("db_results_all")
+        pprint.pp(db_results_all)
         path_text_dict = defaultdict(list)
         for inner_list in db_results_all:
             for item in inner_list:

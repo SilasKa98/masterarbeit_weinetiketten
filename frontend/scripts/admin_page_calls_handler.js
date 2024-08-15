@@ -315,10 +315,22 @@ function run_check_directory_for_duplicates(){
 
 
 function run_update_entities_for_labels(){
+
+    let update_entities_for_labels_only_missings = document.getElementById("update_entities_for_labels_only_missings")
+
+    if(update_entities_for_labels_only_missings.checked){
+        update_entities_for_labels_only_missings = true
+    }else{
+        update_entities_for_labels_only_missings = false
+    }
+
     $.ajax({
         type: "POST",
         url: "http://127.0.0.1:5000/update_entities_for_labels",
         contentType: 'application/json',
+        data: JSON.stringify({
+            only_update_missings: update_entities_for_labels_only_missings
+        }),
         success: function(response){ 
             console.log(response)
             tasksState["update_entities_for_labels"] = "processing";
@@ -330,7 +342,6 @@ function run_update_entities_for_labels(){
 
 
 function toggleOnlyNewImgs_readSaveOcr(switch_elem){
-    console.log("fooo")
     let ocr_sel = document.getElementById("read_and_save_ocr_table_select")
     let col_sel = document.getElementById("read_and_save_ocr_column_input_select")
     let path_sel = document.getElementById("read_and_save_ocr_path_select")
