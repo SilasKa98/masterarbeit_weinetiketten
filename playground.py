@@ -1,14 +1,16 @@
 #from Services.DataProcessService import DataProcessService
 #from Services.DetailFinderService import DetailFinderService
-#from ActionProcessor import ActionProcessor
+from ActionProcessor import ActionProcessor
 #from Services.SpellcheckerService import SpellcheckerService
 #from Services.SearchImagesService import SearchImagesService
-from Services.KerasOCRService import KerasOCRService
+#from Services.KerasOCRService import KerasOCRService
 
 
-keras_ocr = KerasOCRService()
-text = keras_ocr.read_in_files("C:\\Masterarbeit_ocr_env\\wine_images\\archiv20\\abenheim_liebfrauenmorgen.jpg")
-print(text)
+#keras_ocr = KerasOCRService()
+#text = keras_ocr.read_in_files("C:\\Masterarbeit_ocr_env\\wine_images\\archiv20\\abenheim_liebfrauenmorgen.jpg")
+#print(text)
+action = ActionProcessor()
+action.create_entities_for_labels()
 
 #loaded_input_file = preprocessor.load_data('data/english_words.csv')
 #print(loaded_input_file)
