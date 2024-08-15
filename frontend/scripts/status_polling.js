@@ -98,7 +98,7 @@ function handleSearchAlgorithm(result, task_name) {
                     const newDiv_inner = document.createElement("div");
                     newDiv_inner.classList.add("result_category_wrap");
                     newDiv.append(newDiv_inner)
-                    newDiv_inner.innerHTML += "<h3>Gefunden durch: " + category_inner + "</h3>";
+                    newDiv_inner.innerHTML += "<h3>"+item_inner.length+" Ergebnisse Gefunden durch: " + category_inner + "</h3>";
                     item_inner.forEach(path => {
                         let content_string = handel_image_content_filling(path)
                         newDiv_inner.innerHTML += content_string;
