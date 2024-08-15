@@ -401,6 +401,10 @@ class SearchImagesService:
         entities_dict = {key: value for key, value in entities_dict.items() if value}
         print("entities_dict_finals")
         print(entities_dict)
+        # filter for duplikates
+        entities_dict = {key: list(set(value)) for key, value in entities_dict.items()}
+        print("entities_dict_finals dup remove")
+        print(entities_dict)
         return entities_dict
 
     # sub function for semantic search
