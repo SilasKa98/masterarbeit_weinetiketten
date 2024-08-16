@@ -159,8 +159,8 @@ class DataProcessService:
         return intersection if intersection else None
 
     @staticmethod
-    def similar(a, b):
-        return SequenceMatcher(None, a, b).ratio()
+    def is_similar(word1, word2, threshold=80):
+        return fuzz.ratio(word1, word2) > threshold
 
     def convert_set_to_list(self, obj):
         # rekursiv transform sets to lists
@@ -258,16 +258,65 @@ class DataProcessService:
         except Exception as e:
             print(f"Error while parsing XML-File: {e}")
 
-
+    # clean word and check if it contains vocals and has a min length
     @staticmethod
     def word_is_meaningful(word):
-        # filter words that do not contains vocals
-        if not re.search(r'[aeiouAEIOUäöüÄÖÜ]', word):
-            return False
-        # filter words that contain less than 2 different chars
-        if len(set(word)) < 2:
-            return False
-        return True
+
+        if word.isdigit():
+            year = int(word)
+            if 1600 <= year <= 2100:
+                return True
+
+        clean_word = re.sub(r'[^a-zA-ZäöüÄÖÜ]', '', word)
+        has_vowel = bool(re.search(r'[aeiouäöüAEIOUÄÖÜ]', clean_word))
+        unique_letters = len(set(clean_word)) >= 3
+        min_length = len(clean_word) >= 3
+        return has_vowel and unique_letters and min_length
+
+    def generate_google_search_query_from_ent_dict(self, dict_input):
+        dict_input = self.remove_duplicate_val_from_dict(dict_input)
+        search_query = ""
+        used_keys = set()
+
+        if 'wine_types' in dict_input:
+            search_query += ' '.join(dict_input['wine_types']) + ' '
+            used_keys.add('wine_types')
+
+        if 'wine_names' in dict_input:
+            search_query += ' '.join(dict_input['wine_names']) + ' '
+            used_keys.add('wine_names')
+
+        if 'wine_attributes' in dict_input:
+            search_query += ' '.join(dict_input['wine_attributes']) + ' '
+            used_keys.add('wine_attributes')
+
+        if 'loc' in dict_input:
+            search_query += ' '.join([f'"{loc}"' for loc in dict_input['loc']]) + ' '
+            used_keys.add('loc')
+
+        if 'date' in dict_input:
+            search_query += ' '.join(dict_input['date']) + ' '
+            used_keys.add('date')
+
+        search_query = search_query.strip().replace('"', '')
+
+        cleaned_search_query = [item for item in search_query.split() if self.word_is_meaningful(item)]
+
+        # remove similar words (also uses some tolerance, so words doesn't need 1:1)
+        seen = []
+        unique_words = []
+        for word in cleaned_search_query:
+            if not any(self.is_similar(word, seen_word) for seen_word in seen):
+                unique_words.append(word)
+                seen.append(word)
+
+        cleaned_search_query = ' '.join(unique_words)
+
+        # only return query string if values of 3 different categorys are in it
+        if len(used_keys) >= 3:
+            return cleaned_search_query
+        else:
+            return ""
 
 
 
