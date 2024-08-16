@@ -1,9 +1,11 @@
 import json
 import os
 import threading
+import urllib
 import uuid
 from collections import OrderedDict
 
+import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -60,10 +62,10 @@ class InterfaceService:
 
             sel_columns = sel_columns + ", " + table + ".path"
 
-
             # use threads so the task is getting done async and the rest of the system stays responsive
             threading.Thread(target=self.process_spelling_correction,
-                             args=(task_id, task_name, table, sel_columns, insert_column, use_ml, lang_filter, only_new)).start()
+                             args=(task_id, task_name, table, sel_columns, insert_column, use_ml, lang_filter,
+                                   only_new)).start()
 
             self.tasks[task_name] = {
                 "task_id": task_id,
@@ -138,7 +140,8 @@ class InterfaceService:
             task_name = "read_and_save_ocr"
 
             threading.Thread(target=self.process_read_and_save_ocr,
-                             args=(task_id, task_name, table, ocr_model, column, path, use_translation, only_new_entries)).start()
+                             args=(task_id, task_name, table, ocr_model, column, path, use_translation,
+                                   only_new_entries)).start()
 
             self.tasks[task_name] = {
                 "task_id": task_id,
@@ -184,7 +187,8 @@ class InterfaceService:
             task_id = str(uuid.uuid4())
             task_name = "search_algorithm"
 
-            threading.Thread(target=self.process_search_algorithm, args=(task_id, task_name, search_text, search_logic_combined)).start()
+            threading.Thread(target=self.process_search_algorithm,
+                             args=(task_id, task_name, search_text, search_logic_combined)).start()
 
             self.tasks[task_name] = {
                 "task_id": task_id,
@@ -198,7 +202,6 @@ class InterfaceService:
                 "name": task_name
             }
             return jsonify(response)
-
 
         @self.app.route('/get_image_informations', methods=['POST'])
         def get_image_informations():
@@ -220,7 +223,6 @@ class InterfaceService:
                 "name": task_name
             }
             return jsonify(response)
-
 
         @self.app.route('/modify_images', methods=["POST"])
         def modify_images():
@@ -268,7 +270,8 @@ class InterfaceService:
 
             task_id = str(uuid.uuid4())
             task_name = "check_directory_for_duplicates"
-            threading.Thread(target=self.process_check_directory_for_duplicates, args=(task_id, task_name, UPLOAD_FOLDER)).start()
+            threading.Thread(target=self.process_check_directory_for_duplicates,
+                             args=(task_id, task_name, UPLOAD_FOLDER)).start()
 
             self.tasks[task_name] = {
                 "task_id": task_id,
@@ -289,7 +292,8 @@ class InterfaceService:
             only_update_missings = data["only_update_missings"]
             task_id = str(uuid.uuid4())
             task_name = "update_entities_for_labels"
-            threading.Thread(target=self.process_update_entities_for_labels, args=(task_id, task_name, only_update_missings)).start()
+            threading.Thread(target=self.process_update_entities_for_labels,
+                             args=(task_id, task_name, only_update_missings)).start()
 
             self.tasks[task_name] = {
                 "task_id": task_id,
@@ -304,14 +308,16 @@ class InterfaceService:
             }
             return jsonify(response)
 
+    # ------------------------------------------------Processing-------------------------------------------------------
 
-    # ------------------------------------------------Processing--------------------------------------------------------
     # functions to async handle the processing
-    def process_spelling_correction(self, task_id, task_name, table, sel_columns, insert_column, use_ml, lang_filter, only_new):
+    def process_spelling_correction(self, task_id, task_name, table, sel_columns, insert_column, use_ml, lang_filter,
+                                    only_new):
 
         from ActionProcessor import ActionProcessor
         action_processor = ActionProcessor()
-        action_processor.correct_sentence_spelling(table, sel_columns, insert_column, use_ml=use_ml, lang_filter=lang_filter, only_new=only_new)
+        action_processor.correct_sentence_spelling(table, sel_columns, insert_column, use_ml=use_ml,
+                                                   lang_filter=lang_filter, only_new=only_new)
 
         self.tasks[task_name] = {"status": "success",
                                  "name": task_name,
@@ -332,7 +338,8 @@ class InterfaceService:
 
         from ActionProcessor import ActionProcessor
         action_processor = ActionProcessor()
-        similarity_result = action_processor.search_for_duplicate_entrys(table, column, save=save, save_table=save_table)
+        similarity_result = action_processor.search_for_duplicate_entrys(table, column, save=save,
+                                                                         save_table=save_table)
 
         return_strings = []
         for item in similarity_result:
@@ -349,7 +356,8 @@ class InterfaceService:
                                  "result": return_strings
                                  }
 
-    def process_read_and_save_ocr(self, task_id, task_name, table, ocr_model, column, path, use_translation, only_new_entries):
+    def process_read_and_save_ocr(self, task_id, task_name, table, ocr_model, column, path, use_translation,
+                                  only_new_entries):
 
         from ActionProcessor import ActionProcessor
         action_processor = ActionProcessor()
@@ -393,7 +401,7 @@ class InterfaceService:
         for key in top_hits:
             top_hits[key] = list(top_hits[key])
 
-        hits = {"top_hits": top_hits,  "text_based_hits": text_based_hits, "second_choice_hits": second_choice_hits}
+        hits = {"top_hits": top_hits, "text_based_hits": text_based_hits, "second_choice_hits": second_choice_hits}
 
         data_processing = DataProcessService()
         hits = data_processing.convert_set_to_list(hits)
@@ -407,6 +415,7 @@ class InterfaceService:
 
     def process_get_image_informations(self, task_id, task_name, path):
         from Services.DatabaseService import DatabaseService
+        from Services.DataProcessService import DataProcessService
         database = DatabaseService()
         db_results = database.select_from_table("etiketten_infos", "*", condition="path = %s", params=[path])
         print("frontend_db_results")
@@ -419,6 +428,30 @@ class InterfaceService:
         image_anno = db_results[0][8]
         image_vol = db_results[0][9]
         image_wine_type = db_results[0][10]
+        ent_dict = db_results[0][11]
+
+        data_service = DataProcessService()
+        try:
+            ent_dict = json.loads(ent_dict)
+            google_query = data_service.generate_google_search_query_from_ent_dict(ent_dict)
+        except:
+            google_query = ""
+
+        if google_query == "":
+            doctr_text_final = database.select_from_table("doctr", "text_final", condition="path = %s", params=[path])
+            keywords = data_service.create_keywords_of_scentence(doctr_text_final[0][0], image_lang, 2, 5, 0.7)[0][0].split()
+            print("keywords")
+            print(keywords)
+            google_query = ' '.join(keywords)
+            print("alternativ query !")
+
+        if "wine_names" in ent_dict:
+            try:
+                wine_name = ' '.join(ent_dict["wine_names"])
+            except:
+                wine_name = ""
+        else:
+            wine_name = ""
 
         result = {"image_name": image_name,
                   "image_lang": image_lang,
@@ -427,7 +460,9 @@ class InterfaceService:
                   "image_provinces": image_provinces,
                   "image_anno": image_anno,
                   "image_vol": image_vol,
-                  "image_wine_type": image_wine_type
+                  "image_wine_type": image_wine_type,
+                  "google_query": google_query,
+                  "wine_name": wine_name
                   }
 
         self.tasks[task_name] = {
@@ -494,7 +529,3 @@ class InterfaceService:
             "name": task_name,
             "task_id": task_id
         }
-
-
-
-
