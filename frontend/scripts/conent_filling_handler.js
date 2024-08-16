@@ -24,7 +24,9 @@ function handel_offcanvas_content_filling(path){
                 var result = response.result
 
                 // pre processing and filtering
-                result["image_anno"] = result["image_anno"] || "";
+                if(result["image_anno"]){
+                    result["image_anno"] = result["image_anno"] || "";
+                }
                 const wineTypes = {
                     "white wine": "Weißwein",
                     "red wine": "Rotwein",
@@ -39,14 +41,23 @@ function handel_offcanvas_content_filling(path){
                     { key: "image_provinces", label: "Region" },
                     { key: "image_anno", label: "Jahrgang" },
                     { key: "image_vol", label: "Alkoholgehalt" },
-                    { key: "image_wine_type", label: "Weinsorte" }
+                    { key: "image_wine_type", label: "Weinsorte" },
+                    { key: "wine_name", label: "Weinname/Rebsorte"},
+                    { key: "google_query", label: "Google" }
                 ];
 
                 let content = '';
 
                 labels.forEach(item => {
                     if (result[item.key]) {
-                        content += `<span class="offCanvasCardLabel">${item.label}: </span><span>${result[item.key]}</span><br>`;
+                        if(item.key == "google_query"){
+                            let formattedQuery = result[item.key].replace(/ /g, '+')
+                            let encodedQuery = encodeURIComponent(formattedQuery).replace(/%2B/g, '+')
+                            content += `<br><span class="offCanvasCardLabel"></span><a href=https://www.google.com/search?q=${encodedQuery}&tbm=shop target='_blank'>Ähnliche Weine auf Google suchen</a><br>`;
+                        }else{
+                            content += `<span class="offCanvasCardLabel">${item.label}: </span><span>${result[item.key]}</span><br>`;
+                        }
+                        
                     }
                 });
 
@@ -56,7 +67,7 @@ function handel_offcanvas_content_filling(path){
                                         '<div class="card-body">'+
                                             '<h5 class="card-title">'+result["image_name"]+'</h5>'+
                                             '<p class="card-text">'+
-                                                content
+                                                content + 
                                             '</p>'+
                                             '<p class="card-text"><small class="text-body-secondary">Last updated just now</small></p>'+
                                         '</div>'+
@@ -92,3 +103,5 @@ function handel_image_content_filling(path){
     
     return content_string
 }
+
+
