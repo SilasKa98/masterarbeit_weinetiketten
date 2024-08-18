@@ -176,6 +176,7 @@ class SearchImagesService:
             print(top_hits_combinations)
             if top_hits_combinations:
                 top_hits = top_hits_combinations
+                top_hits = {key: list(set(value)) for key, value in top_hits.items()}
 
         # limit top hits to 24 items
         data_processing = DataProcessService()
