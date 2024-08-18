@@ -39,13 +39,20 @@ class DetailFinderService:
     def find_anno(self, path):
         text = self.path_text_dict[path]
         # etiketten jahreszahlen von 1400 bis 2099
-        pattern = r'\b(14\d{2}|15\d{2}|16\d{2}|17\d{2}|18\d{2}|19\d{2}|20\d{2})\b'
-        anno_list = re.findall(pattern, text)
-        counter = Counter(anno_list)
-        if counter:
-            most_common_element = counter.most_common(1)[0][0]
+        pattern_general = r'\b(14\d{2}|15\d{2}|16\d{2}|17\d{2}|18\d{2}|19\d{2}|20\d{2})\b'
+        pattern_er = r'\b(14\d{2}|15\d{2}|16\d{2}|17\d{2}|18\d{2}|19\d{2}|20\d{2})\s*er\b'
+        anno_list_general = re.findall(pattern_general, text)
+        anno_list_er = re.findall(pattern_er, text)
+        counter_general = Counter(anno_list_general)
+        anno_list_er = [match.split()[0] for match in anno_list_er]
+        counter_er = Counter(anno_list_er)
+        if counter_er:
+            most_common_element = counter_er.most_common(1)[0][0]
+        elif counter_general:
+            most_common_element = counter_general.most_common(1)[0][0]
         else:
             most_common_element = None
+
         return most_common_element
 
     def find_vol(self, path):
