@@ -159,8 +159,8 @@
             <div class="card-body">
                 <h5 class="card-title">Etiketten nach Details durchsuchen</h5>
                 <p class="card-text">
-                    Mit diesem Modul können die persistierten Details aktualisiert werden. 
-                    Hierrunter zählen Das <b>Land</b>, die <b>Provinzen</b>, der <b>Jahrgang</b> und der <b>Alkohlgehalt</b> des jeweiligen Weines.<br>
+                    Mit diesem Modul können die persistierten Details der Weinetiketten aktualisiert werden. 
+                    Hierrunter zählen Das <b>Land</b>, die <b>Region</b>, der <b>Jahrgang</b>, der <b>Alkohlgehalt</b> und der <b>Weintyp (Rotwein/Weißwein)</b> des jeweiligen Weines.<br>
                     Jeder erkannte Weinetikettentext wird hierbei nach all diesen Informationen durchsucht. 
                 </p>
                 <div>
