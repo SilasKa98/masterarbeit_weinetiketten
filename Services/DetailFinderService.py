@@ -10,7 +10,6 @@ from countryinfo import CountryInfo
 class DetailFinderService:
 
     def __init__(self, init_path_text_dict=True):
-        self.database_service = DatabaseService()
         if init_path_text_dict:
             self.country_provinces_dict = self.get_provinces()
             self.country_info_dict = self.get_all_countries_with_infos()
@@ -20,11 +19,13 @@ class DetailFinderService:
             self.country_info_dict = None
             self.path_text_dict = None
 
-    def fetch_all_texts(self, used_ocrs=["doctr", "easyocr", "tesseract", "kerasocr"]):
+    @staticmethod
+    def fetch_all_texts(used_ocrs=["doctr", "easyocr", "tesseract", "kerasocr"]):
 
         db_results_all = []
         for ocr in used_ocrs:
-            db_result = self.database_service.select_from_table(ocr, "*", as_dict=True)
+            database_service = DatabaseService()
+            db_result = database_service.select_from_table(ocr, "*", as_dict=True)
             db_results_all.extend(db_result)  # direkt in eine Liste einfügen
 
         path_text_dict = defaultdict(str)
@@ -53,12 +54,21 @@ class DetailFinderService:
         vol_list = re.findall(pattern, text)
         # Clean up the results by removing any "vol" and trailing spaces
         #vol_list = [re.sub(r'\s*vol', '', v).strip() for v in vol_list]
+        # Clean up the results by removing "vol", any trailing spaces, and replace commas with dots
+        vol_list = [re.sub(r'\s*vol', '', v).replace(',', '.').strip() for v in vol_list]
+
+        # Convert percentages to floats
+        vol_list = [float(v.replace('%', '')) for v in vol_list]
+
         counter = Counter(vol_list)
         if counter:
-            most_common_element = counter.most_common(1)[0][0].replace("vol","");
+            for vol, _ in counter.most_common():
+                if 7 <= vol <= 20:
+                    return str(vol)+"%"
+            # If no suitable value is found, return None or a default value
+            return None
         else:
-            most_common_element = None
-        return most_common_element
+            return None
 
     @staticmethod
     def get_provinces():
