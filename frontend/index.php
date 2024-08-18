@@ -21,7 +21,7 @@
       <main>
         <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 text-center h-100">
           <div class="col-md-6 p-lg-5 mx-auto my-5">
-            <h1 class="display-3 fw-bold">Weinetiketten</h1>
+            <h1 class="display-3 fw-bold">Wine Explorer</h1>
             <h3 class="fw-normal text-muted mb-3">Die intelligente Suche nach Weinetiketten</h3>
             <div class="input-group mb-3">
               <input type="text" class="form-control" id="search_text" placeholder="" aria-label="..." aria-describedby="basic-addon2">
