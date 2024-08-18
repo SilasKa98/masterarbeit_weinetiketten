@@ -1,3 +1,4 @@
+import os
 import re
 import pycountry
 from Services.DatabaseService import DatabaseService
@@ -38,7 +39,7 @@ class DetailFinderService:
 
     def find_anno(self, path):
         text = self.path_text_dict[path]
-        # etiketten jahreszahlen von 1400 bis 2099
+        # etiketten years from 1400 bis 2099
         pattern_general = r'\b(14\d{2}|15\d{2}|16\d{2}|17\d{2}|18\d{2}|19\d{2}|20\d{2})\b'
         pattern_er = r'\b(14\d{2}|15\d{2}|16\d{2}|17\d{2}|18\d{2}|19\d{2}|20\d{2})\s*er\b'
         anno_list_general = re.findall(pattern_general, text)
@@ -59,8 +60,7 @@ class DetailFinderService:
         text = self.path_text_dict[path]
         pattern = r'\b\d{1,2}[.,]\d{1,2}%\s*vol|\b\d{1,2}%\s*vol|\b\d{1,2}[.,]\d{1,2}%|\b\d{1,2}%'
         vol_list = re.findall(pattern, text)
-        # Clean up the results by removing any "vol" and trailing spaces
-        #vol_list = [re.sub(r'\s*vol', '', v).strip() for v in vol_list]
+
         # Clean up the results by removing "vol", any trailing spaces, and replace commas with dots
         vol_list = [re.sub(r'\s*vol', '', v).replace(',', '.').strip() for v in vol_list]
 
@@ -136,9 +136,9 @@ class DetailFinderService:
 
     def find_wine_type(self, path):
         text = self.path_text_dict[path]
-        with open(f"C:\\Masterarbeit_ocr_env\\dictionary_files\\red_wine_names.txt", "r", encoding="utf-8") as file:
+        with open(os.getenv("RED_WINE_NAMES"), "r", encoding="utf-8") as file:
             red_wine_names = [item.strip().lower() for item in file]
-        with open(f"C:\\Masterarbeit_ocr_env\\dictionary_files\\white_wine_names.txt", "r", encoding="utf-8") as file:
+        with open(os.getenv("WHITE_WINE_NAMES"), "r", encoding="utf-8") as file:
             white_wine_names = [item.strip().lower() for item in file]
         data = DataProcessService()
         is_red_wine = False
