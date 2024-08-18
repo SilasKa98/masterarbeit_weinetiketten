@@ -157,7 +157,7 @@ class DataProcessService:
                     intersection[year_range].append(str(year))
 
         if intersection:
-            print("foo ", intersection)
+            print("match found: ", intersection)
 
         return intersection if intersection else None
 
