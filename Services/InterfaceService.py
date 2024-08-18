@@ -439,7 +439,7 @@ class InterfaceService:
 
         if google_query == "":
             doctr_text_final = database.select_from_table("doctr", "text_final", condition="path = %s", params=[path])
-            keywords = data_service.create_keywords_of_scentence(doctr_text_final[0][0], image_lang, 2, 5, 0.7)[0][0].split()
+            keywords = data_service.create_keywords_of_scentence(doctr_text_final[0][0], image_lang, 2, 5, 0.8)[0][0].split()
             print("keywords")
             print(keywords)
             google_query = ' '.join(keywords)
