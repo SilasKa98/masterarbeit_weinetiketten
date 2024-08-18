@@ -37,9 +37,11 @@ from Services.DetailFinderService import DetailFinderService
 
 
 details = DetailFinderService(init_path_text_dict=True)
+anno = details.find_anno("wine_images\\archiv20a\\merl_koenigslay_terrassen.jpg")
+print(anno)
+'''
 vol = details.find_vol("wine_images\\archiv20a\\merl_koenigslay_terrassen.jpg")
 print(vol)
-'''
 anno = details.find_anno("wine_images\\archiv20a\\merl_koenigslay_terrassen.jpg")
 print(anno)
 countries = details.find_country("wine_images\\archiv20a\\merl_koenigslay_terrassen.jpg")
