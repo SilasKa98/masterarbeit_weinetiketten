@@ -442,7 +442,7 @@ class InterfaceService:
             keywords = data_service.create_keywords_of_scentence(doctr_text_final[0][0], image_lang, 2, 5, 0.8)[0][0].split()
             print("keywords")
             print(keywords)
-            google_query = ' '.join(keywords)
+            google_query = ' '.join(keywords).lower()
             print("alternativ query !")
 
         if "wine_names" in ent_dict:
