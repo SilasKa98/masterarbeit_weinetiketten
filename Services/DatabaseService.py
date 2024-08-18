@@ -1,5 +1,8 @@
 import mysql.connector
 import os
+from dotenv import load_dotenv
+dotenv_path = '/Masterarbeit_ocr_env/.env'
+load_dotenv(dotenv_path=dotenv_path)
 
 
 class DatabaseService:
@@ -9,7 +12,7 @@ class DatabaseService:
             host=os.getenv("HOST"),
             user=os.getenv("USER"),
             password=os.getenv("PASSWORD"),
-            database=os.getenv("database")
+            database=os.getenv("DATABASE")
         )
 
     def select_from_table(self, table, selected_cols, condition=None, params=None, join=None, as_dict=False):
