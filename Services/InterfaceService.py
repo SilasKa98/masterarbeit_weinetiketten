@@ -347,7 +347,7 @@ class InterfaceService:
             path1 = item[3][0] if isinstance(item[3], tuple) else item[3]
             path2 = item[4][0] if isinstance(item[4], tuple) else item[4]
 
-            append_string = f"<p>Ratio: {item[2]} | Paths: <a href=/{path1} target='_blank'>{path1}</a> & <a href=/{path2} target='_blank'>{path2}</a></p>"
+            append_string = f"<p>Übereinstimmung: {round(item[2])}% | Paths: <a href=/{path1} target='_blank'>{path1}</a> & <a href=/{path2} target='_blank'>{path2}</a></p>"
             return_strings.append(append_string)
 
         self.tasks[task_name] = {"status": "success",
@@ -496,8 +496,12 @@ class InterfaceService:
             path1 = item[3][0] if isinstance(item[3], tuple) else item[3]
             path2 = item[4][0] if isinstance(item[4], tuple) else item[4]
 
-            append_string = f"<p>Ratio: {item[2]} | Paths: <a href=/{path1} target='_blank'>{path1}</a> & <a href=/{path2} target='_blank'>{path2}</a></p>"
+            append_string = f"<p>Übereinstimmung: {round(item[2])}% | Paths: <a href=/{path1} target='_blank'>{path1}</a> & <span>{path2}</span></p>"
             return_strings.append(append_string)
+
+        if len(return_strings) == 0:
+            no_duplicates_string = "Keine Duplikate gefunden."
+            return_strings.append(no_duplicates_string)
 
         # after everything is done, clear the upload folder
         if os.path.exists(upload_folder):
