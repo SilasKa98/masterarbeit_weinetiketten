@@ -113,10 +113,11 @@ class SearchImagesService:
 
         entity_search_dict = self.named_entity_recognition(search_text)
         entity_search_text = " ".join(ent for ents in entity_search_dict.values() for ent in ents)
-
         query = entity_search_text.strip() or search_text
-        print("########################(query)##################################")
-        print(query)
+
+        print("entity_search_dict")
+        print(entity_search_dict)
+
         found_paths_semantic = self.semantic_search(query)
         label_details_result = self.search_with_db_label_details(entity_search_dict)
         text_based_result = self.text_based_keyword_search(entity_search_dict, search_text)
@@ -136,13 +137,8 @@ class SearchImagesService:
         if self.search_for_province is False and self.search_for_country is True and search_logic_combined is False:
             country_summed_text_based_result = {}
             for key, item in text_based_result.items():
-                print(key)
-                print(item)
-                print("add_country_info_check")
-                print(self.additional_country_infos)
                 found_country = next((inner_key for inner_key, inner_list in self.additional_country_infos.items() if key in inner_list), None)
-                print("11found_country")
-                print(found_country)
+
                 if found_country and key in self.additional_country_infos[found_country]:
                     new_key = GoogleTranslator(source='en', target='de').translate(found_country).lower()
                     if new_key not in country_summed_text_based_result:
@@ -152,18 +148,12 @@ class SearchImagesService:
                 else:
                     country_summed_text_based_result[key] = list(set(item))
 
-            print("country_summed_text_based_result")
-            pprint.pp(country_summed_text_based_result)
             text_based_result = country_summed_text_based_result
-
-        print("########################(text_based_result)##################################")
-        pprint.pp(text_based_result)
 
         found_paths_only = [path for path, _, _ in found_paths_semantic]
         #top_hits = self.text_based_keyword_search(search_text, sub_search=True, sub_search_paths=found_paths_only)
         top_hits = {key: set(pfad for pfad in pfade if pfad in found_paths_only) for key, pfade in text_based_result.items()}
-        print("entity_search_dict")
-        print(entity_search_dict)
+
         if search_logic_combined:
             # doing result adjustment for normal textbased results if combined box is checked
             text_based_result_combinations = self.combined_search_result_adjustment(text_based_result, self.entity_search_dict_with_adds)
@@ -172,8 +162,7 @@ class SearchImagesService:
 
             # doing result adjustments for top hits if combined box is checked
             top_hits_combinations = self.combined_search_result_adjustment(top_hits, self.entity_search_dict_with_adds)
-            print("top_hits_combinations")
-            print(top_hits_combinations)
+
             if top_hits_combinations:
                 top_hits = top_hits_combinations
                 top_hits = {key: list(set(value)) for key, value in top_hits.items()}
@@ -191,10 +180,6 @@ class SearchImagesService:
         second_choice_hits = list(filter(lambda x: x not in sub_search_values_list, found_paths_only))
         second_choice_hits = second_choice_hits[:32]
 
-        print("---------------------------new text based result------------------------------------------------")
-        pprint.pp(text_based_result)
-        pprint.pp(top_hits)
-
         # remove all paths from text_based_results that are already in top hits
         top_hits_values = set(v for values in top_hits.values() for v in values)
         if len(top_hits_values) > 0:
@@ -208,24 +193,15 @@ class SearchImagesService:
 
         def is_valid_combination(inner_comb, types_dict):
 
-            print("types_dict_inner")
-            print(types_dict)
             # get categories with 0 as placeholder value
             category_count = {inner_key: 0 for inner_key in types_dict}
-
-            print("category_count1")
-            print(category_count)
 
             # now actually count for existing values
             for c_key, values in types_dict.items():
                 category_count[c_key] = sum(1 for item in inner_comb if item in values)
 
-            print("category_count2")
-            print(category_count)
-
             # check if there are multiple values for one category for this combination
             if any(count > 1 for count in category_count.values()):
-                print("return false")
                 return False
 
             # check if every category has one elem in the current combination
@@ -243,9 +219,6 @@ class SearchImagesService:
         if len(all_values_for_comb) == 1:
             return input_result
 
-        print("all vals for comb")
-        print(all_values_for_comb)
-
         combinations = []
         if entity_dict != {}:
             for r in range(2, len(entity_dict.keys()) + 1):
@@ -261,7 +234,6 @@ class SearchImagesService:
                     print(combo)
                     combinations.append(combo)
 
-
         combination_text_based_result = {}
         print("combinations: ")
         print(combinations)
@@ -273,8 +245,6 @@ class SearchImagesService:
             common_key = ' '.join(combs)
             combination_text_based_result[common_key] = common_paths
 
-        print("combination_text_based_result")
-        print(combination_text_based_result)
         if self.search_for_province is False and self.search_for_country is True:
             country_combined_dict = {}
             for key, item in combination_text_based_result.items():
@@ -305,8 +275,6 @@ class SearchImagesService:
                 else:
                     country_combined_dict[key] = item
 
-            print("country_combined_dict")
-            pprint.pp(country_combined_dict)
             combination_text_based_result = country_combined_dict
 
         return combination_text_based_result
@@ -345,7 +313,7 @@ class SearchImagesService:
         # -> this shouldn`t be necessary, however its to make sure that no double entries are generated
         wine_type_matches = [doc_de[start:end].text for match_id, start, end in matches_types if doc_de[start:end].text not in wine_name_matches]
         wine_attributes_matches = [doc_de[start:end].text for match_id, start, end in matches_attributes]
-        print(wine_attributes_matches)
+
         # en model is used for date recognition
         doc_en = nlp_en(search_text)
         found_dates = [ent.text for ent in doc_en.ents if ent.label_ == "DATE"]
@@ -372,12 +340,8 @@ class SearchImagesService:
         if wine_attributes_matches:
             entities_dict["wine_attributes"] = wine_attributes_matches
 
-        print("docents")
-        print(doc_de.ents)
         for ent in doc_de.ents:
             if ent.label_ in ["LOC", "GPE"]:
-                print("ent.text")
-                print(ent.text)
                 if "loc" not in entities_dict:
                     entities_dict["loc"] = []
 
@@ -400,12 +364,10 @@ class SearchImagesService:
         # all other keys with empty lists will get removed too. Its to be save that no empty list remains, which would
         # conflict with the combination logic
         entities_dict = {key: value for key, value in entities_dict.items() if value}
-        print("entities_dict_finals")
-        print(entities_dict)
+
         # filter for duplikates
         entities_dict = {key: list(set(value)) for key, value in entities_dict.items()}
-        print("entities_dict_finals dup remove")
-        print(entities_dict)
+
         return entities_dict
 
     # sub function for semantic search
@@ -454,9 +416,6 @@ class SearchImagesService:
         tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         model = BertModel.from_pretrained('bert-base-uncased')
 
-        print("--------------semantic search text:------------")
-        print(search_text)
-
         db_results_all = []
         for ocr_model, columns in used_ocrs.items():
             for column in columns:
@@ -487,10 +446,8 @@ class SearchImagesService:
         query_vector = self.encode_text(query, tokenizer, model)
         #indices = t.get_nns_by_vector(query_vector, 50)
         indices = self.annoy_index_cache.get_nns_by_vector(query_vector, 600)
-        print(indices)
 
         found_paths = [list(set(self.semantic_vector_cache.keys()))[i] for i in indices]
-        print(found_paths)
 
         return found_paths
 
@@ -506,17 +463,12 @@ class SearchImagesService:
             entity_search_dict["loc"].extend(values_to_add)
             entity_search_dict["loc"] = list(set(entity_search_dict["loc"]))
 
-        print("currentEntitySearchDict")
-        print(entity_search_dict)
         search_text_keywords = list(set())
         if entity_search_dict:
             for k, v in entity_search_dict.items():
                 search_text_keywords.extend(v)
         else:
             search_text_keywords = DataProcessService.create_keywords_of_scentence(search_text, "de", 4, 6, 0.9)[0][0].split()
-
-        print("--------------------------SEARCH TEXT KEYWORDS (SUBSEARCH)------------------------------------")
-        print(search_text_keywords)
 
         db_results_all = []
         for ocr in used_ocrs:
@@ -579,8 +531,7 @@ class SearchImagesService:
 
     def search_with_db_label_details(self, search_entity_dict):
         self.update_cache_details_label_search()
-        print("labelsearch_entity_dict")
-        print(search_entity_dict)
+
         db_details_result = self.database_service.select_from_table("etiketten_infos", "path, country, provinces, anno, vol, wine_type", as_dict=True)
         entity_list = list()
 
@@ -592,10 +543,7 @@ class SearchImagesService:
         country_entity_relation_list = {}
         found_country_keys = []
         for key, value in self.country_list_cache.items():
-            print("seach entity_list")
-            print(entity_list)
-            print(value)
-            #if bool(set(entity_list) & set(item)):
+
             if any(i.lower() in (s.lower() for s in entity_list) for i in value):
                 # a province/country name was found for
                 found_country_key = key
@@ -604,44 +552,26 @@ class SearchImagesService:
                 country_entity_relation_list[found_country_key].extend(value)
 
         country_entity_relation_list = {key: [inner_item.lower() for inner_item in item] for key, item in country_entity_relation_list.items()}
-        print("country_entity_relation_list_test")
-        print(country_entity_relation_list)
 
         if len(country_entity_relation_list) > 0:
             found_provinces_list = {}
             for country_name in country_entity_relation_list.keys():
-                print("self.province_list_cache[country_name]")
-                print(self.province_list_cache[country_name])
                 found_provinces_list[country_name] = [province_name.lower() for province_name in self.province_list_cache[country_name]]
             self.search_for_country = True
-            print("found_provinces_list_test")
-            print(found_provinces_list)
+
             # check if searchentitys/searchwords are provinces. If so, remove the found provinces from the provinces -
             # list now the provinces list can be used to remove the remaining provinces from the country_entity_relation_list
             # with this logic, its only searched for the specific province and not for other provinces,
             # which arent desired to be shown
             found_provinces_intersection = {}
             for key, item in found_provinces_list.items():
-                print("set(item).intersection(entity_list)")
-                print(set(item).intersection(entity_list))
                 if len(set(item).intersection(entity_list)) > 0:
                     found_provinces_intersection[key] = list(set(item).intersection(entity_list))
-            #found_provinces_intersection = set(found_provinces_list).intersection(entity_list)
-            print("found_provinces_intersection")
-            print(found_provinces_intersection)
+
             if len(found_provinces_intersection) > 0:
                 self.search_for_province = True
-               # for key, item in found_provinces_list.items():
-                    #found_provinces_list = {key: [inner_province for inner_province in item if inner_province not in found_provinces_intersection[key]]}
-
-                print("found_provinces_list_neu")
-                print(found_provinces_list)
-               # for key, item in country_entity_relation_list.items():
-                 #   country_entity_relation_list = {key: [element for element in item if element not in found_provinces_list[key]]}
                 country_entity_relation_list = found_provinces_intersection
 
-            print("country_entity_relation_list_final")
-            print(country_entity_relation_list)
             self.additional_country_infos = country_entity_relation_list
             for item in country_entity_relation_list.values():
                 search_entity_dict["loc"].extend(item)
@@ -682,8 +612,6 @@ class SearchImagesService:
                             else:
                                 detail_search_findings[str(item.lower())] = {elem["path"]}
 
-        print("detail_search_findings_end")
-        pprint.pp(detail_search_findings)
         return detail_search_findings
 
 
