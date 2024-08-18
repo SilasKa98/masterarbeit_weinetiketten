@@ -159,6 +159,7 @@ class SearchImagesService:
             text_based_result_combinations = self.combined_search_result_adjustment(text_based_result, self.entity_search_dict_with_adds)
             if text_based_result_combinations:
                 text_based_result = text_based_result_combinations
+                text_based_result = {key: list(set(value)) for key, value in text_based_result.items()}
 
             # doing result adjustments for top hits if combined box is checked
             top_hits_combinations = self.combined_search_result_adjustment(top_hits, self.entity_search_dict_with_adds)
