@@ -77,23 +77,22 @@ class DataProcessService:
                 min_length = 5
             return [token for token in tokens if len(token) >= min_length]
 
-        # load blacklisted words (e.g. wein)
-        with open(os.getenv("BLACKLISTED_WORDS_FILE"), "r", encoding="utf-8") as file:
-            blacklisted_words = [item.strip().lower() for item in file]
+        def load_file(file_path):
+            with open(file_path, "r", encoding="utf-8") as file:
+                return [item.strip().lower() for item in file]
 
-        with open(os.getenv("WINE_NAMES_FILE"), "r", encoding="utf-8") as file:
-            wine_names = [item.strip().lower() for item in file]
-        with open(os.getenv("WINE_TYPES_FILE"), "r", encoding="utf-8") as file:
-            wine_types = [item.strip().lower() for item in file]
+        # load blacklisted words (e.g. wein)
+        blacklisted_words = load_file(os.getenv("BLACKLISTED_WORDS_FILE"))
+        wine_names = load_file(os.getenv("WINE_NAMES_FILE"))
+        wine_types = load_file(os.getenv("WINE_TYPES_FILE"))
 
         if text1.strip() in wine_names or text1.strip() in wine_types:
             search_tokens = [text1.lower()]
         else:
-            search_tokens = filter_short_tokens(word_tokenize(text1.lower()), source="search")
+            #search_tokens = filter_short_tokens(word_tokenize(text1.lower()), source="search")
+            search_tokens = [item for item in [text1.lower()] if len(item) > 3]
 
         doc_tokens = filter_short_tokens(word_tokenize(text2.lower()), source="text")
-        #print("####################search tokens########################")
-        #print(search_tokens)
         intersection = {}
         # general matching for string tokens
         for t in search_tokens:
@@ -102,6 +101,10 @@ class DataProcessService:
                 continue
             # find best match for both texts/tokens
             matches = process.extract(t, doc_tokens, scorer=fuzz.partial_ratio, limit=1)
+            #print("doc_tokens ")
+            #print(doc_tokens)
+            #print("t ")
+            #print(t)
             for match in matches:
                 token_match, score, _ = match
                 if score >= threshold:
@@ -154,7 +157,7 @@ class DataProcessService:
                     intersection[year_range].append(str(year))
 
         if intersection:
-            print(intersection)
+            print("foo ", intersection)
 
         return intersection if intersection else None
 
