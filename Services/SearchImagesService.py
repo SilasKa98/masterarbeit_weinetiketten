@@ -454,22 +454,20 @@ class SearchImagesService:
 
     def text_based_keyword_search(self, entity_search_dict, search_text, used_ocrs=["easyocr", "tesseract", "doctr"], sub_search=False, sub_search_paths=[]):
         if len(self.additional_country_infos) > 0:
-            #additional_country_infos_str = " ".join(self.additional_country_infos.values())
-
-            #search_text = search_text+" "+additional_country_infos_str
-
-            values_to_add = []
+            values_to_add = set()
             for value_list in self.additional_country_infos.values():
-                values_to_add.extend(value_list)
+                values_to_add.update(value_list)
             entity_search_dict["loc"].extend(values_to_add)
             entity_search_dict["loc"] = list(set(entity_search_dict["loc"]))
 
-        search_text_keywords = list(set())
+        search_text_keywords = set()
         if entity_search_dict:
-            for k, v in entity_search_dict.items():
-                search_text_keywords.extend(v)
+            for v in entity_search_dict.values():
+                search_text_keywords.update(v)
         else:
-            search_text_keywords = DataProcessService.create_keywords_of_scentence(search_text, "de", 4, 6, 0.9)[0][0].split()
+            search_text_keywords = set(
+                DataProcessService.create_keywords_of_scentence(search_text, "de", 4, 6, 0.9)[0][0].split()
+            )
 
         db_results_all = []
         for ocr in used_ocrs:
@@ -493,39 +491,42 @@ class SearchImagesService:
         # create final path_text_dict string
         path_text_dict = {k: " ".join(v) for k, v in path_text_dict.items()}
 
+        # load lists for find_text_intersection logic
+        def load_file(file_path):
+            with open(file_path, "r", encoding="utf-8") as file:
+                return [item.strip().lower() for item in file]
+
+        blacklisted_words = load_file(os.getenv("BLACKLISTED_WORDS_FILE"))
+        wine_names = load_file(os.getenv("WINE_NAMES_FILE"))
+        wine_types = load_file(os.getenv("WINE_TYPES_FILE"))
+
         # Step 2: Erstelle intersection_dict
+        intersection_dict = defaultdict(set)
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor() as executor:
+            futures = {
+                executor.submit(DataProcessService.find_text_intersections, keyword, text, wine_names, wine_types, blacklisted_words): (keyword, key)
+                for key, text in path_text_dict.items()
+                for keyword in search_text_keywords
+            }
+
+            for future in futures:
+                keyword, key = futures[future]
+                try:
+                    result = future.result()
+                    if result:
+                        text_intersection_str = next(iter(result))
+                        intersection_dict[text_intersection_str].add(key)
+                except Exception as e:
+                    print(f"Error processing keyword '{keyword}' with key '{key}': {e}")
+        '''
         intersection_dict = defaultdict(set)
         for key, text in path_text_dict.items():
             for keyword in search_text_keywords:
-                text_intersection = DataProcessService.find_text_intersections(keyword, text)
+                text_intersection = DataProcessService.find_text_intersections(keyword, text, wine_names, wine_types, blacklisted_words)
                 if text_intersection:
                     text_intersection_str = next(iter(text_intersection))
                     intersection_dict[text_intersection_str].add(key)
-        '''
-        # create dictionary with all texts and the matching image path
-        path_text_dict = {}
-        for inner_list in db_results_all:
-            for item in inner_list:
-                for key, value in item.items():
-                    if key == "path":
-                        current_path = value
-                    else:
-                        if current_path in path_text_dict:
-                            path_text_dict[current_path] = path_text_dict[current_path] + " " + value
-                        else:
-                            path_text_dict[current_path] = value
-
-        # create dict with the keyword the label was found with as key and corresponding path as value
-        intersection_dict = {}
-        for key, text in path_text_dict.items():
-            for keyword in search_text_keywords:
-                text_intersection = DataProcessService.find_text_intersections(keyword, text)
-                if text_intersection:
-                    text_intersection_str = next(iter(text_intersection))
-                    if text_intersection_str in intersection_dict:
-                        intersection_dict[text_intersection_str].add(key)
-                    else:
-                        intersection_dict[text_intersection_str] = {key}
         '''
 
         return intersection_dict
