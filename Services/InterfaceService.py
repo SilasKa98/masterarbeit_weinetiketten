@@ -184,11 +184,19 @@ class InterfaceService:
             data = request.json
             search_text = data["search_text"]
             search_logic_combined = data["search_logic_combined"]
+            try:
+                if 60 <= int(data["percentage_matching_range"]) <= 100:
+                    percentage_matching_range = int(data["percentage_matching_range"])
+                else:
+                    percentage_matching_range = 90
+            except:
+                percentage_matching_range = 90
+
             task_id = str(uuid.uuid4())
             task_name = "search_algorithm"
 
             threading.Thread(target=self.process_search_algorithm,
-                             args=(task_id, task_name, search_text, search_logic_combined)).start()
+                             args=(task_id, task_name, search_text, search_logic_combined, percentage_matching_range)).start()
 
             self.tasks[task_name] = {
                 "task_id": task_id,
@@ -389,11 +397,11 @@ class InterfaceService:
                                  "task_id": task_id
                                  }
 
-    def process_search_algorithm(self, task_id, task_name, search_text, search_logic_combined):
+    def process_search_algorithm(self, task_id, task_name, search_text, search_logic_combined, percentage_matching_range):
         from Services.SearchImagesService import SearchImagesService
         from Services.DataProcessService import DataProcessService
         search = SearchImagesService()
-        search_results = search.search_algorithm(search_text, search_logic_combined)
+        search_results = search.search_algorithm(search_text, search_logic_combined, percentage_matching_range)
         top_hits = search_results[0]
         second_choice_hits = search_results[1]
         text_based_hits = search_results[2]

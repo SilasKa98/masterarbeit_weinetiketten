@@ -114,7 +114,7 @@ class SearchImagesService:
             self.province_list_cache = details.get_provinces()
             self.save_cache(self.province_cache_file, self.province_list_cache)
 
-    def search_algorithm(self, search_text, search_logic_combined):
+    def search_algorithm(self, search_text, search_logic_combined, percentage_matching_range):
 
         entity_search_dict = self.named_entity_recognition(search_text)
         entity_search_text = " ".join(ent for ents in entity_search_dict.values() for ent in ents)
@@ -125,7 +125,7 @@ class SearchImagesService:
 
         found_paths_semantic = self.semantic_search(query)
         label_details_result = self.search_with_db_label_details(entity_search_dict)
-        text_based_result = self.text_based_keyword_search(entity_search_dict, search_text)
+        text_based_result = self.text_based_keyword_search(entity_search_dict, search_text, percentage_matching_range)
         # TODO check for double entries here, so no labels are redundant in this dict
         text_based_x_label_details = {}
         for key in set(text_based_result.keys()).union(label_details_result.keys()):
@@ -457,7 +457,8 @@ class SearchImagesService:
 
         return found_paths
 
-    def text_based_keyword_search(self, entity_search_dict, search_text, used_ocrs=["easyocr", "tesseract", "doctr"], sub_search=False, sub_search_paths=[]):
+    def text_based_keyword_search(self, entity_search_dict, search_text, percentage_matching_range,
+                                  used_ocrs=["easyocr", "tesseract", "doctr"], sub_search=False, sub_search_paths=[]):
         if len(self.additional_country_infos) > 0:
             values_to_add = set()
             for value_list in self.additional_country_infos.values():
@@ -512,11 +513,12 @@ class SearchImagesService:
 
         doc_tokens_dict = {k: create_doc_tokens(v) for k, v in path_text_dict.items()}
 
+        print("search_threshold: ",percentage_matching_range)
         intersection_dict = defaultdict(set)
         for key, text in path_text_dict.items():
             for keyword in search_text_keywords:
                 text_intersection = DataProcessService.find_text_intersections(keyword, doc_tokens_dict[key], wine_names, wine_types,
-                                                                               blacklisted_words)
+                                                                               blacklisted_words, threshold=percentage_matching_range)
                 if text_intersection:
                     text_intersection_str = next(iter(text_intersection))
                     intersection_dict[text_intersection_str].add(key)

@@ -217,3 +217,16 @@ main {
   padding-top: 2px;
   padding-bottom: 2px;
 }
+
+#range_label_wrapper, #range_input_wrapper, #range_display_wrapper{
+  float: left;
+}
+
+#range_input_wrapper{
+  margin-top: 4px;
+  margin-left: 8px;
+}
+
+#range_display_wrapper{
+  margin-left: 1%;
+}

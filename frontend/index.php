@@ -31,7 +31,22 @@
             </div>
             <div class="form-check form-switch input_option_admin text-start">
               <input class="form-check-input" type="checkbox" role="switch" id="search_logic_combined">
-              <label class="form-check-label" for="read_and_save_ocr_only_new_entries">Suchtext zusammenhängend betrachten</label>
+              <label class="form-check-label" for="search_logic_combined">Suchtext zusammenhängend betrachten</label>
+            </div>
+            <div class="form-check form-switch input_option_admin text-start">
+            <input class="form-check-input" type="checkbox" role="switch" id="custom_search_precision" onclick="toggle_precision_range_slider()">
+            <label class="form-check-label" for="custom_search_precision">Benutzerdefinierten Übereinstimmungsgrad festlegen</label>
+            </div>
+            <div class="form-check form-switch input_option_admin text-start" id="percentage_matching_range_wrapper" style="display:none;">
+              <div id="range_label_wrapper">
+                <label for="customRange3" class="form-label">Übereinstimmungsgrad festlegen</label>
+              </div>
+              <div id="range_input_wrapper">
+                <input type="range" min="60" max="100" step="5" value="90" id="percentage_matching_range" onchange="update_range_diplay(this)">
+              </div>
+              <div id="range_display_wrapper">
+                <p id="range_display"></p>
+              </div>
             </div>
             <div class="spinner-border" id="spinner_search_algorithm" role="status" style="float: right; display:none;">
                 <span class="sr-only"></span>
