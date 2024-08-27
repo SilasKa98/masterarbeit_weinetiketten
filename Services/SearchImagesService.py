@@ -474,8 +474,6 @@ class SearchImagesService:
                 DataProcessService.create_keywords_of_scentence(search_text, "de", 4, 6, 0.9)[0][0].split()
             )
 
-        print("search_text_keywords")
-        print(search_text_keywords)
         db_results_all = []
         for ocr in used_ocrs:
             if not sub_search:
