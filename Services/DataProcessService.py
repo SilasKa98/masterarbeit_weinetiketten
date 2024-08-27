@@ -5,6 +5,7 @@ from glob import glob
 from difflib import SequenceMatcher
 from collections import Counter
 
+import nltk
 from nltk import RegexpTokenizer
 from rapidfuzz import process, fuzz
 from nltk.tokenize import word_tokenize
@@ -69,21 +70,18 @@ class DataProcessService:
         return d
 
     @staticmethod
-    def find_text_intersections(text1, text2, wine_names, wine_types, blacklisted_words, threshold=90):
-        def filter_short_tokens(tokens, source="search"):
-            if source == "search":
-                min_length = 3
-            else:
-                min_length = 5
+    def find_text_intersections(text1, doc_tokens, wine_names, wine_types, blacklisted_words, threshold=90):
+        def filter_short_tokens(tokens, min_length):
+            # Filter tokens based on a minimum length.
             return [token for token in tokens if len(token) >= min_length]
 
-        if text1.strip() in wine_names or text1.strip() in wine_types:
-            search_tokens = [text1.lower()]
+        normalized_text1 = text1.strip().lower()
+        if normalized_text1 in wine_names or normalized_text1 in wine_types:
+            search_tokens = {normalized_text1}
         else:
-            #search_tokens = filter_short_tokens(word_tokenize(text1.lower()), source="search")
-            search_tokens = [item for item in [text1.lower()] if len(item) > 3]
+            # Tokenize text1 and filter short tokens, use set for faster membership checks and removing duplicates
+            search_tokens = set(filter_short_tokens(nltk.word_tokenize(normalized_text1), 3))
 
-        doc_tokens = filter_short_tokens(word_tokenize(text2.lower()), source="text")
         intersection = {}
         # general matching for string tokens
         for t in search_tokens:

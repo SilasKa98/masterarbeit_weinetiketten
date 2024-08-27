@@ -4,6 +4,8 @@ import re
 import os
 import pickle
 import pprint
+
+import nltk
 import numpy as np
 import torch
 from transformers import BertTokenizer, BertModel
@@ -15,6 +17,9 @@ from Services.DatabaseService import DatabaseService
 from Services.DataProcessService import DataProcessService
 from Services.DetailFinderService import DetailFinderService
 from collections import defaultdict
+
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, as_completed
 
 
 class SearchImagesService:
@@ -469,6 +474,8 @@ class SearchImagesService:
                 DataProcessService.create_keywords_of_scentence(search_text, "de", 4, 6, 0.9)[0][0].split()
             )
 
+        print("search_text_keywords")
+        print(search_text_keywords)
         db_results_all = []
         for ocr in used_ocrs:
             if not sub_search:
@@ -500,34 +507,21 @@ class SearchImagesService:
         wine_names = load_file(os.getenv("WINE_NAMES_FILE"))
         wine_types = load_file(os.getenv("WINE_TYPES_FILE"))
 
-        # Step 2: Erstelle intersection_dict
-        intersection_dict = defaultdict(set)
-        from concurrent.futures import ThreadPoolExecutor
-        with ThreadPoolExecutor() as executor:
-            futures = {
-                executor.submit(DataProcessService.find_text_intersections, keyword, text, wine_names, wine_types, blacklisted_words): (keyword, key)
-                for key, text in path_text_dict.items()
-                for keyword in search_text_keywords
-            }
+        def create_doc_tokens(text_doc):
+            tokens = nltk.word_tokenize(text_doc.lower())
+            filtered_tokens = set(token for token in tokens if len(token) >= 5)
+            return filtered_tokens
 
-            for future in futures:
-                keyword, key = futures[future]
-                try:
-                    result = future.result()
-                    if result:
-                        text_intersection_str = next(iter(result))
-                        intersection_dict[text_intersection_str].add(key)
-                except Exception as e:
-                    print(f"Error processing keyword '{keyword}' with key '{key}': {e}")
-        '''
+        doc_tokens_dict = {k: create_doc_tokens(v) for k, v in path_text_dict.items()}
+
         intersection_dict = defaultdict(set)
         for key, text in path_text_dict.items():
             for keyword in search_text_keywords:
-                text_intersection = DataProcessService.find_text_intersections(keyword, text, wine_names, wine_types, blacklisted_words)
+                text_intersection = DataProcessService.find_text_intersections(keyword, doc_tokens_dict[key], wine_names, wine_types,
+                                                                               blacklisted_words)
                 if text_intersection:
                     text_intersection_str = next(iter(text_intersection))
                     intersection_dict[text_intersection_str].add(key)
-        '''
 
         return intersection_dict
 
