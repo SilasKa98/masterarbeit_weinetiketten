@@ -69,22 +69,13 @@ class DataProcessService:
         return d
 
     @staticmethod
-    def find_text_intersections(text1, text2, threshold=90):
+    def find_text_intersections(text1, text2, wine_names, wine_types, blacklisted_words, threshold=90):
         def filter_short_tokens(tokens, source="search"):
             if source == "search":
                 min_length = 3
             else:
                 min_length = 5
             return [token for token in tokens if len(token) >= min_length]
-
-        def load_file(file_path):
-            with open(file_path, "r", encoding="utf-8") as file:
-                return [item.strip().lower() for item in file]
-
-        # load blacklisted words (e.g. wein)
-        blacklisted_words = load_file(os.getenv("BLACKLISTED_WORDS_FILE"))
-        wine_names = load_file(os.getenv("WINE_NAMES_FILE"))
-        wine_types = load_file(os.getenv("WINE_TYPES_FILE"))
 
         if text1.strip() in wine_names or text1.strip() in wine_types:
             search_tokens = [text1.lower()]
@@ -101,19 +92,10 @@ class DataProcessService:
                 continue
             # find best match for both texts/tokens
             matches = process.extract(t, doc_tokens, scorer=fuzz.partial_ratio, limit=1)
-            #print("doc_tokens ")
-            #print(doc_tokens)
-            #print("t ")
-            #print(t)
             for match in matches:
                 token_match, score, _ = match
-                if score >= threshold:
-                    # if the token_match (a word in the label text) the image is found with, is in the blacklist
-                    # don't insert, so its not a hit/match. Example for this case is the word "wein"
-                    if token_match.lower() not in blacklisted_words:
-                        if t not in intersection:
-                            intersection[text1] = list(set())
-                        intersection[text1].append(token_match)
+                if score >= threshold and token_match.lower() not in blacklisted_words:
+                    intersection.setdefault(text1, set()).add(token_match)
 
         # Regex to find year spans (e.g. "1900-2000")
         year_range_regex = r'\b(\d{4})-(\d{4})\b'
