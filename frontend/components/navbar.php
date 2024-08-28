@@ -5,6 +5,7 @@
             <ul class="navbar-nav flex-grow-1 justify-content">
                 <li class="nav-item"><a class="nav-link" href="" data-bs-toggle='offcanvas' data-bs-target='#offcanvas_imgDetails' aria-controls='offcanvas_imgDetails'>Etikettendetails</a></li>
                 <li class="nav-item"><a class="nav-link" href="admin_page.php">Admin</a></li>
+                <li class="nav-item"><a class="nav-link" href="evaluation.php">Evaluation</a></li>
             </ul>
         </div>
     </div>
