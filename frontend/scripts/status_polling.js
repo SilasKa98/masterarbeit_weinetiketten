@@ -33,6 +33,8 @@ function handleTask(task_name, task_status, task_result) {
         handleDirectoryDuplicationCheck(task_result)
     }else if (task_name == "search_algorithm" && task_status == "success" && fileName != "admin_page.php") {
         handleSearchAlgorithm(task_result, task_name);
+    }else if(task_name == "eval_search_time" && task_status == "success" && fileName == "evaluation.php"){
+        handleEvalSearchTime(task_result);
     }
 }
 
@@ -63,6 +65,21 @@ function handleDirectoryDuplicationCheck(result){
     });
 
     tasksState["check_directory_for_duplicates"] = "success";
+}
+
+function handleEvalSearchTime(result){
+    if (tasksState["eval_search_time"] === "success") return;
+
+    var result_elem = document.getElementById("result_eval_search_time");
+    document.getElementById("result_eval_search_time_btn").style.display = "block";
+
+    console.log("result search eval")
+    console.log(result)
+    result.forEach(resElem => {
+        result_elem.innerHTML += resElem + "<br>";
+    });
+
+    tasksState["eval_search_time"] = "success";
 }
 
 
@@ -169,7 +186,7 @@ function startPolling() {
     let path = window.location.pathname;
     var tasks = [];
     const fileName = path.substring(path.lastIndexOf('/') + 1);
-    if(fileName == "admin_page.php"){
+    if(fileName == "admin_page.php" || fileName == "evaluation.php"){
         tasks.push("default")
     }else{
         tasks.push("search_algorithm")
