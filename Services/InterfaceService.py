@@ -316,6 +316,32 @@ class InterfaceService:
             }
             return jsonify(response)
 
+
+        @self.app.route('/eval_search_time', methods=["POST"])
+        def eval_search_time():
+            data = request.json
+            search_text_eval = data["search_text_eval"]
+            search_logic_combined_eval = data["search_logic_combined_eval"]
+            number_of_db_entries = data["number_of_db_entries"]
+            task_id = str(uuid.uuid4())
+            task_name = "eval_search_time"
+
+            threading.Thread(target=self.process_eval_search_time,
+                             args=(task_id, task_name, search_text_eval, search_logic_combined_eval, number_of_db_entries)).start()
+
+            self.tasks[task_name] = {
+                "task_id": task_id,
+                "status": "processing",
+                "name": task_name
+            }
+
+            response = {
+                "task_id": task_id,
+                "status": "processing",
+                "name": task_name
+            }
+            return jsonify(response)
+
     # ------------------------------------------------Processing-------------------------------------------------------
 
     # functions to async handle the processing
@@ -401,7 +427,8 @@ class InterfaceService:
         from Services.SearchImagesService import SearchImagesService
         from Services.DataProcessService import DataProcessService
         search = SearchImagesService()
-        search_results = search.search_algorithm(search_text, search_logic_combined, percentage_matching_range)
+        number_of_used_db_entries = None
+        search_results = search.search_algorithm(search_text, search_logic_combined, percentage_matching_range, number_of_used_db_entries)
         top_hits = search_results[0]
         second_choice_hits = search_results[1]
         text_based_hits = search_results[2]
@@ -541,3 +568,17 @@ class InterfaceService:
             "name": task_name,
             "task_id": task_id
         }
+
+    def process_eval_search_time(self, task_id, task_name, search_text_eval, search_logic_combined_eval, number_of_used_db_entries):
+        from Services.EvaluationService import EvaluationService
+        evaluation = EvaluationService()
+
+        eval_result = evaluation.eval_search_time(search_text_eval, search_logic_combined_eval, 90, number_of_used_db_entries)
+
+        self.tasks[task_name] = {
+            "status": "success",
+            "name": task_name,
+            "task_id": task_id,
+            "result": eval_result
+        }
+
