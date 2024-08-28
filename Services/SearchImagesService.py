@@ -1,5 +1,6 @@
 import hashlib
 import itertools
+import random
 import re
 import os
 import pickle
@@ -114,7 +115,7 @@ class SearchImagesService:
             self.province_list_cache = details.get_provinces()
             self.save_cache(self.province_cache_file, self.province_list_cache)
 
-    def search_algorithm(self, search_text, search_logic_combined, percentage_matching_range):
+    def search_algorithm(self, search_text, search_logic_combined, percentage_matching_range, number_of_used_db_entries):
 
         entity_search_dict = self.named_entity_recognition(search_text)
         entity_search_text = " ".join(ent for ents in entity_search_dict.values() for ent in ents)
@@ -124,8 +125,8 @@ class SearchImagesService:
         print(entity_search_dict)
 
         found_paths_semantic = self.semantic_search(query)
-        label_details_result = self.search_with_db_label_details(entity_search_dict)
-        text_based_result = self.text_based_keyword_search(entity_search_dict, search_text, percentage_matching_range)
+        label_details_result = self.search_with_db_label_details(entity_search_dict, number_of_used_db_entries)
+        text_based_result = self.text_based_keyword_search(entity_search_dict, search_text, percentage_matching_range, number_of_used_db_entries)
         # TODO check for double entries here, so no labels are redundant in this dict
         text_based_x_label_details = {}
         for key in set(text_based_result.keys()).union(label_details_result.keys()):
@@ -457,7 +458,7 @@ class SearchImagesService:
 
         return found_paths
 
-    def text_based_keyword_search(self, entity_search_dict, search_text, percentage_matching_range,
+    def text_based_keyword_search(self, entity_search_dict, search_text, percentage_matching_range, number_of_used_db_entries,
                                   used_ocrs=["easyocr", "tesseract", "doctr"], sub_search=False, sub_search_paths=[]):
         if len(self.additional_country_infos) > 0:
             values_to_add = set()
@@ -485,6 +486,11 @@ class SearchImagesService:
                     db_result = self.database_service.select_from_table(ocr, "*", condition="path = %s", params=[item], as_dict=True)
                     db_results_all.append(db_result)
 
+        if number_of_used_db_entries is not None:
+            #number_of_used_db_entries = round(number_of_used_db_entries / len(used_ocrs))
+            for i in range(len(db_results_all)):
+                db_results_all[i] = random.choices(db_results_all[i], k=number_of_used_db_entries)
+
         path_text_dict = defaultdict(list)
         for inner_list in db_results_all:
             for item in inner_list:
@@ -496,6 +502,8 @@ class SearchImagesService:
 
         # create final path_text_dict string
         path_text_dict = {k: " ".join(v) for k, v in path_text_dict.items()}
+
+        print("path_text_dict_len: ", len(path_text_dict))
 
         # load lists for find_text_intersection logic
         def load_file(file_path):
@@ -525,10 +533,14 @@ class SearchImagesService:
 
         return intersection_dict
 
-    def search_with_db_label_details(self, search_entity_dict):
+    def search_with_db_label_details(self, search_entity_dict, number_of_used_db_entries):
         self.update_cache_details_label_search()
 
         db_details_result = self.database_service.select_from_table("etiketten_infos", "path, country, provinces, anno, vol, wine_type", as_dict=True)
+
+        if number_of_used_db_entries is not None:
+            db_details_result = random.choices(db_details_result, k=number_of_used_db_entries)
+
         entity_list = list()
 
         for key, item in search_entity_dict.items():
