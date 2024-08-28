@@ -46,9 +46,3 @@ function toggle_precision_range_slider(){
         percentage_matching_range_wrapper.style.display = 'none';
     }
 }
-
-function update_range_diplay(e){
-    let range = e.value
-    let range_display = document.getElementById("range_display")
-    range_display.innerHTML = range + "%"
-}

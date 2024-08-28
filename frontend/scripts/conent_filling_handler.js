@@ -113,3 +113,13 @@ function handel_image_content_filling(path){
 }
 
 
+
+function clear_SearchTimeEvalResult(){
+    document.getElementById("result_eval_search_time").innerHTML = ""
+}
+
+function update_range_diplay(e){
+    let range = e.value
+    let range_display = document.getElementById("range_display")
+    range_display.innerHTML = range + "%"
+}
