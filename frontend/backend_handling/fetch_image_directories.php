@@ -1,6 +1,11 @@
 <?php
 $env = parse_ini_file('../.env');
-$path = $env["IMAGES_PATH"];
+if($_POST["called_from"] == "admin"){
+   $path = $env["IMAGES_PATH"]; 
+}elseif($_POST["called_from"] == "eval"){
+    $path = $env["EVALUATION_TEXTS_PATH"]; 
+}
+
 $comb_path = realpath(__DIR__ . '/'.$path);
 $directories = glob($comb_path . '/*' , GLOB_ONLYDIR);
 
