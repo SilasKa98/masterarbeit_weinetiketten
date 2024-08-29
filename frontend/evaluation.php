@@ -10,12 +10,13 @@
     <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+    <link href="styles/admin.css" rel="stylesheet">
 </head>
 <body  onload="statusPolling(); startPolling();">
 <?php include_once "components/navbar.php"?>
     <h1 style="text-align:center"> Evaluationen </h1>
 
-    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary">
+    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary outer_card_wrapper">
         <div class="card">
             <div class="card-header">
                 <span style="color: #d7a900;">eval_search_time</span>()
@@ -33,13 +34,13 @@
                         <input class="form-check-input" type="checkbox" role="switch" id="search_logic_combined_eval">
                         <label class="form-check-label" for="search_logic_combined">Suchtext zusammenhängend betrachten</label>
                     </div><br>
-                    <div id="range_input_wrapper">
+                    <div id="range_input_wrapper" style="float:left;">
                         <label>Prozentanzahl der berücksichtigten Weinetiketten</label>
                         <input type="range" min="5" max="100" step="5" value="100" id="number_of_db_entries" onchange="update_range_diplay(this)">
                     </div>
-                    <div id="range_display_wrapper">
+                    <div id="range_display_wrapper" style="float:left; margin-left: 1%">
                         <p id="range_display">100%</p>
-                    </div>
+                    </div><br><br>
                     <button class="btn btn-success" onclick="run_eval_search_time()">Evaluation ausführen</button>
                 </div>
             </div>

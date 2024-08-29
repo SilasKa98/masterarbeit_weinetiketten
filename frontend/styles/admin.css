@@ -1,3 +1,8 @@
 .input_option_admin{
     margin-bottom: 10px;
 }
+
+.outer_card_wrapper{
+    background-color: transparent !important;
+    padding: 1% !important;
+}

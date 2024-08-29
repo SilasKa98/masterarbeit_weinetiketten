@@ -22,7 +22,7 @@
 <?php include_once "components/navbar.php"?>
     <h1 style="text-align:center"> Admin </h1>
 
-    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary">
+    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary outer_card_wrapper">
         <div class="card">
             <div class="card-header">
                 <span style="color: #d7a900;">read_and_save_ocr</span>()
@@ -81,7 +81,7 @@
 
 
 
-    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary">
+    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary outer_card_wrapper">
         <div class="card">
             <div class="card-header">
                 <span style="color: #d7a900;">spelling_correction</span>()
@@ -151,7 +151,7 @@
     </div>
 
 
-    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary">
+    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary outer_card_wrapper">
         <div class="card">
             <div class="card-header">
                 <span style="color: #d7a900;">update_label_detail_infos</span>()
@@ -182,7 +182,7 @@
     </div>
 
 
-    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary">
+    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary outer_card_wrapper">
         <div class="card">
             <div class="card-header">
                 <span style="color: #d7a900;">update_entities_for_labels</span>()
@@ -217,7 +217,7 @@
     </div>
 
 
-    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary">
+    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary outer_card_wrapper">
         <div class="card">
             <div class="card-header">
                 <span style="color: #d7a900;">search_for_duplicate_entrys</span>()
@@ -275,7 +275,7 @@
 
 
 
-    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary">
+    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary outer_card_wrapper">
         <div class="card">
             <div class="card-header">
                 <span style="color: #d7a900;">check_directory_for_duplicates</span>()
@@ -317,7 +317,7 @@
 
 
 
-    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary">
+    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary outer_card_wrapper">
         <div class="card">
             <div class="card-header">
                 <span style="color: #d7a900;">read_db_and_detect_lang</span>()
@@ -354,7 +354,7 @@
     </div>
 
 
-    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary">
+    <div class="position-relative overflow-hidden p-3 p-md-5 m-md-3 bg-body-tertiary outer_card_wrapper">
         <div class="card">
             <div class="card-header">
                 <span style="color: #d7a900;">modify_images</span>()
