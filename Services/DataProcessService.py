@@ -190,6 +190,31 @@ class DataProcessService:
         return input_word
 
     @staticmethod
+    def remove_line_breaks(text):
+        return text.replace('\n', ' ').strip()
+
+    @staticmethod
+    def remove_non_year_numbers(text):
+
+        year_pattern = r'\b\d{4}(?:\s*er)?\b'
+        valid_number_pattern = r'\b\d+[.,]\d*\s*%?\s*(?:vol)?\b'
+
+        years = set(re.findall(year_pattern, text))
+
+        all_numbers_pattern = r'\b\d+[.,]?\d*\s*(?:%?\s*(?:vol)?)?\b'
+
+        def replace_non_year_numbers(match):
+            number = match.group(0).strip()
+            if number in years or re.match(valid_number_pattern, number):
+                return number
+            return ''
+
+        cleaned_text = re.sub(all_numbers_pattern, replace_non_year_numbers, text)
+
+        return cleaned_text
+
+
+    @staticmethod
     def create_txt_from_wikimedia(file_path, output_file, max_words, language="de"):
         from bigxml import Parser, xml_handle_element
         import re
