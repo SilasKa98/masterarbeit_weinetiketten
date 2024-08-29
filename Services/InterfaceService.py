@@ -342,6 +342,33 @@ class InterfaceService:
             }
             return jsonify(response)
 
+        @self.app.route('/do_ocr_eval', methods=["POST"])
+        def do_ocr_eval():
+            data = request.json
+            ocr_modell_select = data["ocr_modell_select"]
+            do_ocr_eval_column_input_select = data["do_ocr_eval_column_input_select"]
+            do_ocr_eval_path_select = data["do_ocr_eval_path_select"]
+            error_rate_select = data["error_rate_select"]
+            task_id = str(uuid.uuid4())
+            task_name = "do_ocr_eval"
+
+            threading.Thread(target=self.process_do_ocr_eval,
+                             args=(task_id, task_name, ocr_modell_select, do_ocr_eval_column_input_select,
+                                   do_ocr_eval_path_select, error_rate_select)).start()
+
+            self.tasks[task_name] = {
+                "task_id": task_id,
+                "status": "processing",
+                "name": task_name
+            }
+
+            response = {
+                "task_id": task_id,
+                "status": "processing",
+                "name": task_name
+            }
+            return jsonify(response)
+
     # ------------------------------------------------Processing-------------------------------------------------------
 
     # functions to async handle the processing
@@ -582,3 +609,25 @@ class InterfaceService:
             "result": eval_result
         }
 
+    def process_do_ocr_eval(self, task_id, task_name, ocr_modell_select, do_ocr_eval_column_input_select,
+                                   do_ocr_eval_path_select, error_rate_select):
+
+        from Services.EvaluationService import EvaluationService
+        evaluation = EvaluationService()
+        eval_result, summed_eval_score = evaluation.do_ocr_eval(error_rate_select, do_ocr_eval_path_select,
+                                             do_ocr_eval_column_input_select, ocr_modell_select)
+
+        result = {
+            "used_model": ocr_modell_select,
+            "used_error_rate": error_rate_select,
+            "used_column": do_ocr_eval_column_input_select,
+            "used_path": do_ocr_eval_path_select,
+            "eval_result": [eval_result, summed_eval_score]
+        }
+
+        self.tasks[task_name] = {
+            "status": "success",
+            "name": task_name,
+            "task_id": task_id,
+            "result": result
+        }
