@@ -56,6 +56,12 @@ print(wine_types)
 
 #all_paths_in_db_tupels = action.update_label_detail_infos()
 
-eval = EvaluationService()
-eval.eval_search_time("Weißwein aus deutschland", False, 90)
+evaluation = EvaluationService()
+eval_result_word, summed_eval_score_word = evaluation.do_ocr_eval("word_error_rate_eval", "C:\\Masterarbeit_ocr_env\\Evaluation", "text_final", "doctr")
+print(eval_result_word)
+print(summed_eval_score_word)
+
+eval_result_char, summed_eval_score_char = evaluation.do_ocr_eval("char_error_rate_eval", "C:\\Masterarbeit_ocr_env\\Evaluation", "text_final", "doctr")
+print(eval_result_char)
+print(summed_eval_score_char)
 
