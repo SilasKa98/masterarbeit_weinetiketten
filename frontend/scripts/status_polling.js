@@ -5,6 +5,14 @@ let pollingRates = {
     "search_algorithm": 2000 
 };
 
+function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
 
 function handleTask(task_name, task_status, task_result) {
     var spinner_elem = document.getElementById("spinner_" + task_name);
@@ -35,6 +43,8 @@ function handleTask(task_name, task_status, task_result) {
         handleSearchAlgorithm(task_result, task_name);
     }else if(task_name == "eval_search_time" && task_status == "success" && fileName == "evaluation.php"){
         handleEvalSearchTime(task_result);
+    }else if(task_name == "do_ocr_eval" && task_status == "success" && fileName == "evaluation.php"){
+        handleOCREval(task_result);
     }
 }
 
@@ -73,13 +83,66 @@ function handleEvalSearchTime(result){
     var result_elem = document.getElementById("result_eval_search_time");
     document.getElementById("result_eval_search_time_btn").style.display = "block";
 
-    console.log("result search eval")
-    console.log(result)
     result.forEach(resElem => {
         result_elem.innerHTML += resElem + "<br>";
     });
 
     tasksState["eval_search_time"] = "success";
+}
+
+function handleOCREval(result){
+    if (tasksState["do_ocr_eval"] === "success") return;
+
+    var result_elem = document.getElementById("result_do_ocr_eval");
+    document.getElementById("result_do_ocr_eval_btn").style.display = "block";
+
+    console.log("result do_ocr_eval")
+    console.log(result)
+
+    result_elem.innerHTML += "<hr><h2>" +
+                                "<span style='font-size:16pt;'>" +
+                                    result["used_model"] +
+                                "</span>" +
+                                "<span style='font-size:12pt;'>" +
+                                    " (" + result["used_error_rate"] + ")" +
+                                "</span>" + 
+                            "</h2>" 
+
+    uuid = generateUUID()
+
+    result_elem.innerHTML += "<p style='margin-bottom:0;'>Verwendete Datenbankspalte: <b>" + result["used_column"] + "</b></p>"
+    result_elem.innerHTML += "<p>Verwendeter Pfad: <b>"+ result["used_path"] +"</b></p>"
+    result_elem.innerHTML += " <a class='btn btn-secondary' data-bs-toggle='collapse' href='#collapsePathError_"+uuid+"' role='button' aria-expanded='false' aria-controls='collapsePathError_"+uuid+"'>Detailierte Pfad-Errorrate Anzeigen</a>"
+    
+    result_elem_inner_div = document.createElement("div");
+    result_elem_inner_div.setAttribute("class", "path_error_wrapper")
+
+    collapsePathError_div = document.createElement("div");
+    collapsePathError_div.setAttribute("class", "collapse")
+    collapsePathError_div.setAttribute("id", "collapsePathError_"+uuid)
+
+    collapsePathError_Innerdiv = document.createElement("div");
+    collapsePathError_Innerdiv.setAttribute("class", "card card-body")
+
+    collapsePathError_div.append(collapsePathError_Innerdiv)
+    result_elem_inner_div.append(collapsePathError_div)
+    result_elem.append(result_elem_inner_div)
+
+    for (const [key, value] of Object.entries(result)) {
+        if(key == "eval_result"){
+            value.forEach(resElem => {
+                if(typeof resElem === 'object' && resElem !== null){
+                    for (const [innerKey, innerValue] of Object.entries(resElem)) {
+                        collapsePathError_Innerdiv.innerHTML += "<p>Fehlerrate für das Etikett: <a href='../" + innerKey + "' target='_blank'>" + innerKey +"</a>: " + innerValue + " (Textechtheit: " + Math.round((1- innerValue)*100) + "%)</p>";
+                    }
+                }else{
+                    result_elem.innerHTML += "<br><p>Die Durchschnittliche Fehlerrate für die OCR Genauigkeit beträgt: <b>" + resElem + "</b> Das entspricht einer Textechtheit von: <b>" +Math.round((1 - resElem)*100) + "%</b></p><br>";
+                }
+            });
+        }
+    }
+
+    tasksState["do_ocr_eval"] = "success";
 }
 
 
