@@ -51,8 +51,12 @@ function fetchColumns(table, module_name){
                     option.text = columnName;
                     col_sel_id.appendChild(option);
                 });
-            }else if(module_name == "read_and_save_ocr"){
-                let col_sel_id = document.getElementById("read_and_save_ocr_column_input_select")
+            }else if(module_name == "read_and_save_ocr" || module_name == "do_ocr_eval"){
+                if(module_name == "read_and_save_ocr"){
+                    var col_sel_id = document.getElementById("read_and_save_ocr_column_input_select")
+                }else{
+                    var col_sel_id = document.getElementById("do_ocr_eval_column_input_select")
+                }
 
                 // remove all options except the first one ("Spalte auswählen"), so its not stacking up by switching tables
                 while (col_sel_id.options.length > 1) {
@@ -72,24 +76,39 @@ function fetchColumns(table, module_name){
 }
 
 
-function getImageDirectories(){
+function getImageDirectories(called_from){
     $.ajax({
         type: "POST",
         url: "backend_handling/fetch_image_directories.php",
+        data: {
+            called_from: called_from
+        },
         success: function(response){ 
             const json_response =  JSON.parse(response);
-            const read_and_save_ocr_path_select = document.getElementById("read_and_save_ocr_path_select");
-            const modify_images_path_select = document.getElementById("modify_images_path_select");
+            if(called_from == "admin"){
+                const read_and_save_ocr_path_select = document.getElementById("read_and_save_ocr_path_select");
+                const modify_images_path_select = document.getElementById("modify_images_path_select");
+            }else if(called_from == "eval"){
+                const do_ocr_eval_path_select = document.getElementById("do_ocr_eval_path_select");
+            }
+            
             json_response.forEach(path => {
-                const option = document.createElement('option');
-                option.value = path;
-                option.text = path;
-                read_and_save_ocr_path_select.appendChild(option);
+                if(called_from == "admin"){
+                    const option = document.createElement('option');
+                    option.value = path;
+                    option.text = path;
+                    read_and_save_ocr_path_select.appendChild(option);
 
-                const option2 = document.createElement('option');
-                option2.value = path;
-                option2.text = path;
-                modify_images_path_select.appendChild(option2);
+                    const option2 = document.createElement('option');
+                    option2.value = path;
+                    option2.text = path;
+                    modify_images_path_select.appendChild(option2);
+                }else if(called_from == "eval"){
+                    const option3 = document.createElement('option');
+                    option3.value = path;
+                    option3.text = path;
+                    do_ocr_eval_path_select.appendChild(option3);
+                }
             });
         }
     });
