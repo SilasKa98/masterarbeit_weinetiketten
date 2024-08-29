@@ -114,8 +114,8 @@ function handel_image_content_filling(path){
 
 
 
-function clear_SearchTimeEvalResult(){
-    document.getElementById("result_eval_search_time").innerHTML = ""
+function clear_SearchTimeEvalResult(e){
+    e.nextElementSibling.innerHTML = ""
 }
 
 function update_range_diplay(e){
