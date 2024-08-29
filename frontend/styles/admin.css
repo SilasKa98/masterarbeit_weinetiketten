@@ -6,3 +6,8 @@
     background-color: transparent !important;
     padding: 1% !important;
 }
+
+.path_error_wrapper{
+    max-height: 400px;
+    overflow-y: scroll;
+}
