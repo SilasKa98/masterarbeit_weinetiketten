@@ -306,8 +306,8 @@ class ActionProcessor:
             modified_sentence = []
 
             item_words = item.split()
+            deepl = DeepLService()
             for word in item_words:
-                deepl = DeepLService()
                 word_lang = deepl.detect_language_on_the_fly(word)
                 if word_lang[1] >= 0.9:
                     word_lang = word_lang[0]
@@ -328,9 +328,10 @@ class ActionProcessor:
                 cleaned_word = pre_processor.word_cleaning(word, lang=word_lang)
                 cleaned_word = pre_processor.remove_numerics(cleaned_word)
                 special_characters = "!@#$%^&*()+?_=,<>/"
+                year_number_pattern = r'\b\d{4}(?:er| er)?\b'
                 if len(cleaned_word) > 1:
                     if use_ml:
-                        if 5 < len(cleaned_word) < 80 and not any(char in special_characters for char in cleaned_word) and not cleaned_word.isdigit():
+                        if 5 < len(cleaned_word) < 80 and not any(char in special_characters for char in cleaned_word) and not cleaned_word.isdigit() and not re.search(year_number_pattern, cleaned_word):
                             # create list with 1 and 0 for is word correct check
                             # checking in all available dictionarys (de, en, it, fr)
                             # if correct append 1 if not append 0
