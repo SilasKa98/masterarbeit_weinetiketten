@@ -84,9 +84,11 @@
             <div class="card-body">
                 <h5 class="card-title">Evaluieren der OCR Genauigkeit</h5>
                 <p class="card-text">
-                    Mit diesem Modul kann die Genauigkeit der Weinetikettentexte bestimmt werden die mit OCR eingelsen wurden.<br>
-                    Zur bestimmung der Genauigkeit kann entweder die "Word Error Rate" oder die "Character Error Rate" ausgewählt werden.<br>
-                    Außerdem kann das verwendete OCR-Modell sowie die Datenbankspalte ausgewählt werden.
+                    Mit diesem Modul kann die Genauigkeit der Weinetikettentexte bestimmt werden die mit OCR eingelesen wurden.<br>
+                    Zur bestimmung der Genauigkeit kann die "Word Error Rate (WER)", die "Character Error Rate (CER)" oder "Present Relevant Words Rate (PRWR)" ausgewählt werden.<br>
+                    Sowohl WER als auch CER folgen dabei den vorgegebenen Formeln für die bestimmung dieser Werte. PRWR ist eine selbst erstelle Evaluationsmethode und überprüft, <br>
+                    alle relavanten Wörter der Evaluationstexte auf Existenz in den OCR-Texten.<br>
+                    Außerdem kann das verwendete OCR-Modell sowie die Datenbankspalte, welche zur OCR-Text überprüfung genutzt werden soll, ausgewählt werden.
                 </p>
                 <div>
                     <select  class="form-select input_option_admin" id="ocr_modell_select" onchange="fetchColumns(value, 'do_ocr_eval')">
