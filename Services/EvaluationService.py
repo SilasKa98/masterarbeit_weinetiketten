@@ -66,7 +66,7 @@ class EvaluationService:
         eval_result = {}
         for path_key, eval_text in eval_path_text_dict.items():
             escaped_path_key = path_key.replace("\\", "\\\\") + "%"
-            print(escaped_path_key)
+            #print(escaped_path_key)
             db_select = database.select_from_table(used_ocr, f"path, {used_column}", condition="path like %s", params=[escaped_path_key], as_dict=True)
             if db_select:
                 ocr_text = db_select[0][used_column]
@@ -79,6 +79,10 @@ class EvaluationService:
                     eval_result[db_select[0]["path"]] = result
                 elif method_to_eval == "word_error_rate_eval":
                     result = self.word_error_rate_eval(eval_text, ocr_text)
+                    eval_result[db_select[0]["path"]] = result
+                elif method_to_eval == "relevant_words_present_eval":
+                    print("path: ", db_select[0]["path"])
+                    result = self.relevant_words_present_eval(eval_text, ocr_text)
                     eval_result[db_select[0]["path"]] = result
         print(eval_result)
         summed_eval_score = round(sum(eval_result.values())/len(eval_result.values()), 2)
@@ -109,6 +113,31 @@ class EvaluationService:
         if char_error_rate > 1:
             char_error_rate = 1
         return char_error_rate
+
+    @staticmethod
+    def relevant_words_present_eval(eval_text, ocr_text):
+        special_characters = "!@#$%^&*()+?_=,.<>/"
+        eval_text = [
+            item.replace("-", "").replace(".", "").replace(",", "")
+            for item in eval_text.lower().split()
+            if len(item) > 3 and sum(char in special_characters for char in item) < 2
+        ]
+        ocr_text = [
+            item.replace("-", "").replace(".", "").replace(",", "")
+            for item in ocr_text.lower().split()
+            if len(item) > 3 and sum(char in special_characters for char in item) < 2
+        ]
+
+        word_present_counter = 0
+        for word in eval_text:
+            if word in ocr_text:
+                word_present_counter += 1
+        print("eval: ", eval_text)
+        print("ocr: ", ocr_text)
+        print(round(word_present_counter/len(eval_text), 2))
+        word_present_error_ratio = 1 - (round(word_present_counter/len(eval_text), 2))
+
+        return word_present_error_ratio
 
 
 
