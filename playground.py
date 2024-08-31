@@ -65,3 +65,7 @@ eval_result_char, summed_eval_score_char = evaluation.do_ocr_eval("char_error_ra
 print(eval_result_char)
 print(summed_eval_score_char)
 
+eval_result_char, summed_eval_score_char = evaluation.do_ocr_eval("relevant_words_present_eval", "C:\\Masterarbeit_ocr_env\\Evaluation\\archiv19", "text_final", "doctr")
+print(eval_result_char)
+print(summed_eval_score_char)
+
