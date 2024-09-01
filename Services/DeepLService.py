@@ -9,6 +9,7 @@ from Services.DatabaseService import DatabaseService
 from dotenv import load_dotenv
 load_dotenv()
 
+
 class DeepLService:
 
     def __init__(self):
@@ -38,13 +39,12 @@ class DeepLService:
         identifier.set_languages(['de', 'fr', 'it', 'en'])
         return identifier.classify(input_text)
 
-
     def detect_language(self, input_text, image_name, image_directory_name, force_update=False):
 
-        #use keywords of the full context to detect the language to not use too many words for deepl (500k/month free)
+        # use keywords of the full context to detect the language to not use too many words for deepl (500k/month free)
         keyword_search = DataProcessService.create_keywords_of_scentence(input_text, "en", 1, 6, 0.9)
 
-        #get keyword text. If its not formed by create_keywords_of_scentence, it will be picking middle 5 words of text
+        # get keyword text. If its not formed by create_keywords_of_scentence, it will be picking middle 5 words of text
         if len(keyword_search) > 0:
             keyword_text = keyword_search[0][0]
         else:
@@ -59,7 +59,7 @@ class DeepLService:
                 keyword_text = ' '.join(text_splitted[start_index:end_index])
 
         try:
-            #first search in db for the specific image if there already is a translation
+            # first search in db for the specific image if there already is a translation
             database_service = DatabaseService()
             database_entry = database_service.select_from_table(
                 "etiketten_infos",
