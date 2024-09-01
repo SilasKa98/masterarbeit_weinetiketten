@@ -69,9 +69,10 @@ class MachineLearningService:
 
         # decoded_sentence = model_prep.decode_sequence(encoder_test_data)
         model_prep = ModelPreparation()
-        decoded_word = model_prep.doPredict(encoder_test_data, self.model_to_use , dim_size,
+        decoded_word, confidence_score = model_prep.doPredict(encoder_test_data, self.model_to_use , dim_size,
                                             char_int_dict, all_existing_chars, decoded_max_length)
         print("Input: ", test_text, "\n")
         print("Output: ", decoded_word, "\n")
-        return decoded_word
+        print("confidence_score: ", confidence_score, "\n")
+        return decoded_word, confidence_score
 
