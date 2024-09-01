@@ -311,6 +311,7 @@ class ModelPreparation:
         stop_condition = False
         decoded_sentence = ""
         temperature = 0.4
+        confidence_score = 0.0
         while not stop_condition:
             output_tokens, h, c = decoder_model.predict([target_seq] + states_value)
 
@@ -336,6 +337,9 @@ class ModelPreparation:
             sampled_char = reverse_target_char_index[sampled_token_index]
             decoded_sentence += sampled_char
 
+            # Update the confidence score by adding the log probability of the sampled token
+            confidence_score += np.log(output_tokens[sampled_token_index])
+
             # Exit condition: either hit max length
             # or find stop character.
             if sampled_char == "\n" or len(decoded_sentence) > decode_max_length:
@@ -347,5 +351,9 @@ class ModelPreparation:
 
             # Update states
             states_value = [h, c]
-        return decoded_sentence
+
+        # Convert the log confidence score to probability by exponentiating
+        confidence_score = np.exp(confidence_score)
+
+        return decoded_sentence, confidence_score
 
