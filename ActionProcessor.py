@@ -358,13 +358,13 @@ class ActionProcessor:
                                 max_iterations = 5
                                 while not spell.is_word_correct_check(modified_word)[0]:
                                     if word_lang == "de":
-                                        modified_word = machine_learning_de.ml_word_correction_exec(cleaned_word, 312 ,ml_correction_init_de[0],ml_correction_init_de[1],ml_correction_init_de[2],ml_correction_init_de[3])
+                                        modified_word, confidence_score = machine_learning_de.ml_word_correction_exec(cleaned_word, 312 ,ml_correction_init_de[0],ml_correction_init_de[1],ml_correction_init_de[2],ml_correction_init_de[3])
                                     elif word_lang == "fr":
-                                        modified_word = machine_learning_fr.ml_word_correction_exec(cleaned_word, 312,ml_correction_init_fr[0],ml_correction_init_fr[1],ml_correction_init_fr[2],ml_correction_init_fr[3])
+                                        modified_word, confidence_score = machine_learning_fr.ml_word_correction_exec(cleaned_word, 312,ml_correction_init_fr[0],ml_correction_init_fr[1],ml_correction_init_fr[2],ml_correction_init_fr[3])
                                     elif word_lang == "it":
-                                        modified_word = machine_learning_it.ml_word_correction_exec(cleaned_word, 312, ml_correction_init_it[0],ml_correction_init_it[1],ml_correction_init_it[2],ml_correction_init_it[3])
+                                        modified_word, confidence_score = machine_learning_it.ml_word_correction_exec(cleaned_word, 312, ml_correction_init_it[0],ml_correction_init_it[1],ml_correction_init_it[2],ml_correction_init_it[3])
                                     elif word_lang == "en":
-                                        modified_word = machine_learning_en.ml_word_correction_exec(cleaned_word, 312,ml_correction_init_en[0],ml_correction_init_en[1],ml_correction_init_en[2],ml_correction_init_en[3])
+                                        modified_word, confidence_score = machine_learning_en.ml_word_correction_exec(cleaned_word, 312,ml_correction_init_en[0],ml_correction_init_en[1],ml_correction_init_en[2],ml_correction_init_en[3])
                                     else:
                                         break
                                     modified_word = re.sub(r'\s+', '', modified_word)
@@ -373,7 +373,7 @@ class ActionProcessor:
                                         break
                                 # if new correct word seems to be found in the 5 iterations append it, else try to
                                 # correct with spellcorrection
-                                if iteration_count < 5:
+                                if iteration_count < 5 and confidence_score >= 0.7:
                                     modified_sentence.append(modified_word)
                                 else:
                                     modified_word = spell.correct_word(cleaned_word)
