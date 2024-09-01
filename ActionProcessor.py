@@ -288,6 +288,8 @@ class ActionProcessor:
         spell_it = SpellcheckerService('dictionary_files\\italy_extracted_words_20mio_uml_it.txt', language="it")
         spell_it.add_words_to_spellchecker_dict()
 
+        spell_general = SpellcheckerService(added_dict_file="", language="")
+
         pre_processor = PreProcessor()
         if use_ml:
             machine_learning_de = MachineLearningService('german_extracted_words_750k_uml.txt', '312Dim_96Batch_adam_german_uml_15epochs_moreData.h5')
@@ -307,10 +309,15 @@ class ActionProcessor:
 
             item_words = item.split()
             deepl = DeepLService()
+            print(item_words)
             for word in item_words:
-                word_lang = deepl.detect_language_on_the_fly(word)
-                if word_lang[1] >= 0.9:
-                    word_lang = word_lang[0]
+                print(word)
+                if len(word) >= 3 and not word.isdigit():
+                    word_lang = deepl.detect_language_on_the_fly(word)
+                    if word_lang[1] >= 0.9:
+                        word_lang = word_lang[0]
+                    else:
+                        word_lang = fetched_langs[idx]
                 else:
                     word_lang = fetched_langs[idx]
 
@@ -323,7 +330,7 @@ class ActionProcessor:
                 elif word_lang == "it":
                     spell = spell_it
                 else:
-                    spell = SpellcheckerService(added_dict_file="", language="")
+                    spell = spell_general
 
                 cleaned_word = pre_processor.word_cleaning(word, lang=word_lang)
                 cleaned_word = pre_processor.remove_numerics(cleaned_word)
@@ -356,8 +363,10 @@ class ActionProcessor:
                                         modified_word = machine_learning_fr.ml_word_correction_exec(cleaned_word, 312,ml_correction_init_fr[0],ml_correction_init_fr[1],ml_correction_init_fr[2],ml_correction_init_fr[3])
                                     elif word_lang == "it":
                                         modified_word = machine_learning_it.ml_word_correction_exec(cleaned_word, 312, ml_correction_init_it[0],ml_correction_init_it[1],ml_correction_init_it[2],ml_correction_init_it[3])
-                                    else:
+                                    elif word_lang == "en":
                                         modified_word = machine_learning_en.ml_word_correction_exec(cleaned_word, 312,ml_correction_init_en[0],ml_correction_init_en[1],ml_correction_init_en[2],ml_correction_init_en[3])
+                                    else:
+                                        break
                                     modified_word = re.sub(r'\s+', '', modified_word)
                                     iteration_count += 1
                                     if iteration_count >= max_iterations:
@@ -389,6 +398,7 @@ class ActionProcessor:
                 "path",
                 current_path
             )
+
 
     def modify_images(self, directory_path):
 
