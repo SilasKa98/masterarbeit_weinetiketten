@@ -11,3 +11,11 @@
     max-height: 400px;
     overflow-y: scroll;
 }
+
+
+#result_do_ocr_eval{
+    width: 98%;
+    margin-left: 1%;
+    margin-top: 1%;
+    margin-bottom: 1%;
+}
