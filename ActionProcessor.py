@@ -334,8 +334,27 @@ class ActionProcessor:
 
                 cleaned_word = pre_processor.word_cleaning(word, lang=word_lang)
                 cleaned_word = pre_processor.remove_numerics(cleaned_word)
+
+                # correct year numbers
+                year_correction_pattern = r"(\b\d{4})(\w+)"
+                year_correction_pattern_with_space = r"(\b\d{4})\s{1,2}(\w{1,2})\b"
+                year_correction_range_pattern = r'\b(1[4-9]\d{2}|20[0-9]{2})\b'
+                year_replacement_pattern = r"\1er"
                 special_characters = "!@#$%^&*()+?_=,<>/"
                 year_number_pattern = r'\b\d{4}(?:er| er)?\b'
+
+                # check if word is a year number with small errors in it and correct it if so. E.g. 1925cr-->1925er
+                match_with_space = re.match(year_correction_pattern_with_space, cleaned_word)
+                match_without_space = re.match(year_correction_pattern, cleaned_word)
+                if match_with_space:
+                    year = match_with_space.group(1)
+                    if re.match(year_correction_range_pattern, year):  # check if in correct year range 1400-2100
+                        cleaned_word = year + "er"
+                elif match_without_space:
+                    year = match_without_space.group(1)
+                    if re.match(year_correction_range_pattern, year):  # check if in correct year range 1400-2100
+                        cleaned_word = year + "er"
+
                 if len(cleaned_word) > 1:
                     if use_ml:
                         if 5 < len(cleaned_word) < 80 and not any(char in special_characters for char in cleaned_word) and not cleaned_word.isdigit() and not re.search(year_number_pattern, cleaned_word):
@@ -369,7 +388,7 @@ class ActionProcessor:
                                         break
                                     modified_word = re.sub(r'\s+', '', modified_word)
                                     iteration_count += 1
-                                    if iteration_count >= max_iterations:
+                                    if iteration_count >= max_iterations or confidence_score >= 0.99:
                                         break
                                 # if new correct word seems to be found in the 5 iterations append it, else try to
                                 # correct with spellcorrection
