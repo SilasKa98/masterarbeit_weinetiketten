@@ -420,8 +420,9 @@ class SearchImagesService:
                                                       "tesseract": ["text_final", "text_pure_modified_images"],
                                                       "easyocr": ["text_final", "text_pure_modified_images"],
                                                         }):
-        tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-        model = BertModel.from_pretrained('bert-base-uncased')
+        # bert-base-uncased --> old model used
+        tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')
+        model = BertModel.from_pretrained('bert-base-multilingual-cased')
 
         db_results_all = []
         for ocr_model, columns in used_ocrs.items():
