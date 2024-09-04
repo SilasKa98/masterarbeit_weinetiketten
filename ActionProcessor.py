@@ -333,13 +333,15 @@ class ActionProcessor:
                     spell = spell_general
 
                 cleaned_word = pre_processor.word_cleaning(word, lang=word_lang)
-                cleaned_word = pre_processor.remove_numerics(cleaned_word)
+                #cleaned_word = pre_processor.remove_numerics(cleaned_word)
 
                 # correct year numbers
                 year_correction_pattern = r"(\b\d{4})(\w+)"
+                alc_pattern = r'^\d+([.,]\d+)?\s*(%|vol|%vol|vol%)$'
+                postal_code_pattern = r'^d[-]?\d{5}$'
+                only_numbers_and_special_chars_pattern = r'^[^a-zA-Z]+$'
                 year_correction_pattern_with_space = r"(\b\d{4})\s{1,2}(\w{1,2})\b"
                 year_correction_range_pattern = r'\b(1[4-9]\d{2}|20[0-9]{2})\b'
-                year_replacement_pattern = r"\1er"
                 special_characters = "!@#$%^&*()+?_=,<>/"
                 year_number_pattern = r'\b\d{4}(?:er| er)?\b'
 
@@ -356,6 +358,11 @@ class ActionProcessor:
                         cleaned_word = year + "er"
 
                 if len(cleaned_word) > 1:
+                    if re.search(year_number_pattern, cleaned_word) or re.search(alc_pattern, cleaned_word) or re.match(
+                                 only_numbers_and_special_chars_pattern, cleaned_word) or re.search(postal_code_pattern, cleaned_word):
+                        modified_sentence.append(cleaned_word)
+                        print("rein in skip")
+                        continue
                     if use_ml:
                         if 5 < len(cleaned_word) < 80 and not any(char in special_characters for char in cleaned_word) and not cleaned_word.isdigit() and not re.search(year_number_pattern, cleaned_word):
                             # create list with 1 and 0 for is word correct check
@@ -374,7 +381,7 @@ class ActionProcessor:
                             if 1 not in is_word_correct_all_langs:
                                 modified_word = cleaned_word
                                 iteration_count = 0
-                                max_iterations = 5
+                                max_iterations = 2
                                 while not spell.is_word_correct_check(modified_word)[0]:
                                     if word_lang == "de":
                                         modified_word, confidence_score = machine_learning_de.ml_word_correction_exec(cleaned_word, 312 ,ml_correction_init_de[0],ml_correction_init_de[1],ml_correction_init_de[2],ml_correction_init_de[3])
@@ -392,11 +399,19 @@ class ActionProcessor:
                                         break
                                 # if new correct word seems to be found in the 5 iterations append it, else try to
                                 # correct with spellcorrection
-                                if iteration_count < 5 and confidence_score >= 0.7:
+                                if iteration_count < 2 and confidence_score >= 0.7:
+                                    print("append ml corrected word")
                                     modified_sentence.append(modified_word)
                                 else:
-                                    modified_word = spell.correct_word(cleaned_word)
-                                    modified_sentence.append(modified_word)
+                                    spellcheck_confidence_ml = spell.get_word_confidence(cleaned_word, modified_word)
+                                    spellcheck_confidence_spellcheck = spell.get_word_confidence(cleaned_word, spell.correct_word(cleaned_word))
+                                    if spellcheck_confidence_ml > spellcheck_confidence_spellcheck:
+                                        modified_sentence.append(modified_word)
+                                    elif spellcheck_confidence_ml < spellcheck_confidence_spellcheck:
+                                        modified_word = spell.correct_word(modified_word)
+                                        modified_sentence.append(modified_word)
+                                    else:
+                                        modified_sentence.append(cleaned_word)
                             else:
                                 modified_sentence.append(word)
                         else:
@@ -405,6 +420,9 @@ class ActionProcessor:
                     else:
                         modified_word = spell.correct_word(cleaned_word)
                         modified_sentence.append(modified_word)
+
+                else:
+                    modified_sentence.append(cleaned_word)
 
             print(modified_sentence)
             joined_string = ' '.join(modified_sentence)
