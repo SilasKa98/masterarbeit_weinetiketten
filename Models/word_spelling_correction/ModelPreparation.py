@@ -266,10 +266,11 @@ class ModelPreparation:
         model.save("savedModels/new_test_model_4.h5")
         model.save("savedModels/new_test_model_4_keras.keras")
 
-    def doPredict(self, input_seq, model_to_load, latent_dim, char_int_dict, all_existing_chars, decode_max_length):
+
+    @staticmethod
+    def doPredict(input_seq, model_to_load, latent_dim, char_int_dict, all_existing_chars, decode_max_length):
         model = tf.keras.models.load_model(model_to_load)
 
-        #input_token_index = self.pre_processor.char_indexing(all_existing_chars)[0]
         input_token_index = dict([(char, i) for i, char in enumerate(char_int_dict)])
         target_token_index = dict([(char, i) for i, char in enumerate(char_int_dict)])
 
@@ -298,62 +299,61 @@ class ModelPreparation:
         reverse_input_char_index = dict((i, char) for char, i in input_token_index.items())
         reverse_target_char_index = dict((i, char) for char, i in target_token_index.items())
 
-        # Encode the input as state vectors.
-        states_value = encoder_model.predict(input_seq)
+        def predict_with_temperature(temperature):
+            # Encode the input as state vectors.
+            states_value = encoder_model.predict(input_seq)
 
-        # Generate empty target sequence of length 1.
-        target_seq = np.zeros((1, 1, num_dec_tokens))
-        # Populate the first character of target sequence with the start character.
-        target_seq[0, 0, target_token_index["\t"]] = 1.0
-
-        # Sampling loop for a batch of sequences
-        # (to simplify, here we assume a batch of size 1).
-        stop_condition = False
-        decoded_sentence = ""
-        temperature = 0.4
-        confidence_score = 0.0
-        while not stop_condition:
-            output_tokens, h, c = decoder_model.predict([target_seq] + states_value)
-
-            # Sample a token
-            #sampled_token_index = np.argmax(output_tokens[0, -1, :])
-            # allow model to do different predictions with for the same word different seeding
-            '''
-            output_tokens = output_tokens[0, -1, :]
-            output_tokens = np.asarray(output_tokens).astype('float64')
-            output_tokens = np.log(output_tokens + 1e-8)  # prevent log(0)
-            exp_preds = np.exp(output_tokens)
-            output_tokens = exp_preds / np.sum(exp_preds)
-            sampled_token_index = np.random.choice(range(num_dec_tokens), p=output_tokens)
-            sampled_char = reverse_target_char_index[sampled_token_index]
-            decoded_sentence += sampled_char
-            '''
-            output_tokens = output_tokens[0, -1, :]
-            output_tokens = np.log(output_tokens + 1e-8) / temperature
-            exp_preds = np.exp(output_tokens)
-            output_tokens = exp_preds / np.sum(exp_preds)
-
-            sampled_token_index = np.random.choice(range(len(output_tokens)), p=output_tokens)
-            sampled_char = reverse_target_char_index[sampled_token_index]
-            decoded_sentence += sampled_char
-
-            # Update the confidence score by adding the log probability of the sampled token
-            confidence_score += np.log(output_tokens[sampled_token_index])
-
-            # Exit condition: either hit max length
-            # or find stop character.
-            if sampled_char == "\n" or len(decoded_sentence) > decode_max_length:
-                stop_condition = True
-
-            # Update the target sequence (of length 1).
+            # Generate empty target sequence of length 1.
             target_seq = np.zeros((1, 1, num_dec_tokens))
-            target_seq[0, 0, sampled_token_index] = 1.0
+            # Populate the first character of target sequence with the start character.
+            target_seq[0, 0, target_token_index["\t"]] = 1.0
 
-            # Update states
-            states_value = [h, c]
+            stop_condition = False
+            decoded_sentence = ""
+            confidence_score = 0.0
 
-        # Convert the log confidence score to probability by exponentiating
-        confidence_score = np.exp(confidence_score)
+            while not stop_condition:
+                output_tokens, h, c = decoder_model.predict([target_seq] + states_value)
+
+                output_tokens = output_tokens[0, -1, :]
+                output_tokens = np.log(output_tokens + 1e-8) / temperature
+                exp_preds = np.exp(output_tokens)
+                output_tokens = exp_preds / np.sum(exp_preds)
+
+                sampled_token_index = np.random.choice(range(len(output_tokens)), p=output_tokens)
+                sampled_char = reverse_target_char_index[sampled_token_index]
+                decoded_sentence += sampled_char
+
+                # Update the confidence score by adding the log probability of the sampled token
+                confidence_score += np.log(output_tokens[sampled_token_index])
+
+                if sampled_char == "\n" or len(decoded_sentence) > decode_max_length:
+                    stop_condition = True
+
+                # Update the target sequence (of length 1).
+                target_seq = np.zeros((1, 1, num_dec_tokens))
+                target_seq[0, 0, sampled_token_index] = 1.0
+
+                # Update states
+                states_value = [h, c]
+
+            confidence_score = np.exp(confidence_score)
+            return decoded_sentence, confidence_score
+
+        # Initial parameters
+        temperature = 0.7
+        confidence_threshold = 0.8
+        max_attempts = 4
+        attempts = 0
+
+        # First prediction attempt
+        decoded_sentence, confidence_score = predict_with_temperature(temperature)
+
+        # Adjust temperature and retry if necessary
+        while confidence_score < confidence_threshold and attempts < max_attempts:
+            print(f"Low confidence score: {confidence_score:.2f}. for word: {decoded_sentence} Retrying with adjusted temperature.")
+            temperature *= 0.5  # Reduce the temperature to make predictions more deterministic
+            decoded_sentence, confidence_score = predict_with_temperature(temperature)
+            attempts += 1
 
         return decoded_sentence, confidence_score
-
