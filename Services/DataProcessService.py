@@ -129,7 +129,11 @@ class DataProcessService:
                 best_match = max(year_matches, key=lambda x: x[0])
                 if year_range not in intersection:
                     intersection[year_range] = list(set())
+                else:
+                    # make sure its a list
+                    intersection[year_range] = list(intersection[year_range])
                 intersection[year_range].append(best_match[1])
+
             elif valid_years:
                 if year_range not in intersection:
                     intersection[year_range] = list(set())
