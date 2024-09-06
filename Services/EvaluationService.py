@@ -101,13 +101,12 @@ class EvaluationService:
             word_error_rate = 1
         return word_error_rate
 
-    def char_error_rate_eval(self, eval_text, ocr_text):
+    @staticmethod
+    def char_error_rate_eval(eval_text, ocr_text):
         print("used char error rate!")
         char_error_rate = cer(
             eval_text,
-            ocr_text,
-            truth_transform=self.transforms,
-            hypothesis_transform=self.transforms
+            ocr_text
         )
         char_error_rate = round(char_error_rate, 2)
         if char_error_rate > 1:
