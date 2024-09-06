@@ -1,4 +1,6 @@
 #from Services.DataProcessService import DataProcessService
+import sys
+
 from Services.DetailFinderService import DetailFinderService
 #from ActionProcessor import ActionProcessor
 #from Services.SpellcheckerService import SpellcheckerService
@@ -55,7 +57,7 @@ print(wine_types)
 #action = ActionProcessor()
 
 #all_paths_in_db_tupels = action.update_label_detail_infos()
-
+'''
 evaluation = EvaluationService()
 eval_result_word, summed_eval_score_word = evaluation.do_ocr_eval("word_error_rate_eval", "C:\\Masterarbeit_ocr_env\\Evaluation", "text_final", "doctr")
 print(eval_result_word)
@@ -69,3 +71,28 @@ eval_result_char, summed_eval_score_char = evaluation.do_ocr_eval("relevant_word
 print(eval_result_char)
 print(summed_eval_score_char)
 
+from mmocr.apis import MMOCRInferencer
+import matplotlib
+matplotlib.use('TkAgg')
+ocr = MMOCRInferencer(det='DBNet', rec='CRNN')
+results = ocr('C:\\Masterarbeit_ocr_env\\wine_images\\archiv19\\cuba3.jpg')
+
+texts = []
+for prediction in results['predictions']:
+    for i, text in enumerate(prediction['rec_texts']):
+        texts.append((text, prediction['det_polygons'][i]))
+
+# Sortiere Texte nach y-Koordinaten (hier als Beispiel)
+sorted_texts = sorted(texts, key=lambda x: min(y for _, y in zip(x[1][::2], x[1][1::2])))
+
+# Ausgabe der sortierten Texte
+for text, _ in sorted_texts:
+    print(text)
+'''
+
+from Services.MMOCRService import MMOCRService
+
+mmocrService = MMOCRService()
+test =mmocrService.read_in_files('C:\\Masterarbeit_ocr_env\\wine_images\\archiv20\\abenheim_liebfrauenmorgen.jpg')
+print("test")
+print(test)
