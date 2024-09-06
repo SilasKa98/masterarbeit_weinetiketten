@@ -17,6 +17,7 @@ from Services.DoctrService import DoctrService
 from Services.SpellcheckerService import SpellcheckerService
 from Services.DetailFinderService import DetailFinderService
 from Services.KerasOCRService import KerasOCRService
+from Services.MMOCRService import MMOCRService
 import os
 from collections import defaultdict
 from datetime import datetime
@@ -33,6 +34,7 @@ class ActionProcessor:
         self.easy_ocr_service = EasyOCRService()
         self.doctr_service = DoctrService()
         self.keras_ocr_service = KerasOCRService()
+        self.mmocr_service = MMOCRService()
 
     def process_directory(self, directory_input, use_translation, ocr_model, only_new_entrys=False):
 
@@ -108,6 +110,8 @@ class ActionProcessor:
                 image_string = self.doctr_service.read_in_files(image_path)
             elif "kerasocr" in ocr_model:
                 image_string = self.keras_ocr_service.read_in_files(image_path)
+            elif "mmocr" in ocr_model:
+                image_string = self.mmocr_service.read_in_files(image_path)
 
             # WIP needs to be adressed. What happens if ocr recognizes nothing?
             if image_string == "":
@@ -123,7 +127,7 @@ class ActionProcessor:
         action_processor = ActionProcessor()
         # use_translation True / False determines  wether language knowledge is used for ocr or not
         if only_new_entrys is True:
-            all_ocr_models = ["tesseract", "easyocr", "doctr", "kerasocr"]
+            all_ocr_models = ["tesseract", "easyocr", "doctr", "kerasocr", "mmocr"]
         else:
             all_ocr_models = [ocr_model]
 
@@ -337,7 +341,7 @@ class ActionProcessor:
 
                 # correct year numbers
                 year_correction_pattern = r"(\b\d{4})(\w+)"
-                alc_pattern = r'^\d+([.,]\d+)?\s*(%|vol|%vol|vol%)$'
+                alc_pattern = r'^(alc\.?\s*)?(\d+([.,]\d+)?\s*(%|vol|%vol|vol%)?)?$'
                 postal_code_pattern = r'^d[-]?\d{5}$'
                 only_numbers_and_special_chars_pattern = r'^[^a-zA-Z]+$'
                 year_correction_pattern_with_space = r"(\b\d{4})\s{1,2}(\w{1,2})\b"
@@ -348,14 +352,17 @@ class ActionProcessor:
                 # check if word is a year number with small errors in it and correct it if so. E.g. 1925cr-->1925er
                 match_with_space = re.match(year_correction_pattern_with_space, cleaned_word)
                 match_without_space = re.match(year_correction_pattern, cleaned_word)
+                year_got_corrected = False
                 if match_with_space:
                     year = match_with_space.group(1)
                     if re.match(year_correction_range_pattern, year):  # check if in correct year range 1400-2100
                         cleaned_word = year + "er"
+                        year_got_corrected = True
                 elif match_without_space:
                     year = match_without_space.group(1)
                     if re.match(year_correction_range_pattern, year):  # check if in correct year range 1400-2100
                         cleaned_word = year + "er"
+                        year_got_corrected = True
 
                 if len(cleaned_word) > 1:
                     if re.search(year_number_pattern, cleaned_word) or re.search(alc_pattern, cleaned_word) or re.match(
@@ -422,7 +429,10 @@ class ActionProcessor:
                         modified_sentence.append(modified_word)
 
                 else:
-                    modified_sentence.append(cleaned_word)
+                    if year_got_corrected:
+                        modified_sentence.append(cleaned_word)
+                    else:
+                        modified_sentence.append(word)
 
             print(modified_sentence)
             joined_string = ' '.join(modified_sentence)
@@ -435,7 +445,6 @@ class ActionProcessor:
                 "path",
                 current_path
             )
-
 
     def modify_images(self, directory_path):
 
