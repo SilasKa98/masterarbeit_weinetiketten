@@ -93,6 +93,6 @@ for text, _ in sorted_texts:
 from Services.MMOCRService import MMOCRService
 
 mmocrService = MMOCRService()
-test =mmocrService.read_in_files('C:\\Masterarbeit_ocr_env\\wine_images\\archiv20\\abenheim_liebfrauenmorgen.jpg')
+test = mmocrService.read_in_files('C:\\Masterarbeit_ocr_env\\wine_images\\uploads_g\\LauffenKirchenweinbergWueRTT.jpg', variable_detection=True)
 print("test")
 print(test)
