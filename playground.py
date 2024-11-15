@@ -1,12 +1,13 @@
 #from Services.DataProcessService import DataProcessService
+import os
 import sys
 
-from Services.DetailFinderService import DetailFinderService
+#from Services.DetailFinderService import DetailFinderService
 #from ActionProcessor import ActionProcessor
 #from Services.SpellcheckerService import SpellcheckerService
 #from Services.SearchImagesService import SearchImagesService
 #from Services.KerasOCRService import KerasOCRService
-from Services.EvaluationService import EvaluationService
+#from Services.EvaluationService import EvaluationService
 
 #keras_ocr = KerasOCRService()
 #text = keras_ocr.read_in_files("C:\\Masterarbeit_ocr_env\\wine_images\\archiv20\\abenheim_liebfrauenmorgen.jpg")
@@ -90,9 +91,38 @@ for text, _ in sorted_texts:
     print(text)
 '''
 
-from Services.MMOCRService import MMOCRService
+#from Services.MMOCRService import MMOCRService
 
-mmocrService = MMOCRService()
-test = mmocrService.read_in_files('C:\\Masterarbeit_ocr_env\\wine_images\\uploads_g\\LauffenKirchenweinbergWueRTT.jpg', variable_detection=True)
-print("test")
+#mmocrService = MMOCRService()
+#test = mmocrService.read_in_files('C:\\Masterarbeit_ocr_env\\wine_images\\uploads_g\\LauffenKirchenweinbergWueRTT.jpg', variable_detection=True)
+#print("test")
+#print(test)
+'''
+from Services.ImageModificationService import ImageModificationService
+from Services.DataProcessService import DataProcessService
+
+data_process_service = DataProcessService()
+directory_path = "C:\\Masterarbeit_ocr_env\\wine_images"
+
+images = data_process_service.iterate_directory(directory_path)
+print(images)
+for index, img_path in enumerate(images):
+    image_directory = os.path.dirname(os.path.abspath(img_path))
+    image_directory_name = os.path.basename(image_directory)
+    image_name = os.path.basename(img_path)
+
+    image_mod = ImageModificationService(image_directory+"/"+image_name)
+    processed_path = f"wine_images/edited_wine_images/{image_directory_name}"
+    if not os.path.exists(processed_path):
+        os.makedirs(processed_path)
+
+    save_path = processed_path + f"/{image_name}"
+    print(image_mod.get_image_dpi())
+    print(save_path)
+    image_mod.image_binarization().save_modified_image2(save_path)
+'''
+from Services.TesseractService import TesseractService
+tesseract = TesseractService()
+test = tesseract.read_in_files("C:\\Users\\Silas-Pc\\Downloads\\test_ocr_normal.png", "eng")
+
 print(test)
