@@ -66,7 +66,7 @@ class EvaluationService:
         eval_result = {}
         for path_key, eval_text in eval_path_text_dict.items():
             escaped_path_key = path_key.replace("\\", "\\\\") + "%"
-            #print(escaped_path_key)
+            print("esc. Path: ",escaped_path_key)
             db_select = database.select_from_table(used_ocr, f"path, {used_column}", condition="path like %s", params=[escaped_path_key], as_dict=True)
             if db_select:
                 ocr_text = db_select[0][used_column]
@@ -80,7 +80,7 @@ class EvaluationService:
                 elif method_to_eval == "word_error_rate_eval":
                     result = self.word_error_rate_eval(eval_text, ocr_text)
                     eval_result[db_select[0]["path"]] = result
-                elif method_to_eval == "relevant_words_present_eval":
+                elif method_to_eval == "relevant_words_missing_eval":
                     print("path: ", db_select[0]["path"])
                     result = self.relevant_words_present_eval(eval_text, ocr_text)
                     eval_result[db_select[0]["path"]] = result
