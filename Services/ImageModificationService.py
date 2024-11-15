@@ -26,6 +26,24 @@ class ImageModificationService:
         self.image_src = cv2.cvtColor(self.image_src, cv2.COLOR_BGR2GRAY)
         return self
 
+    def image_binarization(self):
+        self.image_src = cv2.cvtColor(self.image_src, cv2.COLOR_BGR2GRAY)
+        '''self.image_src = cv2.adaptiveThreshold(
+            self.image_src,
+            255,
+            cv2.ADAPTIVE_THRESH_GAUSSIAN_C,  # median filtering with local neughbors information
+            cv2.THRESH_BINARY,
+            51,  # block size
+            9   # contrast value, which gets subtracted from median
+        '''
+        _, binarized_image = cv2.threshold(
+            self.image_src,
+            0,  # threshold which gets ignored by otsu
+            255,  # max value for binarized pixel
+            cv2.THRESH_BINARY + cv2.THRESH_OTSU
+        )
+        return self
+
     def bump_contrast(self):
         mean, std_dev = cv2.meanStdDev(self.image_src)
         mean = mean[0][0]
