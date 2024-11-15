@@ -85,25 +85,26 @@
                 <h5 class="card-title">Evaluieren der OCR Genauigkeit</h5>
                 <p class="card-text">
                     Mit diesem Modul kann die Genauigkeit der Weinetikettentexte bestimmt werden die mit OCR eingelesen wurden.<br>
-                    Zur bestimmung der Genauigkeit kann die "Word Error Rate (WER)", die "Character Error Rate (CER)" oder "Present Relevant Words Rate (PRWR)" ausgewählt werden.<br>
-                    Sowohl WER als auch CER folgen dabei den vorgegebenen Formeln für die bestimmung dieser Werte. PRWR ist eine selbst erstelle Evaluationsmethode und überprüft, <br>
+                    Zur Bestimmung der Genauigkeit kann die "Word Error Rate (WER)", die "Character Error Rate (CER)" oder "Relevant Words Missing Rate (RWMR)" ausgewählt werden.<br>
+                    Sowohl die WER als auch die CER folgen dabei den gängigen Formeln für die Bestimmung dieser Werte. <br> Die RWMR ist eine selbst erstelle Evaluationsmethode und überprüft, 
                     alle relavanten Wörter der Evaluationstexte auf Existenz in den OCR-Texten.<br>
-                    Außerdem kann das verwendete OCR-Modell sowie die Datenbankspalte, welche zur OCR-Text überprüfung genutzt werden soll, ausgewählt werden.
+                    Außerdem kann das verwendete OCR-Modell sowie die Datenbankspalte, welche zur OCR-Text Überprüfung genutzt werden soll, ausgewählt werden.
                 </p>
                 <div>
                     <select  class="form-select input_option_admin" id="ocr_modell_select" onchange="fetchColumns(value, 'do_ocr_eval')">
-                        <option>OCR-Modell auswählen</option>
+                        <option>OCR-Tool auswählen</option>
                         <?php foreach ($tables as &$val){?>
                             <option value="<?php print $val; ?>"><?php print $val; ?></option>
                         <?php }?>
                     </select>
                     <select class="form-select input_option_admin"  id="do_ocr_eval_column_input_select">
-                        <option>Spalte für Evaluation wählen</option>
+                        <option>Spalte für Evaluation auswählen</option>
                     </select>
                     <select class="form-select input_option_admin" id="do_ocr_eval_path_select">
                         <option>Pfad mit Evaluationstexten auswählen</option>
                     </select>
                     <select  class="form-select input_option_admin" id="error_rate_select">
+                            <option>Methode zur Bewertung der OCR-Genauigkeit</option>
                         <?php foreach ($error_rates as &$val){?>
                             <option value="<?php print $val; ?>"><?php print $val; ?></option>
                         <?php }?>

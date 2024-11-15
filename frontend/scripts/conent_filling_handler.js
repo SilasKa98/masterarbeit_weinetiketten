@@ -77,7 +77,7 @@ function handel_offcanvas_content_filling(path){
                                                 '<p class="card-text">'+
                                                     content + 
                                                 '</p>'+
-                                                '<p class="card-text"><small class="text-body-secondary">Last updated just now</small></p>'+
+                                                '<p class="card-text"><small class="text-body-secondary">Gerade aktualisiert</small></p>'+
                                             '</div>'+
                                         '</div>';
 

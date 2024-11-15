@@ -30,9 +30,9 @@
             <div class="card-body">
                 <h5 class="card-title">Weinetiketten einlesen und speichern</h5>
                 <p class="card-text">
-                    Mit diesem Modul können Weinetiketten per OCR eingelesen werden. <br>
+                    Mit diesem Modul können Weinetiketten mittels OCR eingelesen werden. <br>
                     Dabei können verschiedene Hilfsparameter aktiviert werden, die ein besseres und gezielteres einlesen ermöglichen.
-                    Außerdem kann ausgewählt werden, welches OCR-Modell gewählt werden soll.
+                    Außerdem kann ausgewählt werden, welches OCR-Modell genutzt werden soll.
                 </p>
                 <div>
 
@@ -65,7 +65,7 @@
                 </div>
             </div>
             <div class="card-footer text-body-secondary" id="footer_read_and_save_ocr">
-                Vorsicht! Dieser Prozess kann einige Zeit in anspruch nehmen!
+                Vorsicht! Dieser Prozess kann einige Zeit in Anspruch nehmen!
                 <div class="spinner-border" id="spinner_read_and_save_ocr" role="status" style="float: right; display:none;">
                     <span class="sr-only"></span>
                 </div>
@@ -137,7 +137,7 @@
                 </div>
             </div>
             <div class="card-footer text-body-secondary" id="footer_spelling_correction">
-                Vorsicht! Dieser Prozess kann einige Zeit in anspruch nehmen!
+                Vorsicht! Dieser Prozess kann einige Zeit in Anspruch nehmen!
                 <div class="spinner-border" id="spinner_spelling_correction" role="status" style="float: right; display:none;">
                     <span class="sr-only"></span>
                 </div>
@@ -168,7 +168,7 @@
                 </div>
             </div>
             <div class="card-footer text-body-secondary" id="footer_update_label_detail_infos">
-                Vorsicht! Dieser Prozess kann einige Zeit in anspruch nehmen!
+                Vorsicht! Dieser Prozess kann einige Zeit in Anspruch nehmen!
                 <div class="spinner-border" id="spinner_update_label_detail_infos" role="status" style="float: right; display:none;">
                     <span class="sr-only"></span>
                 </div>
@@ -203,7 +203,7 @@
                 </div>
             </div>
             <div class="card-footer text-body-secondary" id="footer_update_entities_for_labels">
-                Vorsicht! Dieser Prozess kann einige Zeit in anspruch nehmen!
+                Vorsicht! Dieser Prozess kann einige Zeit in Anspruch nehmen!
                 <div class="spinner-border" id="spinner_update_entities_for_labels" role="status" style="float: right; display:none;">
                     <span class="sr-only"></span>
                 </div>
@@ -283,7 +283,7 @@
             <div class="card-body">
                 <h5 class="card-title">Duplikate erkennen</h5>
                 <p class="card-text">
-                   Dieses Modul kann zum finden von Duplikaten vor dem eigentlichen hochladen der neuen Etiketten genutzt werden.<br>
+                   Dieses Modul kann zum finden von Duplikaten vor dem eigentlichen Hochladen der neuen Etiketten genutzt werden.<br>
                    So soll sichergestellt werden, dass keine Etiketten hochgeladen werden, die sich bereits in der Sammlung befinden.                          
                 </p>
                 <div>
@@ -340,7 +340,7 @@
                 </div>
             </div>
             <div class="card-footer text-body-secondary" id="footer_read_db_and_detect_lang">
-                Vorsicht! Dieser Prozess kann einige Zeit in anspruch nehmen!
+                Vorsicht! Dieser Prozess kann einige Zeit in Anspruch nehmen!
                 <div class="spinner-border" id="spinner_read_db_and_detect_lang" role="status" style="float: right; display:none;">
                     <span class="sr-only"></span>
                 </div>
@@ -362,7 +362,7 @@
             <div class="card-body">
                 <h5 class="card-title">Etikettenbilder modifizieren</h5>
                 <p class="card-text">
-                    Mit diesem Modul können die Etikettenbilder visuell modifiziert werden. Durch die modifizierung wird das einlesen mittels OCR verbessert.<br>
+                    Mit diesem Modul können die Etikettenbilder visuell modifiziert werden. Durch die Modifizierung kann das Einlesen mittels OCR verbessert werden.<br>
                     Zur Modifikation werden folgende Schritte durchgeführt: <b>"Grayscaling", "Sharpening", "Contrast bumping", "Noise removing", "Blur applying"</b> <br>
                     und alternativ auch <b>"Image rescaling"</b>, wenn die Bildauflösung kleiner als 300 dpi ist.<br>
                     Die modifizierten Bilder werden in <b>"wine_images/edited_wine_imgages"</b> gespeichert.
@@ -377,7 +377,7 @@
                 </div>
             </div>
             <div class="card-footer text-body-secondary" id="footer_modify_images">
-                Vorsicht! Dieser Prozess kann einige Zeit in anspruch nehmen!
+                Vorsicht! Dieser Prozess kann einige Zeit in Anspruch nehmen!
                 <div class="spinner-border" id="spinner_modify_images" role="status" style="float: right; display:none;">
                     <span class="sr-only"></span>
                 </div>
