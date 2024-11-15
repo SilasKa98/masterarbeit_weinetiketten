@@ -3,6 +3,7 @@ from pytesseract import TesseractError
 import os
 
 pytesseract.pytesseract.tesseract_cmd = r''+os.getenv("TESSERACT_CMD_LOCATION")
+# pytesseract.pytesseract.tesseract_cmd = 'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
 import cv2
 import matplotlib.pyplot as plt
 from PIL import Image

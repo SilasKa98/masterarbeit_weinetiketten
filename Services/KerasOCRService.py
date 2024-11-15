@@ -1,3 +1,5 @@
+import pprint
+
 import keras_ocr.pipeline
 
 
@@ -11,6 +13,7 @@ class KerasOCRService:
             images = [keras_ocr.tools.read(url) for url in [read_in_image]]
             prediction_groups = self.pipeline.recognize(images)
 
+            pprint.pp(prediction_groups)
             text_list = []
             for item in prediction_groups:
                 for inner_item in item:

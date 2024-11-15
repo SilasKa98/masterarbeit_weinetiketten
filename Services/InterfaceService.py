@@ -139,9 +139,9 @@ class InterfaceService:
             task_id = str(uuid.uuid4())
             task_name = "read_and_save_ocr"
 
-            threading.Thread(target=self.process_read_and_save_ocr,
-                             args=(task_id, task_name, table, ocr_model, column, path, use_translation,
-                                   only_new_entries)).start()
+            threading.Thread(target = self.process_read_and_save_ocr,
+                             args = (task_id, task_name, table, ocr_model, column, path, use_translation,
+                             only_new_entries)).start()
 
             self.tasks[task_name] = {
                 "task_id": task_id,

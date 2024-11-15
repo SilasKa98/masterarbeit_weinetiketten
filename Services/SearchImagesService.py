@@ -69,7 +69,6 @@ class SearchImagesService:
         self.save_cache(self.semantic_vector_cache_file, self.semantic_vector_cache)
         self.semantic_vector_cache_hash = self._compute_cache_hash()
 
-
     def load_annoy_cache(self, cache_file):
         if os.path.exists(cache_file):
             vectors = list(self.semantic_vector_cache.values())
@@ -127,7 +126,7 @@ class SearchImagesService:
         found_paths_semantic = self.semantic_search(query)
         label_details_result = self.search_with_db_label_details(entity_search_dict, number_of_used_db_entries)
         text_based_result = self.text_based_keyword_search(entity_search_dict, search_text, percentage_matching_range, number_of_used_db_entries)
-        # TODO check for double entries here, so no labels are redundant in this dict
+
         text_based_x_label_details = {}
         for key in set(text_based_result.keys()).union(label_details_result.keys()):
             if key in text_based_result and key in label_details_result:
@@ -374,7 +373,9 @@ class SearchImagesService:
 
         # filter for duplikates
         entities_dict = {key: list(set(value)) for key, value in entities_dict.items()}
-
+        print("Ents: ")
+        print("search_text: ", search_text)
+        print("entities_dictionary: ", entities_dict)
         return entities_dict
 
     # sub function for semantic search
