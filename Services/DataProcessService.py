@@ -246,19 +246,19 @@ class DataProcessService:
             else:
                 regex = r'\b[A-Za-z-]{5,}\b'
             words = re.findall(regex, text.lower())  # only words with at least 5 chars
-            unique_words = set(words)  # Entfernt Duplikate durch Umwandlung in ein Set
-            return list(unique_words)  # Rückgabe als Liste von eindeutigen Wörtern
+            unique_words = set(words)  # remove duplicates by using set
+            return list(unique_words)
 
 
         try:
             with open(file_path, "rb") as f, open(output_file, 'w', encoding='utf-8') as out_file:
                 count = 0
                 for item in Parser(f).iter_from(handler):
-                    # Bereinigen des Textes und Extrahieren der Wörter
+                    # clean texts and extract words
                     cleaned_text = clean_text(item)
                     words = extract_words(cleaned_text)
 
-                    # Schreibe jedes Wort in die Ausgabedatei
+                    # write words in target file
                     for word in words:
                         out_file.write(word + '\n')
                         count += 1
