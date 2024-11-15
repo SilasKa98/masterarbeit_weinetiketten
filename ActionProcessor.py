@@ -38,7 +38,6 @@ class ActionProcessor:
 
     def process_directory(self, directory_input, use_translation, ocr_model, only_new_entrys=False):
 
-        # directory_input = directory path
         images = self.data_process_service.iterate_directory(directory_input)
         # iterate images in paths
         directory_results = []
@@ -124,8 +123,9 @@ class ActionProcessor:
         return directory_results
 
     def read_and_save_ocr(self, ocr_model, path_to_read, table, insert_column, use_translation=False, only_new_entrys=False):
+
         action_processor = ActionProcessor()
-        # use_translation True / False determines  wether language knowledge is used for ocr or not
+
         if only_new_entrys is True:
             all_ocr_models = ["tesseract", "easyocr", "doctr", "kerasocr", "mmocr"]
         else:
@@ -341,7 +341,7 @@ class ActionProcessor:
 
                 # correct year numbers
                 year_correction_pattern = r"(\b\d{4})(\w+)"
-                alc_pattern = r'^(alc\.?\s*)?(\d+([.,]\d+)?\s*(%|vol|%vol|vol%)?)?$'
+                alc_pattern = r'^(alc\.?\s*)?(\d{1,2}([.,]\d{1,2})?\s*%?\s*(vol|%vol|vol%)?)$'
                 postal_code_pattern = r'^d[-]?\d{5}$'
                 only_numbers_and_special_chars_pattern = r'^[^a-zA-Z]+$'
                 year_correction_pattern_with_space = r"(\b\d{4})\s{1,2}(\w{1,2})\b"
@@ -387,6 +387,7 @@ class ActionProcessor:
                             # if correct, skip the word for correction
                             if 1 not in is_word_correct_all_langs:
                                 modified_word = cleaned_word
+                                confidence_score = 0
                                 iteration_count = 0
                                 max_iterations = 2
                                 while not spell.is_word_correct_check(modified_word)[0]:
@@ -404,7 +405,7 @@ class ActionProcessor:
                                     iteration_count += 1
                                     if iteration_count >= max_iterations or confidence_score >= 0.99:
                                         break
-                                # if new correct word seems to be found in the 5 iterations append it, else try to
+                                # if new correct word seems to be found in the 2 iterations append it, else try to
                                 # correct with spellcorrection
                                 if iteration_count < 2 and confidence_score >= 0.7:
                                     print("append ml corrected word")
@@ -422,8 +423,11 @@ class ActionProcessor:
                             else:
                                 modified_sentence.append(word)
                         else:
-                            modified_word = spell.correct_word(cleaned_word)
-                            modified_sentence.append(modified_word)
+                            if not any(char in special_characters for char in cleaned_word) and not cleaned_word.isdigit() and not re.search(year_number_pattern, cleaned_word):
+                                modified_word = spell.correct_word(cleaned_word)
+                                modified_sentence.append(modified_word)
+                            else:
+                                modified_sentence.append(cleaned_word)
                     else:
                         modified_word = spell.correct_word(cleaned_word)
                         modified_sentence.append(modified_word)
