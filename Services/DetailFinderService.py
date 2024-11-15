@@ -21,13 +21,13 @@ class DetailFinderService:
             self.path_text_dict = None
 
     @staticmethod
-    def fetch_all_texts(used_ocrs=["doctr", "easyocr", "tesseract", "kerasocr"]):
+    def fetch_all_texts(used_ocrs=["doctr", "easyocr", "tesseract", "kerasocr", "mmocr"]):
 
         db_results_all = []
         for ocr in used_ocrs:
             database_service = DatabaseService()
             db_result = database_service.select_from_table(ocr, "*", as_dict=True)
-            db_results_all.extend(db_result)  # direkt in eine Liste einfügen
+            db_results_all.extend(db_result)
 
         path_text_dict = defaultdict(str)
         for item in db_results_all:
