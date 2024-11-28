@@ -61,7 +61,7 @@
         </div>
 
         <div class="flex-md-equal my-md-3 ps-md-3" id="search_background">
-          <div class="text-bg-dark me-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center">
+          <div class="text-bg-dark me-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center" style="border-radius:10px;">
             <div class="my-3 py-3">
               <h2 class="display-5">Suchergebnisse</h2>
             </div>
