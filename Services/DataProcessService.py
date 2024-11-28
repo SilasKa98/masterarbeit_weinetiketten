@@ -89,11 +89,15 @@ class DataProcessService:
             if t in blacklisted_words:
                 continue
             # find best match for both texts/tokens
-            matches = process.extract(t, doc_tokens, scorer=fuzz.partial_ratio, limit=1)
-            for match in matches:
-                token_match, score, _ = match
-                if score >= threshold and token_match.lower() not in blacklisted_words:
-                    intersection.setdefault(text1, set()).add(token_match)
+            if threshold < 100:
+                matches = process.extract(t, doc_tokens, scorer=fuzz.partial_ratio, limit=1)
+                for match in matches:
+                    token_match, score, _ = match
+                    if score >= threshold and token_match.lower() not in blacklisted_words:
+                        intersection.setdefault(text1, set()).add(token_match)
+            else:
+                if t in doc_tokens:
+                    intersection.setdefault(text1, set()).add(t)
 
         # Regex to find year spans (e.g. "1900-2000")
         year_range_regex = r'\b(\d{4})-(\d{4})\b'
