@@ -161,7 +161,6 @@ class ModelPreparation:
     @staticmethod
     def create_ml_model(batch_size,epochs,latent_dim, all_existing_chars, encoder_input_data, decoder_input_data, decoder_target_data):
 
-        # Dropout-Rate festlegen
         dropout_rate = 0.4
 
         num_enc_tokens = len(all_existing_chars)
@@ -180,10 +179,10 @@ class ModelPreparation:
         decoder_dense = Dense(num_dec_tokens, activation='softmax')
         decoder_outputs = decoder_dense(decoder_outputs)
 
-        # Definiere die Rückruffunktion EarlyStopping
+        # define callback function for EarlyStopping
         early_stopping = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
 
-        # Definiere den ReduceLROnPlateau-Callback
+        # define the ReduceLROnPlateau-Callback
         reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=3, min_lr=0.00001)
 
         model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
@@ -243,14 +242,14 @@ class ModelPreparation:
         decoder_dense = tf.keras.layers.Dense(num_dec_tokens, activation="softmax")
         decoder_outputs = decoder_dense(decoder_outputs)
 
-        # Define the model that will turn
+        # Define the model
         # `encoder_input_data` & `decoder_input_data` into `decoder_target_data`
         model = tf.keras.Model([encoder_inputs, decoder_inputs], decoder_outputs)
 
         model.compile(
             optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"])
 
-        # Definiere die Rückruffunktion EarlyStopping
+        # define callback function for EarlyStopping
         early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
 
         model.fit(
@@ -262,7 +261,6 @@ class ModelPreparation:
             callbacks=[early_stopping]
         )
 
-        # Save model
         model.save("savedModels/new_test_model_4.h5")
         model.save("savedModels/new_test_model_4_keras.keras")
 

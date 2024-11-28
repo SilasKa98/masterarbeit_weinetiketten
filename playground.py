@@ -37,6 +37,7 @@ import sys
 #search.text_based_keyword_search("Zeige mir Riesling und Merlot Weine aus der Region Mosel aus 1900")
 #entities = search.named_entity_recognition("Zeige mir Riesling und Merlot Weine aus der Region Mosel von 1900")
 #print(entities)
+import time
 
 '''
 details = DetailFinderService(init_path_text_dict=True)
@@ -121,8 +122,15 @@ for index, img_path in enumerate(images):
     print(save_path)
     image_mod.image_binarization().save_modified_image2(save_path)
 '''
+'''
 from Services.TesseractService import TesseractService
 tesseract = TesseractService()
 test = tesseract.read_in_files("C:\\Users\\Silas-Pc\\Downloads\\test_ocr_normal.png", "eng")
 
 print(test)
+'''
+
+from Services.DetailFinderService import DetailFinderService
+
+details = DetailFinderService(init_path_text_dict=True)
+details.find_country("wine_images\\archiv19\\alpiarca.jpg")

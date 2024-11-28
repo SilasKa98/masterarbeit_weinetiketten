@@ -5,7 +5,6 @@ import numpy as np # linear algebra
 import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
 import os
 import re
-from gibberish import Gibberish
 
 
 class PreProcessor:
@@ -74,7 +73,7 @@ class PreProcessor:
         return df
 
     def form_dataframe_german_txt(self, input_file):
-        # Lade die Textdatei in einen DataFrame mit einer Spalte 'word'
+        # load textfile in dataframe with column 'word'
         df = pd.read_csv(input_file, header=None, names=['word'])
 
         return df
