@@ -1,6 +1,10 @@
 import os
 import re
+
+import nltk
 import pycountry
+from rapidfuzz import process, fuzz
+
 from Services.DatabaseService import DatabaseService
 from Services.DataProcessService import DataProcessService
 from collections import Counter
@@ -36,6 +40,17 @@ class DetailFinderService:
                 path_text_dict[current_path] += " " + " ".join(item.values())
 
         return dict(path_text_dict)
+
+    @staticmethod
+    def create_doc_tokens(text_doc, token_len=5):
+        tokens = nltk.word_tokenize(text_doc.lower())
+        filtered_tokens = set(token for token in tokens if len(token) >= token_len)
+        return filtered_tokens
+
+    @staticmethod
+    def load_file(file_path):
+        with open(file_path, "r", encoding="utf-8") as file:
+            return [item.strip().lower() for item in file]
 
     def find_anno(self, path):
         text = self.path_text_dict[path]
@@ -89,6 +104,8 @@ class DetailFinderService:
                 pass
             country_provinces_dict[item.name] = []
             country_provinces_dict[item.name] += list(set([x for x in country_provinces if len(x) > 2]))
+        if "Thurgau" in country_provinces_dict["Switzerland"]:
+            country_provinces_dict["Switzerland"].remove("Thurgau")
         return country_provinces_dict
 
     def find_provinces(self, path):
@@ -123,6 +140,8 @@ class DetailFinderService:
             country_info_dict[item.name].append(country_capital)
             country_info_dict[item.name].append(country_region)
 
+        if "Thurgau" in country_info_dict["Switzerland"]:
+            country_info_dict["Switzerland"].remove("Thurgau")
         return country_info_dict
 
     def find_country(self, path):
@@ -130,33 +149,50 @@ class DetailFinderService:
         found_countries = list(set())
         for key, values in self.country_info_dict.items():
             for item in values:
-                if re.search(rf"\b{re.escape(item)}\b", text, flags=re.IGNORECASE) and item != "" and item is not None:
+                if re.search(rf"\b{re.escape(item)}\b", text, flags=re.IGNORECASE) and item != "" and item is not None and len(item) > 3:
                     found_countries.append(key)
+
+        if len(found_countries) == 0:
+            doc_tokens = self.create_doc_tokens(text)
+            for key, values in self.country_info_dict.items():
+                for item in values:
+                    if process.extract(item.lower(), doc_tokens, scorer=fuzz.ratio, limit=1)[0][1] >= 95:
+                        found_countries.append(key)
+                        print("found country: ",key)
+
         return found_countries
 
     def find_wine_type(self, path):
         text = self.path_text_dict[path]
-        with open(os.getenv("RED_WINE_NAMES"), "r", encoding="utf-8") as file:
-            red_wine_names = [item.strip().lower() for item in file]
-        with open(os.getenv("WHITE_WINE_NAMES"), "r", encoding="utf-8") as file:
-            white_wine_names = [item.strip().lower() for item in file]
+
+        red_wine_names = self.load_file(os.getenv("RED_WINE_NAMES"))
+        white_wine_names = self.load_file(os.getenv("WHITE_WINE_NAMES"))
+        blacklisted_words = self.load_file(os.getenv("BLACKLISTED_WORDS_FILE"))
+        wine_types = self.load_file(os.getenv("WINE_TYPES_FILE"))
+
+        doc_tokens = self.create_doc_tokens(text)
+
         data = DataProcessService()
         is_red_wine = False
         for red_wine in red_wine_names:
-            if data.find_text_intersections(red_wine.lower(), text.lower()):
+            if data.find_text_intersections(red_wine.lower(), doc_tokens, red_wine_names, wine_types, blacklisted_words):
                 is_red_wine = True
                 break
         is_white_wine = False
         for white_wine in white_wine_names:
-            if data.find_text_intersections(white_wine.lower(), text.lower()):
+            if data.find_text_intersections(white_wine.lower(), doc_tokens, white_wine_names, wine_types, blacklisted_words):
                 is_white_wine = True
                 break
 
         if is_red_wine and is_white_wine:
+            print("unclear")
             return "unclear"
         elif is_white_wine:
+            print("white")
             return "white wine"
         elif is_red_wine:
+            print("red")
             return "red wine"
         else:
+            print("nothing")
             return ""
