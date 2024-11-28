@@ -1,8 +1,8 @@
 Rotwein
 Weißwein
 Weisswein
-Rosewein
 Rose
+Rosé
 Schaumwein
 Champagner
 Prosecco
