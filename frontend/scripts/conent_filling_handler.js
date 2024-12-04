@@ -1,3 +1,23 @@
+function create_loading_placeholder(img_path){
+    loading_placeholder_content = '<div class="card mb-3 offCanvasCard" id="placeholder_loading" aria-hidden="true">'+
+                                    '<div class="img">'+
+                                    '<img src="../'+img_path+'" style="filter: blur(5px);" class="card-img-top offCanvasCardImg" alt="placeholder image">'+
+                                    '</div>'+
+                                    '<div class="card-body">'+
+                                    '<h5 class="card-title placeholder-glow"><span class="placeholder col-6"></span></h5>'+
+                                    '<p class="card-text placeholder-glow">'+
+                                    '<span class="placeholder col-7"></span>'+
+                                    '<span class="placeholder col-4"></span>'+
+                                    '<span class="placeholder col-8"></span>'+
+                                    '<span class="placeholder col-4"></span>'+
+                                    '<span class="placeholder col-6"></span>'+
+                                    '</p></div></div>';
+    
+    if(document.getElementById("placeholder_loading") === null){
+        document.getElementById("offcanvas_imgDetails_body").insertAdjacentHTML("afterbegin", loading_placeholder_content);
+    }
+}
+
 function handel_offcanvas_content_filling(path){
     console.log("current_path")
     console.log(path)
@@ -8,7 +28,7 @@ function handel_offcanvas_content_filling(path){
         data: JSON.stringify({
             path: path,
         }),
-        success: function(response){ 
+        success: function(response){
             console.log(response)
             for (const [category, item] of Object.entries(response)) {
                 console.log(category)
@@ -20,10 +40,17 @@ function handel_offcanvas_content_filling(path){
             specificTaskStatusPolling(taskName).then(response => {
 
                 if (response.status === "processing") {
+                    if(document.getElementById("placeholder_loading") === null){
+                        create_loading_placeholder(path)
+                    }
                     setTimeout(() => {
                         handel_offcanvas_content_filling(path);
                     }, 500);
                 }else{
+
+                    if(document.getElementById("placeholder_loading")){
+                        document.getElementById("placeholder_loading").remove();
+                    }
 
                     console.log(response);
                     console.log(response.status);
@@ -61,7 +88,7 @@ function handel_offcanvas_content_filling(path){
                             if(item.key == "google_query"){
                                 let formattedQuery = result[item.key].replace(/ /g, '+')
                                 let encodedQuery = encodeURIComponent(formattedQuery).replace(/%2B/g, '+')
-                                content += `<br><span class="offCanvasCardLabel"></span><a href=https://www.google.com/search?q=${encodedQuery}&tbm=shop target='_blank'>Ähnliche Weine auf Google suchen</a><br>`;
+                                content += `<br><span class="offCanvasCardLabel"></span><a href=https://www.google.com/search?q=${encodedQuery}&tbm=isch target='_blank'>Ähnliche Weine auf Google suchen</a><br>`;
                             }else{
                                 content += `<span class="offCanvasCardLabel">${item.label}: </span><span>${result[item.key]}</span><br>`;
                             }
