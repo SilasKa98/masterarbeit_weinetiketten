@@ -1,6 +1,8 @@
+import asyncio
 import json
 import os
 import threading
+import time
 import urllib
 import uuid
 from collections import OrderedDict
@@ -211,13 +213,14 @@ class InterfaceService:
             }
             return jsonify(response)
 
+
         @self.app.route('/get_image_informations', methods=['POST'])
         def get_image_informations():
             data = request.json
             path = data["path"]
             task_id = str(uuid.uuid4())
             task_name = "get_image_informations"
-            threading.Thread(target=self.process_get_image_informations, args=(task_id, task_name, path)).start()
+            get_info_thread = threading.Thread(target=self.run_get_info_async_in_thread, args=(self.process_get_image_informations, task_id, task_name, path)).start()
 
             self.tasks[task_name] = {
                 "task_id": task_id,
@@ -231,6 +234,7 @@ class InterfaceService:
                 "name": task_name
             }
             return jsonify(response)
+
 
         @self.app.route('/modify_images', methods=["POST"])
         def modify_images():
@@ -475,7 +479,29 @@ class InterfaceService:
             "result": hits
         }
 
-    def process_get_image_informations(self, task_id, task_name, path):
+    # wrapper function to run the process_get_image_information async
+    @staticmethod
+    def run_get_info_async_in_thread(func, *args):
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(func(*args))
+        loop.close()
+
+    @staticmethod
+    async def create_alt_google_query(doctr_text_final, image_lang):
+
+        import yake
+        custom_kw_extractor = yake.KeywordExtractor(lan=image_lang, n=5, dedupLim=0.8, top=2, features=None)
+        keywords = custom_kw_extractor.extract_keywords(doctr_text_final[0][0])
+        all_keywords = []
+        for kw in keywords:
+            all_keywords.append(kw)
+        print(all_keywords[0][0].split())
+        keywords = all_keywords[0][0].split()
+
+        return keywords
+
+    async def process_get_image_informations(self, task_id, task_name, path):
         from Services.DatabaseService import DatabaseService
         from Services.DataProcessService import DataProcessService
         database = DatabaseService()
@@ -501,7 +527,7 @@ class InterfaceService:
 
         if google_query == "":
             doctr_text_final = database.select_from_table("doctr", "text_final", condition="path = %s", params=[path])
-            keywords = data_service.create_keywords_of_scentence(doctr_text_final[0][0], image_lang, 2, 5, 0.8)[0][0].split()
+            keywords = await self.create_alt_google_query(doctr_text_final, image_lang)
             print("keywords")
             print(keywords)
             google_query = ' '.join(keywords).lower()
