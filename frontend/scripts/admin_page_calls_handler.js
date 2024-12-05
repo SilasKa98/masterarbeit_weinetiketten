@@ -370,7 +370,7 @@ function toggleOnlyNewImgs_readSaveOcr(switch_elem){
     translation_switch.disabled = !translation_switch.disabled
 
     if(switch_elem.checked){
-        ocr_sel.innerHTML = '<option>tesseract, easyocr, doctr, kerasocr</option>'
+        ocr_sel.innerHTML = '<option>tesseract, easyocr, doctr, kerasocr, mmocr</option>'
         col_sel.innerHTML = '<option value="text_pure">text_pure</option><option value="text_pure_modified_images">text_pure_modified_images</option>'
         path_sel.innerHTML = '<option value="/wine_images">/wine_images</option>'+
                              '<option value="/wine_images/edited_wine_images">/wine_images/edited_wine_images</option>'
