@@ -1,0 +1,9 @@
+hessen;hessischer
+hessen;hessener
+bayern;bayerischer
+württemberg;württembergischer
+württemberg;württemberger
+baden;badischer
+baden;badener
+pfalz;pfälzischer
+pfalz;pfalzener

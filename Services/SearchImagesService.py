@@ -9,6 +9,8 @@ import pprint
 import nltk
 import numpy as np
 import torch
+from spacy.language import Language
+from spacy.pipeline import Lemmatizer
 from transformers import BertTokenizer, BertModel
 from annoy import AnnoyIndex
 from deep_translator import GoogleTranslator
@@ -287,6 +289,28 @@ class SearchImagesService:
 
     @staticmethod
     def named_entity_recognition(search_text):
+
+        # function to load lemma mapping for locations out of file
+        def load_custom_lemmas(filename):
+            custom_lemmas = {}
+            directory_path = os.getenv("DICTIONARY_FOLDER")
+            with open(f"{directory_path}{filename}.txt", "r", encoding="utf-8") as file:
+                for line in file:
+                    line = line.strip()
+                    if line:
+                        lemma, word = line.split(";")
+                        custom_lemmas[word.lower()] = lemma.lower()
+            return custom_lemmas
+
+        custom_loc_lemmas = load_custom_lemmas("wine_locations")
+
+        # function to apply the created custom lemma
+        def apply_custom_lemmas(doc_de):
+            for token in doc_de:
+                if token.text.lower() in custom_loc_lemmas:
+                    token.lemma_ = custom_loc_lemmas[token.text.lower()]
+            return doc_de
+
         nlp_de = spacy.load('de_core_news_lg')
         nlp_en = spacy.load('en_core_web_md')
 
@@ -308,9 +332,18 @@ class SearchImagesService:
         matcher_types = create_matcher_for_additional_entities("wine_types", "WINETYPES", used_attr="LOWER")
         matcher_attributes = create_matcher_for_additional_entities("wine_attributes", "WINEATTRIBUTES", used_attr="LEMMA")
 
+        # not in use anymore since accents are now working correctly
         non_accent_search_text = DataProcessService.remove_accent_chars(search_text)
 
-        doc_de = nlp_de(non_accent_search_text.lower())
+        doc_de = nlp_de(search_text.lower())
+        doc_de = apply_custom_lemmas(doc_de)
+
+        # filter for valid lemma tokens that need to be added to the pipeline
+        valid_custom_loc_lemmas = list(set())
+        for token in doc_de:
+            if token.lemma_ in custom_loc_lemmas.values():
+                valid_custom_loc_lemmas.append(token.lemma_)
+
         matches_names = matcher_names(doc_de)
         matches_types = matcher_types(doc_de)
         matches_attributes = matcher_attributes(doc_de)
@@ -366,6 +399,14 @@ class SearchImagesService:
                     entities_dict["loc"].append(ent.text)
         if found_dates:
             entities_dict["date"] = found_dates
+            entities_dict["date"] = [date for date in entities_dict["date"] if len(date) >= 4]
+
+        # if cst. lemma for locations exist add the base word to the dict e.g. for lemma: hessischer, hessen gets added
+        if len(valid_custom_loc_lemmas) > 0:
+            if "loc" not in entities_dict:
+                entities_dict["loc"] = []
+            entities_dict["loc"].extend(valid_custom_loc_lemmas)
+
         # this code is especially targeting the loc entity. If the list of loc is created but remained empty, remove it
         # all other keys with empty lists will get removed too. Its to be save that no empty list remains, which would
         # conflict with the combination logic
@@ -418,8 +459,7 @@ class SearchImagesService:
         return t
 
     def semantic_search(self, search_text, used_ocrs={"doctr": ["text_final", "text_pure_modified_images"],
-                                                      "tesseract": ["text_final", "text_pure_modified_images"],
-                                                      "easyocr": ["text_final", "text_pure_modified_images"],
+                                                      "easyocr": ["text_final", "text_translation"]
                                                         }):
         # bert-base-uncased --> old model used
         tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')
@@ -461,7 +501,7 @@ class SearchImagesService:
         return found_paths
 
     def text_based_keyword_search(self, entity_search_dict, search_text, percentage_matching_range, number_of_used_db_entries,
-                                  used_ocrs=["easyocr", "tesseract", "doctr"], sub_search=False, sub_search_paths=[]):
+                                  used_ocrs=["easyocr", "doctr"], sub_search=False, sub_search_paths=[]):
         if len(self.additional_country_infos) > 0:
             values_to_add = set()
             for value_list in self.additional_country_infos.values():
@@ -516,13 +556,21 @@ class SearchImagesService:
         wine_names = load_file(os.getenv("WINE_NAMES_FILE"))
         wine_types = load_file(os.getenv("WINE_TYPES_FILE"))
 
-        def create_doc_tokens(text_doc):
+        def create_doc_tokens(text_doc, token_len=5):
             tokens = nltk.word_tokenize(text_doc.lower())
-            filtered_tokens = set(token for token in tokens if len(token) >= 5)
+            filtered_tokens = set(token for token in tokens if len(token) >= token_len)
             return filtered_tokens
 
-        doc_tokens_dict = {k: create_doc_tokens(v) for k, v in path_text_dict.items()}
+        keyword_lowest_len = len(min(search_text_keywords, key=len))
+        century_profile = r"^\d{4}-\d{4}$"
+        contains_century = any(re.match(century_profile, element) for element in search_text_keywords)
+        if contains_century and keyword_lowest_len > 4:
+            keyword_lowest_len = 4
 
+        doc_tokens_dict = {k: create_doc_tokens(v, token_len=5) for k, v in path_text_dict.items()}
+
+        print(search_text_keywords)
+        print("keyword_lowest_len: ", keyword_lowest_len)
         print("search_threshold: ",percentage_matching_range)
         intersection_dict = defaultdict(set)
         for key, text in path_text_dict.items():
