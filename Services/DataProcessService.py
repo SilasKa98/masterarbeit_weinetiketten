@@ -86,7 +86,8 @@ class DataProcessService:
         # general matching for string tokens
         for t in search_tokens:
             # if searchword is blacklisted skip this itteration and dont search for matches (e.g. wine)
-            if t in blacklisted_words:
+            # the numeric check disables the rapidfuzz matching search for numbers e.g. years, because its inaccurate
+            if t in blacklisted_words or t.isnumeric():
                 continue
             # find best match for both texts/tokens
             if threshold < 100:
@@ -131,18 +132,11 @@ class DataProcessService:
                         continue
             if year_matches:
                 best_match = max(year_matches, key=lambda x: x[0])
-                if year_range not in intersection:
-                    intersection[year_range] = list(set())
-                else:
-                    # make sure its a list
-                    intersection[year_range] = list(intersection[year_range])
-                intersection[year_range].append(best_match[1])
+                intersection[year_range] = best_match[1]
 
             elif valid_years:
-                if year_range not in intersection:
-                    intersection[year_range] = list(set())
-                for year in valid_years:
-                    intersection[year_range].append(str(year))
+                for year_inner in valid_years:
+                    intersection[year_range] = str(year_inner)
 
         if intersection:
             print("match found: ", intersection)
