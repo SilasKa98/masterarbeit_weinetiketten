@@ -44,8 +44,9 @@ function handel_offcanvas_content_filling(path){
                         create_loading_placeholder(path)
                     }
                     setTimeout(() => {
-                        handel_offcanvas_content_filling(path);
-                    }, 500);
+                       handel_offcanvas_content_filling(path);
+                       statusPolling()   
+                    }, 1000);
                 }else{
 
                     if(document.getElementById("placeholder_loading")){
