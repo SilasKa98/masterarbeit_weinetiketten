@@ -1,0 +1,9 @@
+TABLES = "tesseract,easyocr,doctr,kerasocr,mmocr"
+
+LANGUAGES_FILTER = "de,en,fr,it"
+
+IMAGES_PATH = "../../wine_images"
+
+EVALUATION_TEXTS_PATH = "../../Evaluation"
+
+ERROR_RATES = "word_error_rate_eval,char_error_rate_eval,relevant_words_missing_eval"
