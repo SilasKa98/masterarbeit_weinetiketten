@@ -1,3 +1,5 @@
+# WINE Explorer
+
 Die Implementierung dieses Systems befasst sich mit den Technologien der Optical Character Recognition sowie Themen aus dem Gebiet des maschinellen Lernens. Dabei wurde mit den OCR-Tools EasyOCR, Tesseract, Doctr, Keras-OCR und MMOCR gearbeitet.
 Ziel war es Weinetikettenbilder und die darauf befindlichen Informationen einzulesen um anschließend die Vorliegenden Informationen für ein intelligentes Suchsystem zu verwenden.
 Hierzu wurden Methoden und Abläufe implementiert, mit welchen die Weinetikettenbilder
